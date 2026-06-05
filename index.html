@@ -314,7 +314,9 @@ input[type="file"] { display: none; }
     <div class="toolbar" id="toolbar"></div>
 
     <div class="canvas-wrap" id="canvasWrap">
-      <canvas id="mainCanvas"></canvas>
+      <video id="mainVideo" playsinline webkit-playsinline muted
+        style="display:block;width:100%;height:auto;"></video>
+      <svg id="overlaySvg" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;touch-action:none;"></svg>
     </div>
 
     <div class="checkpoints" id="checkpoints"></div>
@@ -422,11 +424,7 @@ const CHECKPOINTS = [
 
 let lines = JSON.parse(JSON.stringify(PERSP_LINES.side));
 let lineVisible = Object.fromEntries(Object.keys(PERSP_LINES.side).map(k => [k, true]));
-let video = null;
-let canvas, ctx, wrap;
 let activeCP = 0;
-let dragging = null; // { lineKey, point }
-let animFrame = null;
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 canvas = document.getElementById('mainCanvas');
@@ -492,221 +490,159 @@ function setPerspective(p) {
   if (video) gotoCheckpoint(activeCP);
 }
 
-// ─── Ladda video ─────────────────────────────────────────────────────────────
-function loadVideo(file) {
-  if (!file) return;
-  if (video) { video.pause(); video.src = ''; }
-  video = document.createElement('video');
-  video.setAttribute('playsinline', '');
-  video.setAttribute('webkit-playsinline', '');
-  video.preload = 'auto';
-  video.muted = true;
-  video.src = URL.createObjectURL(file);
-
-  video.addEventListener('loadedmetadata', () => {
-    canvas.width  = video.videoWidth  || 1280;
-    canvas.height = video.videoHeight || 720;
-  });
-
-  video.addEventListener('canplay', () => {
-    document.getElementById('uploadCard').style.display = 'none';
-    document.getElementById('analysisCard').style.display = 'block';
-    document.getElementById('infoCard').style.display    = 'block';
-    startDraw();
-    gotoCheckpoint(0);
-  }, { once: true });
-}
+// ─── Video + SVG overlay ─────────────────────────────────────────────────────
+const vidEl = document.getElementById('mainVideo');
+const svg   = document.getElementById('overlaySvg');
+let dragging = null;
 
 ['vidFile','vidGallery','vidRecord'].forEach(id => {
-  document.getElementById(id).addEventListener('change', e => loadVideo(e.target.files[0]));
+  document.getElementById(id).addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    vidEl.src = URL.createObjectURL(file);
+    vidEl.load();
+    vidEl.addEventListener('canplay', () => {
+      document.getElementById('uploadCard').style.display  = 'none';
+      document.getElementById('analysisCard').style.display = 'block';
+      document.getElementById('infoCard').style.display    = 'block';
+      gotoCheckpoint(0);
+    }, { once: true });
+  });
 });
 
 // ─── Hoppa till checkpoint ────────────────────────────────────────────────────
 function gotoCheckpoint(i) {
   activeCP = i;
   const cp = CHECKPOINTS[i];
+  vidEl.pause();
+  vidEl.currentTime = (vidEl.duration || 0) * cp.pct;
 
-  function onSeeked() {
-    video.removeEventListener('seeked', onSeeked);
-    drawFrame();
-  }
-  video.addEventListener('seeked', onSeeked);
-  video.pause();
-  video.currentTime = video.duration * cp.pct;
-
-  // Uppdatera knappar
   document.querySelectorAll('.cp-btn').forEach((btn, idx) => {
     btn.classList.toggle('active', idx === i);
     btn.style.borderBottom = idx === i ? `2px solid ${CHECKPOINTS[idx].color}` : '';
   });
 
-  // Uppdatera info
   const checks = cp[perspective] || cp.side;
   document.getElementById('infoTitle').textContent    = cp.label + ' — ' + (perspective === 'side' ? 'Sidovy' : 'Bakvy');
   document.getElementById('infoSubtitle').textContent = cp.desc;
   document.getElementById('infoChecks').innerHTML = checks.map(c =>
-    `<div class="check-item" style="border-left-color:${cp.color}80">
-      <h3>${c.title}</h3><p>${c.body}</p>
-    </div>`
+    `<div class="check-item" style="border-left-color:${cp.color}80"><h3>${c.title}</h3><p>${c.body}</p></div>`
   ).join('');
+
+  renderSvg();
 }
 
-// ─── Rita en enskild frame (används vid seek) ─────────────────────────────────
-function drawFrame() {
-  if (!video) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  drawLines();
-}
+// ─── Rita SVG-linjer ─────────────────────────────────────────────────────────
+function renderSvg() {
+  svg.innerHTML = '';
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  // Dropshadow filter
+  defs.innerHTML = `<filter id="sh"><feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="rgba(0,0,0,0.7)"/></filter>`;
+  svg.appendChild(defs);
 
-// ─── Rita loop (används när videon spelar) ───────────────────────────────────
-function startDraw() {
-  if (animFrame) cancelAnimationFrame(animFrame);
-  function draw() {
-    if (video && video.readyState >= 2) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      drawLines();
-    }
-    animFrame = requestAnimationFrame(draw);
-  }
-  draw();
-}
-
-function drawLines() {
-  const W = canvas.width, H = canvas.height;
   Object.entries(lines).forEach(([key, l]) => {
     if (!lineVisible[key]) return;
-    const x1 = l.p1.x * W, y1 = l.p1.y * H;
-    const x2 = l.p2.x * W, y2 = l.p2.y * H;
-
-    // Skugga
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur = 6;
+    const x1 = l.p1.x*100+'%', y1 = l.p1.y*100+'%';
+    const x2 = l.p2.x*100+'%', y2 = l.p2.y*100+'%';
 
     // Linje
-    ctx.beginPath();
-    ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
-    ctx.strokeStyle = l.color;
-    ctx.lineWidth = 2.5;
-    ctx.setLineDash([]);
-    ctx.stroke();
-
-    // Pilspetsar
-    drawArrow(x1, y1, x2, y2, l.color);
-    drawArrow(x2, y2, x1, y1, l.color);
-
-    // Handtag
-    [l.p1, l.p2].forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x*W, p.y*H, 8, 0, Math.PI*2);
-      ctx.fillStyle = l.color;
-      ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    });
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1); line.setAttribute('y1',y1);
+    line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+    line.setAttribute('stroke', l.color);
+    line.setAttribute('stroke-width','2.5');
+    line.setAttribute('filter','url(#sh)');
+    svg.appendChild(line);
 
     // Etikett
-    const mx = (x1+x2)/2, my = (y1+y2)/2;
-    ctx.font = 'bold 13px Inter, sans-serif';
-    ctx.fillStyle = '#fff';
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 4;
-    ctx.fillText(l.label, mx + 8, my - 8);
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', ((l.p1.x+l.p2.x)/2*100)+'%');
+    text.setAttribute('y', ((l.p1.y+l.p2.y)/2*100 - 2)+'%');
+    text.setAttribute('fill','#fff');
+    text.setAttribute('font-size','13');
+    text.setAttribute('font-weight','bold');
+    text.setAttribute('font-family','Inter,sans-serif');
+    text.setAttribute('filter','url(#sh)');
+    text.textContent = l.label;
+    svg.appendChild(text);
 
-    ctx.restore();
+    // Handtag
+    ['p1','p2'].forEach(pt => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx', l[pt].x*100+'%');
+      c.setAttribute('cy', l[pt].y*100+'%');
+      c.setAttribute('r','10');
+      c.setAttribute('fill', l.color);
+      c.setAttribute('stroke','#fff');
+      c.setAttribute('stroke-width','2');
+      c.setAttribute('filter','url(#sh)');
+      c.style.cursor = 'grab';
+      c.dataset.key = key; c.dataset.pt = pt;
+      svg.appendChild(c);
+    });
   });
 
-  // Vinkelvisning
-  const angleEl = document.getElementById('angleDisplay');
-  if (angleEl) {
-    if (perspective === 'side' && lineVisible.spine && lines.spine) {
-      const l = lines.spine;
-      const angle = Math.round(Math.abs(Math.atan2(l.p2.x-l.p1.x, l.p2.y-l.p1.y) * 180 / Math.PI));
-      angleEl.innerHTML = `Ryggvinkel: <span>${angle}°</span> <small style="color:rgba(255,255,255,0.35)">(ideal 30–35°)</small>`;
-    } else if (perspective === 'back' && lineVisible.plane && lines.plane) {
-      const l = lines.plane;
-      const angle = Math.round(Math.abs(Math.atan2(l.p2.x-l.p1.x, l.p2.y-l.p1.y) * 180 / Math.PI));
-      angleEl.innerHTML = `Svängplan: <span>${angle}°</span> <small style="color:rgba(255,255,255,0.35)">(ideal ~55–65°)</small>`;
-    }
+  updateAngle();
+}
+
+function updateAngle() {
+  const el = document.getElementById('angleDisplay');
+  if (!el) return;
+  if (perspective === 'side' && lines.spine && lineVisible.spine) {
+    const l = lines.spine;
+    const a = Math.round(Math.abs(Math.atan2(l.p2.x-l.p1.x, l.p2.y-l.p1.y)*180/Math.PI));
+    el.innerHTML = `Ryggvinkel: <span>${a}°</span> <small style="color:rgba(255,255,255,0.35)">(ideal 30–35°)</small>`;
+  } else if (perspective === 'back' && lines.plane && lineVisible.plane) {
+    const l = lines.plane;
+    const a = Math.round(Math.abs(Math.atan2(l.p2.x-l.p1.x, l.p2.y-l.p1.y)*180/Math.PI));
+    el.innerHTML = `Svängplan: <span>${a}°</span> <small style="color:rgba(255,255,255,0.35)">(ideal ~55–65°)</small>`;
   }
 }
 
-function drawArrow(x1, y1, x2, y2, color) {
-  const angle = Math.atan2(y2-y1, x2-x1);
-  const size  = 10;
-  ctx.save();
-  ctx.translate(x2, y2);
-  ctx.rotate(angle);
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(-size, -size/2);
-  ctx.lineTo(-size,  size/2);
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.restore();
-}
+// ─── Drag på SVG ─────────────────────────────────────────────────────────────
+svg.addEventListener('mousedown', startDrag);
+svg.addEventListener('touchstart', startDrag, {passive:false});
 
-// ─── Drag-logik ───────────────────────────────────────────────────────────────
-function getPos(e) {
-  const r = canvas.getBoundingClientRect();
-  const scaleX = canvas.width  / r.width;
-  const scaleY = canvas.height / r.height;
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  return {
-    x: (clientX - r.left) * scaleX / canvas.width,
-    y: (clientY - r.top)  * scaleY / canvas.height,
-  };
-}
-
-function hitTest(pos) {
-  for (const [key, l] of Object.entries(lines)) {
-    if (!lineVisible[key]) continue;
-    for (const pt of ['p1','p2']) {
-      const dx = pos.x - l[pt].x, dy = pos.y - l[pt].y;
-      if (Math.sqrt(dx*dx + dy*dy) < 0.025) return { lineKey: key, point: pt };
-    }
-  }
-  return null;
-}
-
-canvas.addEventListener('mousedown',  e => { dragging = hitTest(getPos(e)); });
-canvas.addEventListener('touchstart', e => { dragging = hitTest(getPos(e)); e.preventDefault(); }, {passive:false});
-
-canvas.addEventListener('mousemove', e => {
-  if (!dragging) return;
-  const pos = getPos(e);
-  lines[dragging.lineKey][dragging.point] = { x: Math.max(0, Math.min(1, pos.x)), y: Math.max(0, Math.min(1, pos.y)) };
-});
-
-canvas.addEventListener('touchmove', e => {
-  if (!dragging) return;
-  const pos = getPos(e);
-  lines[dragging.lineKey][dragging.point] = { x: Math.max(0, Math.min(1, pos.x)), y: Math.max(0, Math.min(1, pos.y)) };
+function startDrag(e) {
+  const t = e.target;
+  if (!t.dataset.key) return;
   e.preventDefault();
-}, {passive:false});
+  dragging = { key: t.dataset.key, pt: t.dataset.pt };
+}
 
-canvas.addEventListener('mouseup',   () => dragging = null);
-canvas.addEventListener('touchend',  () => dragging = null);
+window.addEventListener('mousemove', doDrag);
+window.addEventListener('touchmove', doDrag, {passive:false});
+function doDrag(e) {
+  if (!dragging) return;
+  e.preventDefault();
+  const r   = svg.getBoundingClientRect();
+  const cx  = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy  = e.touches ? e.touches[0].clientY : e.clientY;
+  const nx  = Math.max(0, Math.min(1, (cx-r.left)/r.width));
+  const ny  = Math.max(0, Math.min(1, (cy-r.top)/r.height));
+  lines[dragging.key][dragging.pt] = {x:nx, y:ny};
+  renderSvg();
+}
+
+window.addEventListener('mouseup',  () => dragging = null);
+window.addEventListener('touchend', () => dragging = null);
 
 // ─── Knappar ─────────────────────────────────────────────────────────────────
 function toggleLine(key) {
   lineVisible[key] = !lineVisible[key];
   const btn = document.getElementById('btn_' + key);
   if (btn) btn.classList.toggle('active', lineVisible[key]);
+  renderSvg();
 }
 
 function resetLines() {
   lines = JSON.parse(JSON.stringify(PERSP_LINES[perspective]));
-  lineVisible = Object.fromEntries(Object.keys(PERSP_LINES[perspective]).map(k => [k, true]));
+  lineVisible = Object.fromEntries(Object.keys(PERSP_LINES[perspective]).map(k => [k,true]));
   Object.keys(LINE_LABELS[perspective]).forEach(k => {
-    const btn = document.getElementById('btn_' + k);
+    const btn = document.getElementById('btn_'+k);
     if (btn) btn.classList.add('active');
   });
+  renderSvg();
 }
 </script>
 </body>
