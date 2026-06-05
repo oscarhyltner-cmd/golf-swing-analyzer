@@ -438,16 +438,32 @@ let perspective = 'side'; // 'side' | 'back'
 
 const PERSP_LINES = {
   side: {
-    body:     { p1:{x:0.50,y:0.12}, p2:{x:0.50,y:0.60}, color:'#4dffaa', label:'Kropp',  ref:'v', hint:'Dra lodrätt genom kroppens mitt — huvud ner till mellan fötterna. Visar sidledslutning och sway.' },
-    shoulder: { p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axlar',  ref:'h', hint:'Lägg tvärs över axlarna — visar axellutning.' },
-    hip:      { p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höfter', ref:'h', hint:'Lägg tvärs över höfterna.' },
-    ball:     { p1:{x:0.56,y:0.50}, p2:{x:0.56,y:0.86}, color:'#ff8844', label:'Boll',   ref:'v', hint:'Dra lodrätt genom bollen — kolla bollposition och att huvudet stannar bakom.' },
+    body:     { p1:{x:0.50,y:0.12}, p2:{x:0.50,y:0.60}, color:'#4dffaa', label:'Kropp',  ref:'v',
+                hint:'Sätt övre punkten mitt på huvudet och nedre punkten mitt mellan fötterna.',
+                target:'Adress ~0° (lodrät). Mot impact får den luta 10–20° bort från målet.' },
+    shoulder: { p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axlar',  ref:'h',
+                hint:'Sätt en punkt på vardera axeltopp, rakt över axlarna.',
+                target:'Adress ~5–10° (främre axeln högre). I övrigt nära vågrät.' },
+    hip:      { p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höfter', ref:'h',
+                hint:'Sätt en punkt på vardera höftben, rakt över höften.',
+                target:'Vågrät (~0°) vid adress.' },
+    ball:     { p1:{x:0.56,y:0.50}, p2:{x:0.56,y:0.86}, color:'#ff8844', label:'Boll',   ref:'v',
+                hint:'Dra en lodrät linje rakt upp från bollen.',
+                target:'Alltid 0° (lodrät) — referens för bollposition och huvud bakom bollen.' },
   },
   back: {
-    plane:    { p1:{x:0.50,y:0.78}, p2:{x:0.62,y:0.22}, color:'#4dffaa', label:'Svängplan', ref:'h', hint:'Dra från bollen upp genom händerna — det är ditt svängplan.' },
-    spine:    { p1:{x:0.50,y:0.15}, p2:{x:0.52,y:0.55}, color:'#ff88cc', label:'Ryggaxel',  ref:'v', hint:'Dra längs ryggraden, uppifrån och ner.' },
-    align:    { p1:{x:0.20,y:0.75}, p2:{x:0.80,y:0.75}, color:'#4dcfff', label:'Riktlinje', ref:'h', hint:'Lägg längs tålinjen, parallellt med mållinjen.' },
-    shoulder: { p1:{x:0.35,y:0.30}, p2:{x:0.65,y:0.30}, color:'#ffcf4d', label:'Axlar',     ref:'h', hint:'Lägg tvärs över axlarna.' },
+    plane:    { p1:{x:0.50,y:0.78}, p2:{x:0.62,y:0.22}, color:'#4dffaa', label:'Svängplan', ref:'h',
+                hint:'Nedre punkten på bollen, övre punkten genom händerna/axeln.',
+                target:'Driver ~45–50°, järn ~55–65° från marken. Skaftet bör följa linjen.' },
+    spine:    { p1:{x:0.50,y:0.15}, p2:{x:0.52,y:0.55}, color:'#ff88cc', label:'Ryggaxel',  ref:'v',
+                hint:'Dra längs ryggraden, från nacken till svanskotan.',
+                target:'~30–40° framåtlutning (från lodrätt) vid adress.' },
+    align:    { p1:{x:0.20,y:0.75}, p2:{x:0.80,y:0.75}, color:'#4dcfff', label:'Riktlinje', ref:'h',
+                hint:'Lägg längs tårna, parallellt med mållinjen.',
+                target:'Vågrät (0°).' },
+    shoulder: { p1:{x:0.35,y:0.30}, p2:{x:0.65,y:0.30}, color:'#ffcf4d', label:'Axlar',     ref:'h',
+                hint:'Sätt en punkt på vardera axeltopp.',
+                target:'Nära vågrät (~0°) vid adress.' },
   }
 };
 
@@ -636,17 +652,21 @@ function gotoCheckpoint(i) {
   document.getElementById('infoTitle').textContent    = cp.label + ' — ' + (perspective === 'side' ? 'Framifrån' : 'Bakifrån');
   document.getElementById('infoSubtitle').textContent = cp.desc;
 
-  // Placeringsguide för linjerna
+  // Placeringsguide för linjerna — var de ska sitta + riktvärde i grader
   const guide = Object.entries(lines).filter(([k]) => lineVisible[k]).map(([k, l]) =>
-    `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
-       <span style="width:14px;height:3px;border-radius:2px;background:${l.color};flex-shrink:0;"></span>
-       <span style="font-size:0.72rem;color:rgba(255,255,255,0.7);"><b style="color:${l.color}">${l.label}:</b> ${l.hint}</span>
+    `<div style="display:flex;gap:8px;padding:7px 0;border-top:1px solid rgba(255,255,255,0.07);">
+       <span style="width:12px;height:12px;border-radius:50%;background:${l.color};flex-shrink:0;margin-top:2px;"></span>
+       <div style="font-size:0.73rem;line-height:1.5;">
+         <b style="color:${l.color}">${l.label}</b>
+         <span style="color:rgba(255,255,255,0.7);"> — ${l.hint}</span>
+         <div style="color:rgba(255,255,255,0.5);margin-top:2px;">🎯 Riktvärde: ${l.target}</div>
+       </div>
      </div>`
   ).join('');
 
   document.getElementById('infoChecks').innerHTML =
-    `<div style="grid-column:1/-1;background:rgba(0,0,0,0.18);border-radius:8px;padding:10px 12px;margin-bottom:4px;">
-       <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.4);margin-bottom:6px;">📐 Placera linjerna så här</div>
+    `<div style="grid-column:1/-1;background:rgba(0,0,0,0.18);border-radius:8px;padding:10px 14px;margin-bottom:4px;">
+       <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.4);margin-bottom:2px;">📐 Placera linjerna så här</div>
        ${guide}
      </div>` +
     checks.map(c =>
