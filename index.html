@@ -187,8 +187,8 @@
   .label-pro { background: rgba(240,180,80,0.25); color: #f5d98a; border: 1px solid rgba(240,180,80,0.3); }
 
   .video-area {
-    width: 100%;
-    aspect-ratio: 16/9;
+    flex: 1;
+    min-height: 200px;
     background: rgba(0,0,0,0.25);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -671,6 +671,8 @@ function loadYourVideo(file) {
   yourVideoEl.src = url;
   yourVideoEl.controls = true;
   yourVideoEl.loop = true;
+  yourVideoEl.setAttribute('playsinline', '');
+  yourVideoEl.setAttribute('webkit-playsinline', '');
   yourVideoEl.style.cssText = 'width:100%;height:100%;object-fit:contain;';
   document.getElementById('yourVideoArea').appendChild(yourVideoEl);
   document.getElementById('clearYourBtn').style.display = 'inline-block';
@@ -711,6 +713,8 @@ function loadProVideoFile(file) {
   proVideoEl.src = url;
   proVideoEl.controls = true;
   proVideoEl.loop = true;
+  proVideoEl.setAttribute('playsinline', '');
+  proVideoEl.setAttribute('webkit-playsinline', '');
   proVideoEl.style.cssText = 'width:100%;height:100%;object-fit:contain;';
   document.getElementById('proVideoArea').appendChild(proVideoEl);
   document.getElementById('clearProBtn').style.display = 'inline-block';
