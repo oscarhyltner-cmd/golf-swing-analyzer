@@ -500,18 +500,21 @@ function loadVideo(file) {
   video.setAttribute('playsinline', '');
   video.setAttribute('webkit-playsinline', '');
   video.preload = 'auto';
-  video.muted = true; // krävs för autoplay i vissa browsers
+  video.muted = true;
   video.src = URL.createObjectURL(file);
 
-  video.addEventListener('loadeddata', () => {
+  video.addEventListener('loadedmetadata', () => {
     canvas.width  = video.videoWidth  || 1280;
     canvas.height = video.videoHeight || 720;
+  });
+
+  video.addEventListener('canplay', () => {
     document.getElementById('uploadCard').style.display = 'none';
     document.getElementById('analysisCard').style.display = 'block';
     document.getElementById('infoCard').style.display    = 'block';
     startDraw();
     gotoCheckpoint(0);
-  });
+  }, { once: true });
 }
 
 ['vidFile','vidGallery','vidRecord'].forEach(id => {
@@ -560,7 +563,7 @@ function drawFrame() {
 function startDraw() {
   if (animFrame) cancelAnimationFrame(animFrame);
   function draw() {
-    if (video && !video.paused) {
+    if (video && video.readyState >= 2) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       drawLines();
