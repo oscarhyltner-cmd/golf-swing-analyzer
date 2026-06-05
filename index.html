@@ -427,10 +427,6 @@ let lineVisible = Object.fromEntries(Object.keys(PERSP_LINES.side).map(k => [k, 
 let activeCP = 0;
 
 // ─── Init ────────────────────────────────────────────────────────────────────
-canvas = document.getElementById('mainCanvas');
-ctx    = canvas.getContext('2d');
-wrap   = document.getElementById('canvasWrap');
-
 // Bygg checkpoint-knappar
 const cpBar = document.getElementById('checkpoints');
 CHECKPOINTS.forEach((cp, i) => {
