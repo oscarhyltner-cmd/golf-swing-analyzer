@@ -377,16 +377,16 @@ let perspective = 'side'; // 'side' | 'back'
 
 const PERSP_LINES = {
   side: {
-    spine:    { p1:{x:0.50,y:0.14}, p2:{x:0.46,y:0.54}, color:'#4dffaa', label:'Rygg' },
-    shoulder: { p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axlar' },
-    hip:      { p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höfter' },
-    ground:   { p1:{x:0.10,y:0.82}, p2:{x:0.90,y:0.82}, color:'#ff8844', label:'Mark' },
+    spine:    { p1:{x:0.50,y:0.14}, p2:{x:0.46,y:0.54}, color:'#4dffaa', label:'Rygg',   hint:'Dra längs ryggraden — från nacken ner till svanskotan.' },
+    shoulder: { p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axlar',  hint:'Lägg tvärs över båda axlarna.' },
+    hip:      { p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höfter', hint:'Lägg tvärs över höftbenen.' },
+    ground:   { p1:{x:0.10,y:0.82}, p2:{x:0.90,y:0.82}, color:'#ff8844', label:'Mark',   hint:'Lägg längs marken vid bollen.' },
   },
   back: {
-    plane:    { p1:{x:0.50,y:0.78}, p2:{x:0.62,y:0.22}, color:'#4dffaa', label:'Svängplan' },
-    spine:    { p1:{x:0.50,y:0.15}, p2:{x:0.52,y:0.55}, color:'#ff88cc', label:'Ryggaxel' },
-    align:    { p1:{x:0.20,y:0.75}, p2:{x:0.80,y:0.75}, color:'#4dcfff', label:'Riktlinje' },
-    shoulder: { p1:{x:0.35,y:0.30}, p2:{x:0.65,y:0.30}, color:'#ffcf4d', label:'Axlar' },
+    plane:    { p1:{x:0.50,y:0.78}, p2:{x:0.62,y:0.22}, color:'#4dffaa', label:'Svängplan', hint:'Dra från bollen upp genom händerna — det är ditt svängplan.' },
+    spine:    { p1:{x:0.50,y:0.15}, p2:{x:0.52,y:0.55}, color:'#ff88cc', label:'Ryggaxel',  hint:'Dra längs ryggraden, uppifrån och ner.' },
+    align:    { p1:{x:0.20,y:0.75}, p2:{x:0.80,y:0.75}, color:'#4dcfff', label:'Riktlinje', hint:'Lägg längs tålinjen, parallellt med mållinjen.' },
+    shoulder: { p1:{x:0.35,y:0.30}, p2:{x:0.65,y:0.30}, color:'#ffcf4d', label:'Axlar',     hint:'Lägg tvärs över axlarna.' },
   }
 };
 
@@ -539,9 +539,23 @@ function gotoCheckpoint(i) {
   const checks = cp[perspective] || cp.side;
   document.getElementById('infoTitle').textContent    = cp.label + ' — ' + (perspective === 'side' ? 'Sidovy' : 'Bakvy');
   document.getElementById('infoSubtitle').textContent = cp.desc;
-  document.getElementById('infoChecks').innerHTML = checks.map(c =>
-    `<div class="check-item" style="border-left-color:${cp.color}80"><h3>${c.title}</h3><p>${c.body}</p></div>`
+
+  // Placeringsguide för linjerna
+  const guide = Object.entries(lines).filter(([k]) => lineVisible[k]).map(([k, l]) =>
+    `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+       <span style="width:14px;height:3px;border-radius:2px;background:${l.color};flex-shrink:0;"></span>
+       <span style="font-size:0.72rem;color:rgba(255,255,255,0.7);"><b style="color:${l.color}">${l.label}:</b> ${l.hint}</span>
+     </div>`
   ).join('');
+
+  document.getElementById('infoChecks').innerHTML =
+    `<div style="grid-column:1/-1;background:rgba(0,0,0,0.18);border-radius:8px;padding:10px 12px;margin-bottom:4px;">
+       <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.4);margin-bottom:6px;">📐 Placera linjerna så här</div>
+       ${guide}
+     </div>` +
+    checks.map(c =>
+      `<div class="check-item" style="border-left-color:${cp.color}80"><h3>${c.title}</h3><p>${c.body}</p></div>`
+    ).join('');
 
   renderSvg();
 }
@@ -554,46 +568,71 @@ function renderSvg() {
   defs.innerHTML = `<filter id="sh"><feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="rgba(0,0,0,0.7)"/></filter>`;
   svg.appendChild(defs);
 
+  const NS = 'http://www.w3.org/2000/svg';
   Object.entries(lines).forEach(([key, l]) => {
     if (!lineVisible[key]) return;
     const x1 = l.p1.x*100+'%', y1 = l.p1.y*100+'%';
     const x2 = l.p2.x*100+'%', y2 = l.p2.y*100+'%';
 
-    // Linje
-    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    // Osynlig tjock greppyta för hela linjen (för att flytta linjen)
+    const hitLine = document.createElementNS(NS,'line');
+    hitLine.setAttribute('x1',x1); hitLine.setAttribute('y1',y1);
+    hitLine.setAttribute('x2',x2); hitLine.setAttribute('y2',y2);
+    hitLine.setAttribute('stroke','transparent');
+    hitLine.setAttribute('stroke-width','26');
+    hitLine.style.pointerEvents = 'stroke';
+    hitLine.style.touchAction = 'none';
+    hitLine.style.cursor = 'move';
+    hitLine.dataset.key = key; hitLine.dataset.mode = 'line';
+    svg.appendChild(hitLine);
+
+    // Synlig linje
+    const line = document.createElementNS(NS,'line');
     line.setAttribute('x1',x1); line.setAttribute('y1',y1);
     line.setAttribute('x2',x2); line.setAttribute('y2',y2);
     line.setAttribute('stroke', l.color);
     line.setAttribute('stroke-width','2.5');
     line.setAttribute('filter','url(#sh)');
+    line.style.pointerEvents = 'none';
     svg.appendChild(line);
 
     // Etikett
-    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    const text = document.createElementNS(NS,'text');
     text.setAttribute('x', ((l.p1.x+l.p2.x)/2*100)+'%');
     text.setAttribute('y', ((l.p1.y+l.p2.y)/2*100 - 2)+'%');
     text.setAttribute('fill','#fff');
-    text.setAttribute('font-size','13');
+    text.setAttribute('font-size','12');
     text.setAttribute('font-weight','bold');
     text.setAttribute('font-family','Inter,sans-serif');
     text.setAttribute('filter','url(#sh)');
+    text.style.pointerEvents = 'none';
     text.textContent = l.label;
     svg.appendChild(text);
 
-    // Handtag — pointer-events: all så de är dragbara trots SVG-genomsläpp
+    // Handtag — liten synlig prick + stor osynlig greppyta
     ['p1','p2'].forEach(pt => {
-      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      // Stor osynlig greppyta
+      const hit = document.createElementNS(NS,'circle');
+      hit.setAttribute('cx', l[pt].x*100+'%');
+      hit.setAttribute('cy', l[pt].y*100+'%');
+      hit.setAttribute('r','22');
+      hit.setAttribute('fill','transparent');
+      hit.style.pointerEvents = 'all';
+      hit.style.touchAction   = 'none';
+      hit.style.cursor = 'grab';
+      hit.dataset.key = key; hit.dataset.pt = pt; hit.dataset.mode = 'point';
+      svg.appendChild(hit);
+
+      // Liten synlig prick
+      const c = document.createElementNS(NS,'circle');
       c.setAttribute('cx', l[pt].x*100+'%');
       c.setAttribute('cy', l[pt].y*100+'%');
-      c.setAttribute('r','14');
+      c.setAttribute('r','7');
       c.setAttribute('fill', l.color);
       c.setAttribute('stroke','#fff');
-      c.setAttribute('stroke-width','2.5');
+      c.setAttribute('stroke-width','2');
       c.setAttribute('filter','url(#sh)');
-      c.style.cursor  = 'grab';
-      c.style.pointerEvents = 'all';
-      c.style.touchAction   = 'none';
-      c.dataset.key = key; c.dataset.pt = pt;
+      c.style.pointerEvents = 'none';
       svg.appendChild(c);
     });
   });
@@ -615,13 +654,29 @@ function updateAngle() {
   }
 }
 
-// ─── Drag på handtagen ───────────────────────────────────────────────────────
-// Delegeras via window — handtagen har pointer-events:all
+// ─── Drag på handtag / hela linjen ───────────────────────────────────────────
+function pointerPos(e) {
+  const r  = svg.getBoundingClientRect();
+  const cx = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy = e.touches ? e.touches[0].clientY : e.clientY;
+  return { x: (cx-r.left)/r.width, y: (cy-r.top)/r.height };
+}
+
 function startDrag(e) {
   const t = e.target;
   if (!t.dataset || !t.dataset.key) return;
   e.preventDefault();
-  dragging = { key: t.dataset.key, pt: t.dataset.pt };
+  const key = t.dataset.key;
+  if (t.dataset.mode === 'line') {
+    // Flytta hela linjen — spara startpunkt och original
+    const p = pointerPos(e);
+    dragging = {
+      key, mode: 'line', start: p,
+      orig: { p1: {...lines[key].p1}, p2: {...lines[key].p2} }
+    };
+  } else {
+    dragging = { key, mode: 'point', pt: t.dataset.pt };
+  }
 }
 
 svg.addEventListener('mousedown',  startDrag);
@@ -632,12 +687,17 @@ window.addEventListener('touchmove', doDrag, {passive:false});
 function doDrag(e) {
   if (!dragging) return;
   e.preventDefault();
-  const r   = svg.getBoundingClientRect();
-  const cx  = e.touches ? e.touches[0].clientX : e.clientX;
-  const cy  = e.touches ? e.touches[0].clientY : e.clientY;
-  const nx  = Math.max(0, Math.min(1, (cx-r.left)/r.width));
-  const ny  = Math.max(0, Math.min(1, (cy-r.top)/r.height));
-  lines[dragging.key][dragging.pt] = {x:nx, y:ny};
+  const p = pointerPos(e);
+  const clamp = v => Math.max(0, Math.min(1, v));
+
+  if (dragging.mode === 'line') {
+    const dx = p.x - dragging.start.x;
+    const dy = p.y - dragging.start.y;
+    lines[dragging.key].p1 = { x: clamp(dragging.orig.p1.x + dx), y: clamp(dragging.orig.p1.y + dy) };
+    lines[dragging.key].p2 = { x: clamp(dragging.orig.p2.x + dx), y: clamp(dragging.orig.p2.y + dy) };
+  } else {
+    lines[dragging.key][dragging.pt] = { x: clamp(p.x), y: clamp(p.y) };
+  }
   renderSvg();
 }
 
