@@ -458,9 +458,9 @@ const PERSP_LINES = {
     spine:    { p1:{x:0.50,y:0.15}, p2:{x:0.52,y:0.55}, color:'#ff88cc', label:'Ryggaxel',  ref:'v',
                 hint:'Dra längs ryggraden, från nacken till svanskotan.',
                 target:'~30–40° framåtlutning (från lodrätt) vid adress.' },
-    align:    { p1:{x:0.20,y:0.75}, p2:{x:0.80,y:0.75}, color:'#4dcfff', label:'Riktlinje', ref:'h',
-                hint:'Lägg längs tårna, parallellt med mållinjen.',
-                target:'Vågrät (0°).' },
+    ball:     { p1:{x:0.50,y:0.45}, p2:{x:0.50,y:0.85}, color:'#4dcfff', label:'Boll', ref:'v',
+                hint:'Dra en lodrät linje rakt upp från bollen.',
+                target:'0° (lodrät). Kolla att huvudet stannar bakom och att händerna återvänder hit.' },
     shoulder: { p1:{x:0.35,y:0.30}, p2:{x:0.65,y:0.30}, color:'#ffcf4d', label:'Axlar',     ref:'h',
                 hint:'Sätt en punkt på vardera axeltopp.',
                 target:'Nära vågrät (~0°) vid adress.' },
@@ -469,7 +469,7 @@ const PERSP_LINES = {
 
 const LINE_LABELS = {
   side: { body:'Kroppslinje', shoulder:'Axellinje', hip:'Höftlinje', ball:'Bolllinje' },
-  back: { plane:'Svängplan', spine:'Ryggaxel', align:'Riktlinje', shoulder:'Axellinje' },
+  back: { plane:'Svängplan', spine:'Ryggaxel', ball:'Bolllinje', shoulder:'Axellinje' },
 };
 
 // ─── Data: 6 nyckelpositioner ───────────────────────────────────────────────
