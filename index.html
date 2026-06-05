@@ -306,10 +306,10 @@ input[type="file"] { display: none; }
     <!-- Perspektivväljare -->
     <div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.1);">
       <button id="perspSide" onclick="setPerspective('side')" style="flex:1;padding:11px 8px;border:none;font-family:inherit;font-size:0.78rem;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.12);color:#fff;border-bottom:2px solid #7df;transition:all 0.15s;">
-        ◁ Sidovy &nbsp;<small style="font-weight:400;opacity:0.6;">Kamera framför golfaren</small>
+        Framifrån &nbsp;<small style="font-weight:400;opacity:0.6;">Ser ansikte &amp; mage</small>
       </button>
       <button id="perspBack" onclick="setPerspective('back')" style="flex:1;padding:11px 8px;border:none;font-family:inherit;font-size:0.78rem;font-weight:700;cursor:pointer;background:transparent;color:rgba(255,255,255,0.45);border-bottom:2px solid transparent;transition:all 0.15s;">
-        △ Bakvy &nbsp;<small style="font-weight:400;opacity:0.6;">Kamera bakom golfaren</small>
+        Bakifrån &nbsp;<small style="font-weight:400;opacity:0.6;">Längs slaglinjen</small>
       </button>
     </div>
     <div class="toolbar" id="toolbar"></div>
@@ -377,10 +377,10 @@ let perspective = 'side'; // 'side' | 'back'
 
 const PERSP_LINES = {
   side: {
-    spine:    { p1:{x:0.50,y:0.14}, p2:{x:0.46,y:0.54}, color:'#4dffaa', label:'Rygg',   hint:'Dra längs ryggraden — från nacken ner till svanskotan.' },
-    shoulder: { p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axlar',  hint:'Lägg tvärs över båda axlarna.' },
-    hip:      { p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höfter', hint:'Lägg tvärs över höftbenen.' },
-    ground:   { p1:{x:0.10,y:0.82}, p2:{x:0.90,y:0.82}, color:'#ff8844', label:'Mark',   hint:'Lägg längs marken vid bollen.' },
+    body:     { p1:{x:0.50,y:0.12}, p2:{x:0.50,y:0.60}, color:'#4dffaa', label:'Kropp',  hint:'Dra lodrätt genom kroppens mitt — huvud ner till mellan fötterna. Visar sidledslutning och sway.' },
+    shoulder: { p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axlar',  hint:'Lägg tvärs över axlarna — visar axellutning.' },
+    hip:      { p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höfter', hint:'Lägg tvärs över höfterna.' },
+    ball:     { p1:{x:0.56,y:0.50}, p2:{x:0.56,y:0.86}, color:'#ff8844', label:'Boll',   hint:'Dra lodrätt genom bollen — kolla bollposition och att huvudet stannar bakom.' },
   },
   back: {
     plane:    { p1:{x:0.50,y:0.78}, p2:{x:0.62,y:0.22}, color:'#4dffaa', label:'Svängplan', hint:'Dra från bollen upp genom händerna — det är ditt svängplan.' },
@@ -391,30 +391,30 @@ const PERSP_LINES = {
 };
 
 const LINE_LABELS = {
-  side: { spine:'Rygglinje', shoulder:'Axellinje', hip:'Höftlinje', ground:'Marklinje' },
+  side: { body:'Kroppslinje', shoulder:'Axellinje', hip:'Höftlinje', ball:'Bolllinje' },
   back: { plane:'Svängplan', spine:'Ryggaxel', align:'Riktlinje', shoulder:'Axellinje' },
 };
 
 // ─── Data: 6 nyckelpositioner ───────────────────────────────────────────────
 const CHECKPOINTS = [
   { id:'address',  label:'Adress',   desc:'Setup — ställningen innan swingen börjar', pct:0.02, color:'#7dd',
-    side:[ {title:'Ryggvinkel',   body:'Böj framåt ~30–35° från vertikal. Rak rygg, inte rundad.'}, {title:'Knäflex', body:'Lätt böj i knäna. Inte för djup, inte raka ben.'}, {title:'Bollposition', body:'Driver: innanför vänster häl. Järn: mitten av stance.'}, {title:'Axlar parallellt', body:'Axlar, höfter och fötter parallella med mållinjen.'} ],
+    side:[ {title:'Bollposition', body:'Driver: mitt för främre hälen. Järn: mer mot mitten av stancen.'}, {title:'Axellutning', body:'Främre axeln något högre än bakre — tydligast med driver.'}, {title:'Balans', body:'Vikten jämnt fördelad, lätt mot framfötterna.'}, {title:'Huvud bakom bollen', body:'Vid driver ska huvudet vara strax bakom bollen redan vid adress.'} ],
     back:[ {title:'Stancebredd',  body:'Axelbredd eller lite bredare för driver. Smalare för korta järn.'}, {title:'Riktning', body:'Axlar, höfter och fötter ska peka parallellt med mållinjen — inte mot flaggan.'}, {title:'Bollposition', body:'Sett bakifrån: bollen ska vara innanför vänster häl för driver.'}, {title:'Rygg lateral', body:'Lätt tilt bort från målet vid driver — huvud bakom bollen.'} ]
   },
   { id:'takeaway', label:'Takeaway', desc:'De första 30 cm av backswingen', pct:0.18, color:'#adf',
-    side:[ {title:'Låg och bred', body:'Klubban håller sig nära marken. Skapar bred svängbåge.'}, {title:'Triangeln intakt', body:'Axlar, armar och händer rör sig som en enhet.'}, {title:'Höfterna still', body:'Höfterna roterar minimalt — axlarna leder.'}, {title:'Vänster arm rak', body:'Vänster arm förblir utsträckt.'} ],
+    side:[ {title:'Huvudet still', body:'Huvudet ska knappt röra sig i sidled — jämför med kroppslinjen.'}, {title:'Ingen sway', body:'Bakre höften glider inte utanför bakre foten.'}, {title:'Vikt börjar flytta', body:'Vikten börjar gå mot bakre sidan, men huvudet stannar.'}, {title:'Bred takeaway', body:'Händer och klubba hålls låga och samlade.'} ],
     back:[ {title:'Klubban innanför', body:'Klubbhuvudet ska hålla sig innanför händerna — inte bakom kroppen.'}, {title:'Skaftets riktning', body:'Skaftet pekar mot mållinjen när det är parallellt med marken.'}, {title:'Axelrotation', body:'Vänster axel börjar röra sig mot hakan.'}, {title:'Handens väg', body:'Händerna rör sig längs insidan av mållinjen, inte utåt.'} ]
   },
   { id:'halfway',  label:'Halvvägs', desc:'Mitt i backswingen — klubban parallell med marken', pct:0.35, color:'#bdf',
-    side:[ {title:'Skaftposition', body:'Skaftet pekar mot mållinjen eller parallellt.'}, {title:'Handledsvinkel', body:'Handlederna fullt hänglade — 90° vinkel.'}, {title:'Viktöverföring', body:'Vikt börjar flytta till höger fot (~60%).'}, {title:'Axelrotation', body:'Vänster axel roterar under hakan.'} ],
+    side:[ {title:'Sway-kontroll', body:'Bakre höften ska inte glida utanför bakre foten — rotera, glid inte.'}, {title:'Huvudet kvar', body:'Huvudet stannar i stort sett på samma ställe i sidled.'}, {title:'Främre arm rak', body:'Främre armen förblir utsträckt.'}, {title:'Vikt ~60%', body:'Ungefär 60% av vikten på bakre sidan nu.'} ],
     back:[ {title:'Svängplanet', body:'Dra svängplanslinjen från bollen genom händerna. Skaftet bör följa detta plan.'}, {title:'Klubbhuvudet', body:'Sett bakifrån ska klubbhuvudet synas precis ovanför händerna — on-plane.'}, {title:'Högerarmbåge', body:'Höger armbåge pekar ner mot marken, inte utåt.'}, {title:'Axelrotation', body:'Axlarna har roterat ~45° — höfterna ~20–25°.'} ]
   },
   { id:'top',      label:'Toppen',   desc:'Toppen av backswingen', pct:0.5, color:'#fda',
-    side:[ {title:'Axelrotation', body:'Mål: 90° axelrotation. Höfterna ~45°. Skapar X-faktor.'}, {title:'Parallellt skaft', body:'Driver: skaftet parallellt med marken och pekar mot målet.'}, {title:'Vikt på höger fot', body:'Ca 70–80% av vikten på höger sida.'}, {title:'Huvudet still', body:'Huvud rör sig minimalt — håll ögonen på bollen.'} ],
+    side:[ {title:'Huvudet still', body:'Jämför med adress — huvudet ska vara kvar på nästan samma höjd och sidled.'}, {title:'Vikt på bakre sidan', body:'Ca 70–80% av vikten på bakre foten.'}, {title:'Stabil bas', body:'Knäna håller sin böj — inget upprätande eller vingling.'}, {title:'Full rotation', body:'Axlarna har vridit sig — rygg/axel mot målet.'} ],
     back:[ {title:'Svängplan topp', body:'Skaftet bör ligga på eller strax under svängplanslinjen vid toppen.'}, {title:'Cross-the-line?', body:'Pekar skaftet till höger om målet = för inåt. Vänster = laid-off. Sikta: rakt.'}, {title:'Höger armbåge', body:'Höger armbåge ~90° böjd, pekar mot marken — inte utåt (flybow).'}, {title:'Axelrotation', body:'Vänster axel under hakan — visar på fullständig rotation.'} ]
   },
   { id:'impact',   label:'Impact',   desc:'Kontakt med bollen — det viktigaste ögonblicket', pct:0.72, color:'#faa',
-    side:[ {title:'Händer före', body:'Händerna framför bollen vid impact — forward shaft lean.'}, {title:'Höfterna öppna', body:'Höfterna 30–40° öppna mot målet.'}, {title:'Vikt framåt', body:'~80% av vikten på vänster sida.'}, {title:'Huvud bakom bollen', body:'Håll huvudet bakom bollen till efter impact.'} ],
+    side:[ {title:'Händer före bollen', body:'Händerna framför bollen — skaftet lutar mot målet (forward shaft lean).'}, {title:'Vikt på främre sidan', body:'Ca 80% av vikten på främre foten.'}, {title:'Huvud bakom bollen', body:'Huvudet ska fortfarande vara bakom bollen vid träff.'}, {title:'Främre sidan rak', body:'Främre benet och sidan rätar ut sig till en "vägg".'} ],
     back:[ {title:'Klubbbanan', body:'Sett bakifrån: idealt svänger klubban lätt inifrån-ut för draw eller rak för rak boll.'}, {title:'Skaftlutning', body:'Skaftet lutar mot målet (forward lean) — syns tydligt bakifrån.'}, {title:'Höfterna öppna', body:'Höfterna ska vara klart öppna — vänster höft utdragen mot målet.'}, {title:'Vänster sida', body:'Vänster sida är utsträckt och "vägg" — armen och skaftet bildar en rak linje.'} ]
   },
   { id:'finish',   label:'Finish',   desc:'Fullständig follow-through', pct:0.92, color:'#afa',
@@ -537,7 +537,7 @@ function gotoCheckpoint(i) {
   });
 
   const checks = cp[perspective] || cp.side;
-  document.getElementById('infoTitle').textContent    = cp.label + ' — ' + (perspective === 'side' ? 'Sidovy' : 'Bakvy');
+  document.getElementById('infoTitle').textContent    = cp.label + ' — ' + (perspective === 'side' ? 'Framifrån' : 'Bakifrån');
   document.getElementById('infoSubtitle').textContent = cp.desc;
 
   // Placeringsguide för linjerna
@@ -643,10 +643,10 @@ function renderSvg() {
 function updateAngle() {
   const el = document.getElementById('angleDisplay');
   if (!el) return;
-  if (perspective === 'side' && lines.spine && lineVisible.spine) {
-    const l = lines.spine;
+  if (perspective === 'side' && lines.body && lineVisible.body) {
+    const l = lines.body;
     const a = Math.round(Math.abs(Math.atan2(l.p2.x-l.p1.x, l.p2.y-l.p1.y)*180/Math.PI));
-    el.innerHTML = `Ryggvinkel: <span>${a}°</span> <small style="color:rgba(255,255,255,0.35)">(ideal 30–35°)</small>`;
+    el.innerHTML = `Sidledslutning: <span>${a}°</span> <small style="color:rgba(255,255,255,0.35)">(lutning från lodrätt)</small>`;
   } else if (perspective === 'back' && lines.plane && lineVisible.plane) {
     const l = lines.plane;
     const a = Math.round(Math.abs(Math.atan2(l.p2.x-l.p1.x, l.p2.y-l.p1.y)*180/Math.PI));
