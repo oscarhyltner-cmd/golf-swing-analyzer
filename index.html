@@ -754,7 +754,7 @@ function updateLine(key) {
   e.line.setAttribute('x2',x2); e.line.setAttribute('y2',y2);
   e.text.setAttribute('x', ((l.p1.x+l.p2.x)/2*100)+'%');
   e.text.setAttribute('y', ((l.p1.y+l.p2.y)/2*100 - 2)+'%');
-  e.text.textContent = `${l.label}  ${tiltDeg(l)}° ${l.ref==='v'?'fr. lodrätt':'fr. vågrätt'}`;
+  e.text.textContent = `${tiltDeg(l)}°`;
   ['p1','p2'].forEach((pt, i) => {
     e.hits[i].setAttribute('cx', l[pt].x*100+'%'); e.hits[i].setAttribute('cy', l[pt].y*100+'%');
     e.dots[i].setAttribute('cx', l[pt].x*100+'%'); e.dots[i].setAttribute('cy', l[pt].y*100+'%');
