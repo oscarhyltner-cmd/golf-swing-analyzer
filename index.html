@@ -144,6 +144,58 @@ input[type="file"] { display: none; }
 
 .canvas-wrap canvas { display: block; width: 100%; height: auto; }
 
+/* Egna videokontroller */
+.vidcontrols {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.25);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.vc-btn {
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  width: 38px; height: 38px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.14s;
+}
+.vc-btn:hover { background: rgba(255,255,255,0.26); }
+.vc-play { background: rgba(100,220,160,0.3); border-color: rgba(100,220,160,0.5); }
+.vc-play:hover { background: rgba(100,220,160,0.42); }
+.vc-time { font-size: 0.72rem; color: rgba(255,255,255,0.6); flex-shrink: 0; min-width: 38px; text-align: right; }
+#scrub {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
+  cursor: pointer;
+  outline: none;
+}
+#scrub::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: grab;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+#scrub::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  cursor: grab;
+}
+
 /* Checkpoint knappar */
 .checkpoints {
   display: grid;
@@ -315,9 +367,18 @@ input[type="file"] { display: none; }
     <div class="toolbar" id="toolbar"></div>
 
     <div class="canvas-wrap" id="canvasWrap">
-      <video id="mainVideo" playsinline webkit-playsinline controls
+      <video id="mainVideo" playsinline webkit-playsinline
         style="display:block;width:100%;height:auto;"></video>
       <svg id="overlaySvg" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+    </div>
+
+    <!-- Egna videokontroller (ligger utanför overlayen) -->
+    <div class="vidcontrols">
+      <button class="vc-btn" id="stepBack" title="En bildruta bakåt">⏮</button>
+      <button class="vc-btn vc-play" id="playPause" title="Spela/Pausa">▶</button>
+      <button class="vc-btn" id="stepFwd" title="En bildruta framåt">⏭</button>
+      <input type="range" id="scrub" min="0" max="1000" value="0" step="1">
+      <span class="vc-time" id="vcTime">0.0s</span>
     </div>
 
     <div class="checkpoints" id="checkpoints"></div>
@@ -522,6 +583,41 @@ function showVideo() {
     vidEl.src = URL.createObjectURL(file);
     vidEl.load();
   });
+});
+
+// ─── Egna videokontroller ────────────────────────────────────────────────────
+const playBtn  = document.getElementById('playPause');
+const scrub    = document.getElementById('scrub');
+const vcTime   = document.getElementById('vcTime');
+const FRAME    = 1/30; // ungefärlig bildruta
+
+playBtn.addEventListener('click', () => {
+  if (vidEl.paused) { vidEl.play(); } else { vidEl.pause(); }
+});
+vidEl.addEventListener('play',  () => playBtn.textContent = '⏸');
+vidEl.addEventListener('pause', () => playBtn.textContent = '▶');
+
+document.getElementById('stepBack').addEventListener('click', () => {
+  vidEl.pause();
+  vidEl.currentTime = Math.max(0, vidEl.currentTime - FRAME);
+});
+document.getElementById('stepFwd').addEventListener('click', () => {
+  vidEl.pause();
+  vidEl.currentTime = Math.min(vidEl.duration || 0, vidEl.currentTime + FRAME);
+});
+
+// Slider → video
+scrub.addEventListener('input', () => {
+  if (!vidEl.duration) return;
+  vidEl.pause();
+  vidEl.currentTime = (scrub.value/1000) * vidEl.duration;
+});
+
+// Video → slider + tid
+vidEl.addEventListener('timeupdate', () => {
+  if (!vidEl.duration) return;
+  scrub.value = (vidEl.currentTime / vidEl.duration) * 1000;
+  vcTime.textContent = vidEl.currentTime.toFixed(1) + 's';
 });
 
 // ─── Hoppa till checkpoint ────────────────────────────────────────────────────
