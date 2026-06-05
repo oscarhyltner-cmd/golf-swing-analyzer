@@ -262,6 +262,12 @@ input[type="file"] { display: none; }
 <div class="container">
 
   <!-- Ladda upp -->
+  <!-- Klubbval -->
+  <div class="upload-card" style="margin-bottom:12px;">
+    <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.45);margin-bottom:10px;">Välj klubba</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;" id="clubBar"></div>
+  </div>
+
   <div class="upload-card" id="uploadCard">
     <div style="text-align:center;margin-bottom:14px;">
       <p style="font-size:0.8rem;color:rgba(255,255,255,0.6);">Ladda upp din golf-swing för att analysera den</p>
@@ -324,6 +330,45 @@ input[type="file"] { display: none; }
 </div>
 
 <script>
+// ─── Klubbval ─────────────────────────────────────────────────────────────────
+const CLUBS = [
+  {g:'Woods',   clubs:['Driver','3-Wood','5-Wood']},
+  {g:'Hybrids', clubs:['3-Hybrid','4-Hybrid']},
+  {g:'Irons',   clubs:['4-Järn','5-Järn','6-Järn','7-Järn','8-Järn','9-Järn']},
+  {g:'Wedges',  clubs:['PW','GW','SW','LW']},
+  {g:'Putter',  clubs:['Putter']},
+];
+let selectedClub = 'Driver';
+
+(function buildClubBar() {
+  const bar = document.getElementById('clubBar');
+  CLUBS.forEach(({g, clubs}) => {
+    const sep = document.createElement('span');
+    sep.style.cssText = 'font-size:0.6rem;color:rgba(255,255,255,0.25);padding:0 6px;align-self:center;font-weight:700;text-transform:uppercase;';
+    sep.textContent = g;
+    bar.appendChild(sep);
+    clubs.forEach(c => {
+      const btn = document.createElement('button');
+      btn.textContent = c;
+      btn.style.cssText = `padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,${c===selectedClub?'0.7':'0.2'});background:${c===selectedClub?'rgba(255,255,255,0.9)':'rgba(255,255,255,0.08)'};color:${c===selectedClub?'#1a3a20':'rgba(255,255,255,0.8)'};font-size:0.75rem;font-weight:${c===selectedClub?'700':'500'};cursor:pointer;font-family:inherit;transition:all 0.14s;`;
+      btn.onclick = () => {
+        selectedClub = c;
+        document.querySelectorAll('#clubBar button').forEach(b => {
+          b.style.background = 'rgba(255,255,255,0.08)';
+          b.style.color = 'rgba(255,255,255,0.8)';
+          b.style.borderColor = 'rgba(255,255,255,0.2)';
+          b.style.fontWeight = '500';
+        });
+        btn.style.background = 'rgba(255,255,255,0.9)';
+        btn.style.color = '#1a3a20';
+        btn.style.borderColor = 'rgba(255,255,255,0.7)';
+        btn.style.fontWeight = '700';
+      };
+      bar.appendChild(btn);
+    });
+  });
+})();
+
 // ─── Perspektiv ───────────────────────────────────────────────────────────────
 let perspective = 'side'; // 'side' | 'back'
 
@@ -452,19 +497,20 @@ function loadVideo(file) {
   if (!file) return;
   if (video) { video.pause(); video.src = ''; }
   video = document.createElement('video');
-  video.src = URL.createObjectURL(file);
   video.setAttribute('playsinline', '');
   video.setAttribute('webkit-playsinline', '');
-  video.muted = false;
   video.preload = 'auto';
-  video.addEventListener('loadedmetadata', () => {
+  video.muted = true; // krävs för autoplay i vissa browsers
+  video.src = URL.createObjectURL(file);
+
+  video.addEventListener('loadeddata', () => {
     canvas.width  = video.videoWidth  || 1280;
     canvas.height = video.videoHeight || 720;
     document.getElementById('uploadCard').style.display = 'none';
     document.getElementById('analysisCard').style.display = 'block';
     document.getElementById('infoCard').style.display    = 'block';
-    gotoCheckpoint(0);
     startDraw();
+    gotoCheckpoint(0);
   });
 }
 
@@ -476,8 +522,14 @@ function loadVideo(file) {
 function gotoCheckpoint(i) {
   activeCP = i;
   const cp = CHECKPOINTS[i];
-  video.currentTime = video.duration * cp.pct;
+
+  function onSeeked() {
+    video.removeEventListener('seeked', onSeeked);
+    drawFrame();
+  }
+  video.addEventListener('seeked', onSeeked);
   video.pause();
+  video.currentTime = video.duration * cp.pct;
 
   // Uppdatera knappar
   document.querySelectorAll('.cp-btn').forEach((btn, idx) => {
@@ -496,14 +548,23 @@ function gotoCheckpoint(i) {
   ).join('');
 }
 
-// ─── Rita loop ────────────────────────────────────────────────────────────────
+// ─── Rita en enskild frame (används vid seek) ─────────────────────────────────
+function drawFrame() {
+  if (!video) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  drawLines();
+}
+
+// ─── Rita loop (används när videon spelar) ───────────────────────────────────
 function startDraw() {
   if (animFrame) cancelAnimationFrame(animFrame);
   function draw() {
-    if (!video) { animFrame = requestAnimationFrame(draw); return; }
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    drawLines();
+    if (video && !video.paused) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      drawLines();
+    }
     animFrame = requestAnimationFrame(draw);
   }
   draw();
