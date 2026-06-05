@@ -487,7 +487,7 @@ function setPerspective(p) {
   back.style.color      = p === 'back' ? '#fff' : 'rgba(255,255,255,0.45)';
   back.style.borderBottom = p === 'back' ? '2px solid #7df' : '2px solid transparent';
 
-  if (video) gotoCheckpoint(activeCP);
+  if (vidEl.src) gotoCheckpoint(activeCP);
 }
 
 // ─── Video + SVG overlay ─────────────────────────────────────────────────────
@@ -495,18 +495,35 @@ const vidEl = document.getElementById('mainVideo');
 const svg   = document.getElementById('overlaySvg');
 let dragging = null;
 
+let videoShown = false;
+function showVideo() {
+  if (videoShown) return;
+  videoShown = true;
+  document.getElementById('uploadCard').style.display   = 'none';
+  document.getElementById('analysisCard').style.display = 'block';
+  document.getElementById('infoCard').style.display     = 'block';
+  renderSvg();
+  // Försök seek till checkpoint 0 när duration finns
+  if (vidEl.duration && isFinite(vidEl.duration)) {
+    gotoCheckpoint(0);
+  } else {
+    vidEl.addEventListener('durationchange', function h() {
+      vidEl.removeEventListener('durationchange', h);
+      gotoCheckpoint(0);
+    });
+  }
+}
+
 ['vidFile','vidGallery','vidRecord'].forEach(id => {
   document.getElementById(id).addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
+    // Sätt listener INNAN src
+    vidEl.addEventListener('loadeddata', showVideo, { once: true });
+    vidEl.addEventListener('canplay',    showVideo, { once: true });
+    videoShown = false;
     vidEl.src = URL.createObjectURL(file);
     vidEl.load();
-    vidEl.addEventListener('canplay', () => {
-      document.getElementById('uploadCard').style.display  = 'none';
-      document.getElementById('analysisCard').style.display = 'block';
-      document.getElementById('infoCard').style.display    = 'block';
-      gotoCheckpoint(0);
-    }, { once: true });
   });
 });
 
