@@ -186,10 +186,9 @@
   .label-you { background: rgba(80,200,120,0.25); color: #b6f0c6; border: 1px solid rgba(80,200,120,0.3); }
   .label-pro { background: rgba(240,180,80,0.25); color: #f5d98a; border: 1px solid rgba(240,180,80,0.3); }
 
-  /* Videoyta — fast höjd, ingen aspect-ratio som skapar ojämnheter */
   .video-area {
-    flex: 1;
-    min-height: 220px;
+    width: 100%;
+    aspect-ratio: 16/9;
     background: rgba(0,0,0,0.25);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -421,7 +420,8 @@
         <div class="video-controls">
           <span class="club-name-display" id="yourClubLabel">Ingen klubba vald</span>
           <button class="clear-btn" id="clearYourBtn" style="display:none" onclick="clearYourVideo()">✕ Remove</button>
-          <button class="sync-btn" id="syncBtn" onclick="syncVideos()" style="display:none">⟳ Starta om båda</button>
+          <button class="sync-btn" id="syncBtn" onclick="playBoth()" style="display:none">▶ Spela båda</button>
+          <button class="sync-btn" id="restartBtn" onclick="syncVideos()" style="display:none">⟳ Starta om</button>
         </div>
       </div>
     </div>
@@ -675,6 +675,7 @@ function loadYourVideo(file) {
   document.getElementById('yourVideoArea').appendChild(yourVideoEl);
   document.getElementById('clearYourBtn').style.display = 'inline-block';
   document.getElementById('syncBtn').style.display = 'flex';
+  document.getElementById('restartBtn').style.display = 'flex';
 }
 
 document.getElementById('swingUpload').addEventListener('change', e => loadYourVideo(e.target.files[0]));
@@ -839,8 +840,14 @@ function renderProClips(club) {
   }).join('');
 }
 
+function playBoth() {
+  if (yourVideoEl) yourVideoEl.play();
+  if (proVideoEl) proVideoEl.play();
+}
+
 function syncVideos() {
   if (yourVideoEl) { yourVideoEl.currentTime = 0; yourVideoEl.play(); }
+  if (proVideoEl) { proVideoEl.currentTime = 0; proVideoEl.play(); }
 }
 </script>
 </body>
