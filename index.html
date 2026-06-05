@@ -667,26 +667,25 @@ function tiltDeg(l) {
   return Math.round(l.ref === 'v' ? fromV : fromH);
 }
 
-// ─── Rita SVG-linjer ─────────────────────────────────────────────────────────
+// ─── Rita SVG-linjer (skapas en gång, uppdateras vid drag) ───────────────────
+const NS = 'http://www.w3.org/2000/svg';
+let svgEls = {}; // key -> { hitLine, line, text, hits:[], dots:[] }
+
 function renderSvg() {
   svg.innerHTML = '';
-  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
-  // Dropshadow filter
+  svgEls = {};
+  const defs = document.createElementNS(NS,'defs');
   defs.innerHTML = `<filter id="sh"><feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="rgba(0,0,0,0.7)"/></filter>`;
   svg.appendChild(defs);
 
-  const NS = 'http://www.w3.org/2000/svg';
   Object.entries(lines).forEach(([key, l]) => {
     if (!lineVisible[key]) return;
-    const x1 = l.p1.x*100+'%', y1 = l.p1.y*100+'%';
-    const x2 = l.p2.x*100+'%', y2 = l.p2.y*100+'%';
 
-    // Osynlig tjock greppyta för hela linjen (för att flytta linjen)
+    // Osynlig tjock greppyta för hela linjen
     const hitLine = document.createElementNS(NS,'line');
-    hitLine.setAttribute('x1',x1); hitLine.setAttribute('y1',y1);
-    hitLine.setAttribute('x2',x2); hitLine.setAttribute('y2',y2);
     hitLine.setAttribute('stroke','transparent');
-    hitLine.setAttribute('stroke-width','26');
+    hitLine.setAttribute('stroke-width','30');
+    hitLine.setAttribute('stroke-linecap','round');
     hitLine.style.pointerEvents = 'stroke';
     hitLine.style.touchAction = 'none';
     hitLine.style.cursor = 'move';
@@ -695,58 +694,71 @@ function renderSvg() {
 
     // Synlig linje
     const line = document.createElementNS(NS,'line');
-    line.setAttribute('x1',x1); line.setAttribute('y1',y1);
-    line.setAttribute('x2',x2); line.setAttribute('y2',y2);
     line.setAttribute('stroke', l.color);
-    line.setAttribute('stroke-width','2.5');
+    line.setAttribute('stroke-width','3');
     line.setAttribute('filter','url(#sh)');
     line.style.pointerEvents = 'none';
     svg.appendChild(line);
 
-    // Etikett med live-gradtal
-    const deg = tiltDeg(l);
-    const refTxt = l.ref === 'v' ? 'fr. lodrätt' : 'fr. vågrätt';
+    // Etikett
     const text = document.createElementNS(NS,'text');
-    text.setAttribute('x', ((l.p1.x+l.p2.x)/2*100)+'%');
-    text.setAttribute('y', ((l.p1.y+l.p2.y)/2*100 - 2)+'%');
     text.setAttribute('fill','#fff');
-    text.setAttribute('font-size','12');
+    text.setAttribute('font-size','13');
     text.setAttribute('font-weight','bold');
     text.setAttribute('font-family','Inter,sans-serif');
     text.setAttribute('filter','url(#sh)');
     text.style.pointerEvents = 'none';
-    text.textContent = `${l.label}  ${deg}° ${refTxt}`;
     svg.appendChild(text);
 
-    // Handtag — liten synlig prick + stor osynlig greppyta
+    const hits = [], dots = [];
     ['p1','p2'].forEach(pt => {
       // Stor osynlig greppyta
       const hit = document.createElementNS(NS,'circle');
-      hit.setAttribute('cx', l[pt].x*100+'%');
-      hit.setAttribute('cy', l[pt].y*100+'%');
-      hit.setAttribute('r','22');
+      hit.setAttribute('r','30');
       hit.setAttribute('fill','transparent');
       hit.style.pointerEvents = 'all';
       hit.style.touchAction   = 'none';
       hit.style.cursor = 'grab';
       hit.dataset.key = key; hit.dataset.pt = pt; hit.dataset.mode = 'point';
       svg.appendChild(hit);
+      hits.push(hit);
 
-      // Liten synlig prick
+      // Synlig prick
       const c = document.createElementNS(NS,'circle');
-      c.setAttribute('cx', l[pt].x*100+'%');
-      c.setAttribute('cy', l[pt].y*100+'%');
-      c.setAttribute('r','7');
+      c.setAttribute('r','9');
       c.setAttribute('fill', l.color);
       c.setAttribute('stroke','#fff');
-      c.setAttribute('stroke-width','2');
+      c.setAttribute('stroke-width','2.5');
       c.setAttribute('filter','url(#sh)');
       c.style.pointerEvents = 'none';
       svg.appendChild(c);
+      dots.push(c);
     });
+
+    svgEls[key] = { hitLine, line, text, hits, dots };
+    updateLine(key);
   });
 
   updateAngle();
+}
+
+// Uppdatera bara koordinaterna för en linje (snabbt, ingen ombyggnad)
+function updateLine(key) {
+  const l = lines[key], e = svgEls[key];
+  if (!e) return;
+  const x1 = l.p1.x*100+'%', y1 = l.p1.y*100+'%';
+  const x2 = l.p2.x*100+'%', y2 = l.p2.y*100+'%';
+  e.hitLine.setAttribute('x1',x1); e.hitLine.setAttribute('y1',y1);
+  e.hitLine.setAttribute('x2',x2); e.hitLine.setAttribute('y2',y2);
+  e.line.setAttribute('x1',x1); e.line.setAttribute('y1',y1);
+  e.line.setAttribute('x2',x2); e.line.setAttribute('y2',y2);
+  e.text.setAttribute('x', ((l.p1.x+l.p2.x)/2*100)+'%');
+  e.text.setAttribute('y', ((l.p1.y+l.p2.y)/2*100 - 2)+'%');
+  e.text.textContent = `${l.label}  ${tiltDeg(l)}° ${l.ref==='v'?'fr. lodrätt':'fr. vågrätt'}`;
+  ['p1','p2'].forEach((pt, i) => {
+    e.hits[i].setAttribute('cx', l[pt].x*100+'%'); e.hits[i].setAttribute('cy', l[pt].y*100+'%');
+    e.dots[i].setAttribute('cx', l[pt].x*100+'%'); e.dots[i].setAttribute('cy', l[pt].y*100+'%');
+  });
 }
 
 function updateAngle() {
@@ -761,53 +773,43 @@ function updateAngle() {
 
 // ─── Drag på handtag / hela linjen ───────────────────────────────────────────
 function pointerPos(e) {
-  const r  = svg.getBoundingClientRect();
-  const cx = e.touches ? e.touches[0].clientX : e.clientX;
-  const cy = e.touches ? e.touches[0].clientY : e.clientY;
-  return { x: (cx-r.left)/r.width, y: (cy-r.top)/r.height };
+  const r = svg.getBoundingClientRect();
+  return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
 }
 
-function startDrag(e) {
+svg.addEventListener('pointerdown', e => {
   const t = e.target;
   if (!t.dataset || !t.dataset.key) return;
   e.preventDefault();
+  try { t.setPointerCapture(e.pointerId); } catch(_) {}
   const key = t.dataset.key;
   if (t.dataset.mode === 'line') {
-    // Flytta hela linjen — spara startpunkt och original
     const p = pointerPos(e);
-    dragging = {
-      key, mode: 'line', start: p,
-      orig: { p1: {...lines[key].p1}, p2: {...lines[key].p2} }
-    };
+    dragging = { key, mode:'line', start:p, orig:{ p1:{...lines[key].p1}, p2:{...lines[key].p2} } };
   } else {
-    dragging = { key, mode: 'point', pt: t.dataset.pt };
+    dragging = { key, mode:'point', pt:t.dataset.pt };
   }
-}
+});
 
-svg.addEventListener('mousedown',  startDrag);
-svg.addEventListener('touchstart', startDrag, {passive: false});
-
-window.addEventListener('mousemove', doDrag);
-window.addEventListener('touchmove', doDrag, {passive:false});
-function doDrag(e) {
+svg.addEventListener('pointermove', e => {
   if (!dragging) return;
   e.preventDefault();
   const p = pointerPos(e);
   const clamp = v => Math.max(0, Math.min(1, v));
-
   if (dragging.mode === 'line') {
-    const dx = p.x - dragging.start.x;
-    const dy = p.y - dragging.start.y;
-    lines[dragging.key].p1 = { x: clamp(dragging.orig.p1.x + dx), y: clamp(dragging.orig.p1.y + dy) };
-    lines[dragging.key].p2 = { x: clamp(dragging.orig.p2.x + dx), y: clamp(dragging.orig.p2.y + dy) };
+    const dx = p.x - dragging.start.x, dy = p.y - dragging.start.y;
+    lines[dragging.key].p1 = { x:clamp(dragging.orig.p1.x+dx), y:clamp(dragging.orig.p1.y+dy) };
+    lines[dragging.key].p2 = { x:clamp(dragging.orig.p2.x+dx), y:clamp(dragging.orig.p2.y+dy) };
   } else {
-    lines[dragging.key][dragging.pt] = { x: clamp(p.x), y: clamp(p.y) };
+    lines[dragging.key][dragging.pt] = { x:clamp(p.x), y:clamp(p.y) };
   }
-  renderSvg();
-}
+  updateLine(dragging.key);  // bara koordinatuppdatering — snabbt
+  updateAngle();
+});
 
-window.addEventListener('mouseup',  () => dragging = null);
-window.addEventListener('touchend', () => dragging = null);
+function endDrag() { dragging = null; }
+svg.addEventListener('pointerup', endDrag);
+svg.addEventListener('pointercancel', endDrag);
 
 // ─── Knappar ─────────────────────────────────────────────────────────────────
 function toggleLine(key) {
