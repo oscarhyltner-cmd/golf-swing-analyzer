@@ -438,16 +438,16 @@ let perspective = 'side'; // 'side' | 'back'
 
 const PERSP_LINES = {
   side: {
-    body:     { p1:{x:0.50,y:0.12}, p2:{x:0.50,y:0.60}, color:'#4dffaa', label:'Kropp',  hint:'Dra lodrätt genom kroppens mitt — huvud ner till mellan fötterna. Visar sidledslutning och sway.' },
-    shoulder: { p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axlar',  hint:'Lägg tvärs över axlarna — visar axellutning.' },
-    hip:      { p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höfter', hint:'Lägg tvärs över höfterna.' },
-    ball:     { p1:{x:0.56,y:0.50}, p2:{x:0.56,y:0.86}, color:'#ff8844', label:'Boll',   hint:'Dra lodrätt genom bollen — kolla bollposition och att huvudet stannar bakom.' },
+    body:     { p1:{x:0.50,y:0.12}, p2:{x:0.50,y:0.60}, color:'#4dffaa', label:'Kropp',  ref:'v', hint:'Dra lodrätt genom kroppens mitt — huvud ner till mellan fötterna. Visar sidledslutning och sway.' },
+    shoulder: { p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axlar',  ref:'h', hint:'Lägg tvärs över axlarna — visar axellutning.' },
+    hip:      { p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höfter', ref:'h', hint:'Lägg tvärs över höfterna.' },
+    ball:     { p1:{x:0.56,y:0.50}, p2:{x:0.56,y:0.86}, color:'#ff8844', label:'Boll',   ref:'v', hint:'Dra lodrätt genom bollen — kolla bollposition och att huvudet stannar bakom.' },
   },
   back: {
-    plane:    { p1:{x:0.50,y:0.78}, p2:{x:0.62,y:0.22}, color:'#4dffaa', label:'Svängplan', hint:'Dra från bollen upp genom händerna — det är ditt svängplan.' },
-    spine:    { p1:{x:0.50,y:0.15}, p2:{x:0.52,y:0.55}, color:'#ff88cc', label:'Ryggaxel',  hint:'Dra längs ryggraden, uppifrån och ner.' },
-    align:    { p1:{x:0.20,y:0.75}, p2:{x:0.80,y:0.75}, color:'#4dcfff', label:'Riktlinje', hint:'Lägg längs tålinjen, parallellt med mållinjen.' },
-    shoulder: { p1:{x:0.35,y:0.30}, p2:{x:0.65,y:0.30}, color:'#ffcf4d', label:'Axlar',     hint:'Lägg tvärs över axlarna.' },
+    plane:    { p1:{x:0.50,y:0.78}, p2:{x:0.62,y:0.22}, color:'#4dffaa', label:'Svängplan', ref:'h', hint:'Dra från bollen upp genom händerna — det är ditt svängplan.' },
+    spine:    { p1:{x:0.50,y:0.15}, p2:{x:0.52,y:0.55}, color:'#ff88cc', label:'Ryggaxel',  ref:'v', hint:'Dra längs ryggraden, uppifrån och ner.' },
+    align:    { p1:{x:0.20,y:0.75}, p2:{x:0.80,y:0.75}, color:'#4dcfff', label:'Riktlinje', ref:'h', hint:'Lägg längs tålinjen, parallellt med mållinjen.' },
+    shoulder: { p1:{x:0.35,y:0.30}, p2:{x:0.65,y:0.30}, color:'#ffcf4d', label:'Axlar',     ref:'h', hint:'Lägg tvärs över axlarna.' },
   }
 };
 
@@ -656,6 +656,17 @@ function gotoCheckpoint(i) {
   renderSvg();
 }
 
+// ─── Beräkna lutning i grader (pixel-exakt) ──────────────────────────────────
+function tiltDeg(l) {
+  const r = svg.getBoundingClientRect();
+  const dx = (l.p2.x - l.p1.x) * (r.width  || 1);
+  const dy = (l.p2.y - l.p1.y) * (r.height || 1);
+  let fromH = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI); // 0..180
+  if (fromH > 90) fromH = 180 - fromH;                       // 0..90 från vågrätt
+  const fromV = 90 - fromH;                                  // från lodrätt
+  return Math.round(l.ref === 'v' ? fromV : fromH);
+}
+
 // ─── Rita SVG-linjer ─────────────────────────────────────────────────────────
 function renderSvg() {
   svg.innerHTML = '';
@@ -692,7 +703,9 @@ function renderSvg() {
     line.style.pointerEvents = 'none';
     svg.appendChild(line);
 
-    // Etikett
+    // Etikett med live-gradtal
+    const deg = tiltDeg(l);
+    const refTxt = l.ref === 'v' ? 'fr. lodrätt' : 'fr. vågrätt';
     const text = document.createElementNS(NS,'text');
     text.setAttribute('x', ((l.p1.x+l.p2.x)/2*100)+'%');
     text.setAttribute('y', ((l.p1.y+l.p2.y)/2*100 - 2)+'%');
@@ -702,7 +715,7 @@ function renderSvg() {
     text.setAttribute('font-family','Inter,sans-serif');
     text.setAttribute('filter','url(#sh)');
     text.style.pointerEvents = 'none';
-    text.textContent = l.label;
+    text.textContent = `${l.label}  ${deg}° ${refTxt}`;
     svg.appendChild(text);
 
     // Handtag — liten synlig prick + stor osynlig greppyta
@@ -740,13 +753,9 @@ function updateAngle() {
   const el = document.getElementById('angleDisplay');
   if (!el) return;
   if (perspective === 'side' && lines.body && lineVisible.body) {
-    const l = lines.body;
-    const a = Math.round(Math.abs(Math.atan2(l.p2.x-l.p1.x, l.p2.y-l.p1.y)*180/Math.PI));
-    el.innerHTML = `Sidledslutning: <span>${a}°</span> <small style="color:rgba(255,255,255,0.35)">(lutning från lodrätt)</small>`;
+    el.innerHTML = `Sidledslutning: <span>${tiltDeg(lines.body)}°</span> <small style="color:rgba(255,255,255,0.35)">(från lodrätt)</small>`;
   } else if (perspective === 'back' && lines.plane && lineVisible.plane) {
-    const l = lines.plane;
-    const a = Math.round(Math.abs(Math.atan2(l.p2.x-l.p1.x, l.p2.y-l.p1.y)*180/Math.PI));
-    el.innerHTML = `Svängplan: <span>${a}°</span> <small style="color:rgba(255,255,255,0.35)">(ideal ~55–65°)</small>`;
+    el.innerHTML = `Svängplan: <span>${tiltDeg(lines.plane)}°</span> <small style="color:rgba(255,255,255,0.35)">(ideal ~55–65°)</small>`;
   }
 }
 
