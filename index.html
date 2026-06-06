@@ -432,6 +432,10 @@ input[type="file"] { display: none; }
       <div class="tools-divider"></div>
       <span class="angle-hint" id="angleHint">Klicka: centrum → arm 1 → arm 2</span>
       <div class="action-group">
+        <button class="action-btn" id="guideToggleBtn" onclick="toggleGuides()" style="border-color:rgba(200,168,75,0.4);color:#c8a84b">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Guide: På
+        </button>
         <button class="action-btn" onclick="undoDrawing()">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9,14 4,9 9,4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
           Ångra
@@ -681,6 +685,57 @@ async function extractFrames() {
 }
 
 // ══════════════════════════════════
+//  IDEAL SWING GUIDES  (framifrån-vy)
+//  Alla koordinater normaliserade 0-1.
+//  Positionen antar golfare centrerad i bild.
+// ══════════════════════════════════
+const GUIDES = [
+  // 0: ADDRESS
+  [
+    {type:'line',  pts:[{x:.48,y:.18},{x:.52,y:.74}], label:'Ryggrad ~35° framåtlutning'},
+    {type:'line',  pts:[{x:.28,y:.30},{x:.66,y:.28}], label:'Axlar: parallella med målet'},
+    {type:'line',  pts:[{x:.30,y:.53},{x:.64,y:.51}], label:'Höfter: parallella med målet'},
+    {type:'arrow', pts:[{x:.42,y:.98},{x:.42,y:.87}], label:'Bollpos (driver: vänster häl)'},
+  ],
+  // 1: TAKEAWAY
+  [
+    {type:'line',  pts:[{x:.48,y:.20},{x:.52,y:.72}], label:'Rygg: hålls stabil'},
+    {type:'arrow', pts:[{x:.48,y:.58},{x:.64,y:.42}], label:'Klubban: innanför mållinje'},
+    {type:'arrow', pts:[{x:.30,y:.30},{x:.26,y:.37}], label:'Vänster axel: vänder under haka'},
+    {type:'arrow', pts:[{x:.56,y:.56},{x:.60,y:.62}], label:'Vikt: laddar höger sida'},
+  ],
+  // 2: TOPP AV BACKSWING
+  [
+    {type:'line',  pts:[{x:.24,y:.27},{x:.58,y:.31}], label:'Vänster arm: horisontell'},
+    {type:'arrow', pts:[{x:.28,y:.30},{x:.62,y:.52}], label:'Axlar: 90° rotation'},
+    {type:'arrow', pts:[{x:.32,y:.52},{x:.56,y:.46}], label:'Höfter: 45° rotation'},
+    {type:'arrow', pts:[{x:.54,y:.84},{x:.44,y:.84}], label:'Vikt: 70-80% höger'},
+  ],
+  // 3: TRANSITION
+  [
+    {type:'arrow', pts:[{x:.54,y:.54},{x:.42,y:.51}], label:'Höfter leder: roterar mot mål'},
+    {type:'arrow', pts:[{x:.54,y:.40},{x:.50,y:.48}], label:'Armar/klubba faller inåt'},
+    {type:'arrow', pts:[{x:.52,y:.80},{x:.38,y:.80}], label:'Vikt skiftar till vänster'},
+    {type:'line',  pts:[{x:.48,y:.18},{x:.51,y:.72}], label:'Huvud: stilla över bollen'},
+  ],
+  // 4: IMPACT
+  [
+    {type:'line',  pts:[{x:.43,y:.26},{x:.49,y:.74}], label:'Skaft: framåtlutning (viktigt!)'},
+    {type:'line',  pts:[{x:.32,y:.50},{x:.57,y:.43}], label:'Höfter: 45° öppna mot mål'},
+    {type:'line',  pts:[{x:.32,y:.28},{x:.55,y:.50}], label:'Vänster sida: rak & fast'},
+    {type:'arrow', pts:[{x:.40,y:.88},{x:.36,y:.74}], label:'Händer: framför bollen'},
+    {type:'arrow', pts:[{x:.48,y:.18},{x:.48,y:.22}], label:'Huvud: kvar bakom bollen'},
+  ],
+  // 5: FOLLOW-THROUGH
+  [
+    {type:'arrow', pts:[{x:.44,y:.60},{x:.38,y:.26}], label:'Finish: hög över vänster axel'},
+    {type:'line',  pts:[{x:.30,y:.52},{x:.54,y:.36}], label:'Bröst/mage: mot mål'},
+    {type:'arrow', pts:[{x:.60,y:.82},{x:.58,y:.68}], label:'Höger häl: upp från marken'},
+    {type:'arrow', pts:[{x:.38,y:.80},{x:.36,y:.72}], label:'Vikt: 100% vänster fot'},
+  ],
+];
+
+// ══════════════════════════════════
 //  ANNOTATION SYSTEM
 // ══════════════════════════════════
 let frames        = [];       // [{src, label}]
@@ -692,6 +747,7 @@ let painting      = false;
 let startPt       = null;
 let anglePhase    = 0;        // 0=idle, 1=vertex set, 2=arm1 set
 let anglePts      = [];
+let showGuides    = true;
 
 const canvas  = document.getElementById('drawCanvas');
 const ctx     = canvas.getContext('2d');
@@ -921,6 +977,7 @@ function drawArrowHead(ctx, A, B, color) {
 
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawGuides();
   (drawings[currentFrame] || []).forEach(d => {
     if (d.tool === 'angle') {
       drawAngleFull(ctx, d.pts, d.color);
@@ -928,11 +985,78 @@ function redraw() {
       drawShape(ctx, d.tool, d.color, d.pts[0], d.pts[1]);
     }
   });
-  // angle preview dots
   if (activeTool === 'angle' && anglePts.length > 0) {
     anglePts.forEach(p => drawDot(p));
     if (anglePts.length === 2) drawShape(ctx, 'angle-preview', activeColor, anglePts[0], anglePts[1]);
   }
+}
+
+// ── Guide rendering
+function drawGuides() {
+  if (!showGuides) return;
+  const guides = GUIDES[currentFrame] || [];
+  const GUIDE_COLOR = 'rgba(200,168,75,0.82)';
+  guides.forEach(g => {
+    ctx.save();
+    ctx.strokeStyle = GUIDE_COLOR;
+    ctx.fillStyle   = GUIDE_COLOR;
+    ctx.lineWidth   = 2;
+    ctx.lineCap     = 'round';
+    const A = toCanvas(g.pts[0]);
+    const B = toCanvas(g.pts[g.pts.length - 1]);
+    if (g.type === 'line') {
+      ctx.setLineDash([7, 5]);
+      strokeLine(ctx, A, B);
+      ctx.setLineDash([]);
+    } else if (g.type === 'arrow') {
+      ctx.setLineDash([]);
+      strokeLine(ctx, A, B);
+      drawArrowHead(ctx, A, B, GUIDE_COLOR);
+    }
+    if (g.label) drawGuideLabel(ctx, A, B, g.label);
+    ctx.restore();
+  });
+  // Watermark
+  ctx.save();
+  ctx.font = '500 10px Inter, sans-serif';
+  ctx.fillStyle = 'rgba(200,168,75,0.45)';
+  ctx.fillText('⬦ IDEAL GUIDE — framifrån-vy', 8, canvas.height - 7);
+  ctx.restore();
+}
+
+function drawGuideLabel(ctx, A, B, text) {
+  const mx = (A.x + B.x) / 2;
+  const my = (A.y + B.y) / 2;
+  ctx.font = '600 10px Inter, sans-serif';
+  const w = ctx.measureText(text).width;
+  const pad = 4, h = 14;
+  let lx = mx + 7;
+  let ly = my - 2;
+  if (lx + w + pad > canvas.width - 4) lx = mx - w - pad - 7;
+  if (lx < 4) lx = 4;
+  if (ly - h + 4 < 4) ly = my + 14;
+  if (ly > canvas.height - 4) ly = my - 4;
+  ctx.fillStyle = 'rgba(10,22,12,0.72)';
+  const rr = typeof ctx.roundRect === 'function' ? 3 : 0;
+  if (rr) { ctx.beginPath(); ctx.roundRect(lx - pad, ly - h + 3, w + pad*2, h, rr); ctx.fill(); }
+  else { ctx.fillRect(lx - pad, ly - h + 3, w + pad*2, h); }
+  ctx.fillStyle = 'rgba(220,185,80,0.95)';
+  ctx.fillText(text, lx, ly);
+}
+
+function toggleGuides() {
+  showGuides = !showGuides;
+  const btn = document.getElementById('guideToggleBtn');
+  if (showGuides) {
+    btn.style.borderColor = 'rgba(200,168,75,0.4)';
+    btn.style.color = '#c8a84b';
+    btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Guide: På';
+  } else {
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Guide: Av';
+  }
+  redraw();
 }
 
 function undoDrawing() {
