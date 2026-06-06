@@ -11,794 +11,301 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --green-deep:   #07120a;
-  --green-mid:    #0f2214;
-  --green-panel:  #122718;
-  --green-accent: #3ddc6e;
-  --green-dim:    rgba(61,220,110,0.18);
+  --bg:           #07120a;
+  --panel:        #0f2214;
+  --panel-hi:     #132918;
+  --accent:       #3ddc6e;
+  --accent-dim:   rgba(61,220,110,0.15);
   --gold:         #c8a84b;
-  --white-hi:     rgba(255,255,255,0.92);
-  --white-mid:    rgba(255,255,255,0.55);
-  --white-lo:     rgba(255,255,255,0.22);
-  --white-ghost:  rgba(255,255,255,0.08);
-  --border:       rgba(255,255,255,0.1);
+  --w90:          rgba(255,255,255,0.90);
+  --w55:          rgba(255,255,255,0.55);
+  --w22:          rgba(255,255,255,0.22);
+  --w08:          rgba(255,255,255,0.08);
+  --border:       rgba(255,255,255,0.10);
   --border-hi:    rgba(255,255,255,0.18);
-  --shadow:       0 12px 40px rgba(0,0,0,0.55);
   --radius:       16px;
+  --shadow:       0 12px 40px rgba(0,0,0,0.55);
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: var(--green-deep);
-  color: var(--white-hi);
+  background: var(--bg);
+  color: var(--w90);
   min-height: 100vh;
   overflow-x: hidden;
 }
-
-/* ── ANIMATED BACKGROUND ── */
 body::before {
   content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
+  position: fixed; inset: 0; z-index: -1;
   background:
     radial-gradient(ellipse 70% 50% at 15% 20%, #0e2d12 0%, transparent 65%),
     radial-gradient(ellipse 60% 45% at 88% 75%, #0b2410 0%, transparent 60%),
-    radial-gradient(ellipse 40% 35% at 50% 50%, #122a16 0%, transparent 70%),
     linear-gradient(160deg, #07120a 0%, #0c1e0f 40%, #081408 100%);
 }
-
-/* Subtle grain */
 body::after {
   content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  position: fixed; inset: 0; z-index: -1; opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 200px 200px;
 }
 
 /* ── HEADER ── */
 header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  padding: 0 32px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: rgba(7,18,10,0.82);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  position: sticky; top: 0; z-index: 50;
+  height: 60px; padding: 0 28px;
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(7,18,10,0.85);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--border);
 }
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-}
-
 .logo-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--green-dim);
-  border: 1px solid rgba(61,220,110,0.3);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--accent-dim); border: 1px solid rgba(61,220,110,0.28);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
+.logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 0.12em; line-height: 1; }
+.logo-sub  { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); opacity: 0.7; margin-top: 1px; }
 
-.logo-text {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.35rem;
-  letter-spacing: 0.12em;
-  color: var(--white-hi);
-  line-height: 1;
-}
-
-.logo-sub {
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--green-accent);
-  opacity: 0.75;
-  margin-top: 1px;
-}
-
-.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-
-.settings-btn {
-  background: var(--white-ghost);
-  border: 1px solid var(--border);
-  color: var(--white-mid);
-  border-radius: 8px;
-  padding: 7px 13px;
-  cursor: pointer;
-  font-size: 0.74rem;
-  font-weight: 600;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.15s;
-  letter-spacing: 0.02em;
-}
-.settings-btn:hover { background: var(--white-lo); color: var(--white-hi); border-color: var(--border-hi); }
-.settings-btn.has-key { color: var(--green-accent); border-color: rgba(61,220,110,0.35); }
-
-/* ── MAIN LAYOUT ── */
-.container {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 32px 20px 60px;
-}
+/* ── LAYOUT ── */
+.container { max-width: 860px; margin: 0 auto; padding: 28px 18px 60px; }
 
 /* ── CLUB BAR ── */
-.club-bar {
-  margin-bottom: 24px;
-  animation: fadeUp 0.4s ease both;
-}
-
-.club-bar-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--white-mid);
-  margin-bottom: 10px;
-}
-
-.club-scroll {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
+.section-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--w55); margin-bottom: 10px; }
+.club-bar { margin-bottom: 22px; animation: fadeUp 0.4s ease both; }
+.club-scroll { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
 .club-scroll::-webkit-scrollbar { display: none; }
-
-.club-group {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.club-group + .club-group {
-  padding-left: 10px;
-  margin-left: 4px;
-  border-left: 1px solid var(--border);
-}
-
-.club-group-label {
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.22);
-  padding-right: 4px;
-  white-space: nowrap;
-}
-
+.club-group { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.club-group + .club-group { padding-left: 10px; margin-left: 4px; border-left: 1px solid var(--border); }
+.club-group-label { font-size: 0.57rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--w22); padding-right: 2px; white-space: nowrap; }
 .club-btn {
-  background: var(--white-ghost);
-  border: 1px solid var(--border);
-  color: var(--white-mid);
-  padding: 5px 13px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 0.76rem;
-  font-weight: 500;
-  font-family: inherit;
-  white-space: nowrap;
-  transition: all 0.13s;
-  flex-shrink: 0;
+  background: var(--w08); border: 1px solid var(--border); color: var(--w55);
+  padding: 5px 13px; border-radius: 20px; cursor: pointer;
+  font-size: 0.75rem; font-weight: 500; font-family: inherit; white-space: nowrap;
+  transition: all 0.13s; flex-shrink: 0;
 }
-.club-btn:hover { background: var(--white-lo); color: var(--white-hi); border-color: var(--border-hi); }
-.club-btn.active {
-  background: var(--green-accent);
-  border-color: var(--green-accent);
-  color: #04100a;
-  font-weight: 700;
-}
+.club-btn:hover { background: var(--w22); color: var(--w90); border-color: var(--border-hi); }
+.club-btn.active { background: var(--accent); border-color: var(--accent); color: #04100a; font-weight: 700; }
 
 /* ── VIDEO PANEL ── */
 .video-panel {
-  background: var(--green-panel);
-  border: 1px solid var(--border-hi);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.06);
-  margin-bottom: 20px;
+  background: var(--panel); border: 1px solid var(--border-hi);
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow); margin-bottom: 18px;
   animation: fadeUp 0.45s 0.05s ease both;
 }
-
 .video-panel-header {
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
+  padding: 13px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
 }
-
-.panel-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.1em;
-  color: var(--white-hi);
-}
-
+.panel-title { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.1em; }
 .panel-badge {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 20px;
-  background: var(--green-dim);
-  color: var(--green-accent);
-  border: 1px solid rgba(61,220,110,0.3);
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px;
+  background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(61,220,110,0.28);
 }
 
 /* ── VIDEO AREA ── */
-.video-area {
-  position: relative;
-  background: #000;
-  min-height: 340px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.video-area video {
-  width: 100%;
-  height: 100%;
-  max-height: 520px;
-  object-fit: contain;
-  display: block;
-}
-
-/* ── UPLOAD PROMPT ── */
-.upload-prompt {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  padding: 48px 24px;
-  width: 100%;
-}
-
-.upload-prompt-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.6rem;
-  letter-spacing: 0.1em;
-  color: var(--white-mid);
-}
-
-.upload-options {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
+.video-area { position: relative; background: #000; min-height: 300px; display: flex; align-items: center; justify-content: center; }
+.video-area video { width: 100%; max-height: 500px; object-fit: contain; display: block; }
+.upload-prompt { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 44px 20px; width: 100%; }
+.upload-prompt-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.1em; color: var(--w55); }
+.upload-options { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .upload-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 18px 20px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--white-ghost);
-  min-width: 100px;
-  transition: all 0.15s;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;
+  padding: 16px 18px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--w08); min-width: 96px; transition: all 0.15s;
 }
-.upload-option:hover {
-  background: var(--white-lo);
-  border-color: var(--border-hi);
-  transform: translateY(-1px);
+.upload-option:hover { background: var(--w22); border-color: var(--border-hi); transform: translateY(-2px); }
+.upload-icon-wrap {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: var(--accent-dim); border: 1px solid rgba(61,220,110,0.2);
+  display: flex; align-items: center; justify-content: center;
 }
-
-.upload-option-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: rgba(61,220,110,0.1);
-  border: 1px solid rgba(61,220,110,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.upload-option-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--white-hi);
-}
-
-.upload-option-sub {
-  font-size: 0.62rem;
-  color: var(--white-mid);
-}
-
+.upload-option-label { font-size: 0.74rem; font-weight: 600; color: var(--w90); }
+.upload-option-sub   { font-size: 0.61rem; color: var(--w55); }
 input[type="file"] { display: none; }
 
 /* ── CUSTOM VIDEO CONTROLS ── */
 .video-controls-bar {
-  display: none;
-  flex-direction: column;
-  gap: 0;
-  background: rgba(7,18,10,0.92);
-  backdrop-filter: blur(12px);
-  padding: 10px 16px 12px;
-  border-top: 1px solid var(--border);
+  display: none; flex-direction: column; gap: 0;
+  background: rgba(5,14,7,0.94); backdrop-filter: blur(12px);
+  padding: 10px 16px 12px; border-top: 1px solid var(--border);
 }
-
 .video-controls-bar.visible { display: flex; }
-
-/* Scrubber */
-.scrubber-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.time-display {
-  font-size: 0.68rem;
-  font-weight: 600;
-  font-family: 'Courier New', monospace;
-  color: var(--white-mid);
-  white-space: nowrap;
-  min-width: 72px;
-  text-align: right;
-}
-
-.scrubber {
-  flex: 1;
-  -webkit-appearance: none;
-  appearance: none;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--border);
-  outline: none;
-  cursor: pointer;
-  position: relative;
-}
-.scrubber::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: var(--green-accent);
-  cursor: pointer;
-  box-shadow: 0 0 6px rgba(61,220,110,0.5);
-}
-.scrubber::-moz-range-thumb {
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: var(--green-accent);
-  cursor: pointer;
-  border: none;
-}
-
-/* Controls row */
-.controls-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ctrl-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--white-mid);
-  padding: 6px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.13s;
-  font-family: inherit;
-}
-.ctrl-btn:hover { background: var(--white-ghost); color: var(--white-hi); }
-
+.scrubber-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.time-label { font-size: 0.65rem; font-weight: 600; font-family: monospace; color: var(--w55); white-space: nowrap; min-width: 74px; text-align: right; }
+.scrubber { flex: 1; -webkit-appearance: none; appearance: none; height: 3px; border-radius: 2px; background: var(--border); outline: none; cursor: pointer; }
+.scrubber::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 6px rgba(61,220,110,0.5); }
+.scrubber::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; }
+.controls-row { display: flex; align-items: center; gap: 8px; }
 .play-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--green-accent);
-  color: #04100a;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.13s;
-  flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #04100a;
+  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.13s;
 }
-.play-btn:hover { background: #5aeB82; transform: scale(1.05); }
+.play-btn:hover { background: #5aeb82; transform: scale(1.06); }
 .play-btn:active { transform: scale(0.96); }
+.ctrl-btn { background: none; border: none; cursor: pointer; color: var(--w55); padding: 6px; border-radius: 6px; display: flex; align-items: center; transition: all 0.13s; font-family: inherit; }
+.ctrl-btn:hover { background: var(--w08); color: var(--w90); }
+.ctrl-btn.active { color: var(--accent); }
+.club-pill { font-size: 0.64rem; font-weight: 700; color: var(--w55); background: var(--w08); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; white-space: nowrap; }
+.speed-group { display: flex; gap: 2px; background: var(--w08); border: 1px solid var(--border); border-radius: 6px; padding: 3px; margin-left: auto; }
+.speed-btn { background: none; border: none; color: var(--w55); font-size: 0.67rem; font-weight: 600; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-family: inherit; transition: all 0.12s; white-space: nowrap; }
+.speed-btn:hover { color: var(--w90); }
+.speed-btn.active { background: var(--accent); color: #04100a; }
 
-.speed-group {
-  display: flex;
-  gap: 3px;
-  background: var(--white-ghost);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 3px;
-  margin-left: auto;
-}
-
-.speed-btn {
-  background: none;
-  border: none;
-  color: var(--white-mid);
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.12s;
-  white-space: nowrap;
-}
-.speed-btn:hover { color: var(--white-hi); background: var(--white-ghost); }
-.speed-btn.active { background: var(--green-accent); color: #04100a; }
-
-.loop-btn.active { color: var(--green-accent); }
-
-.club-pill {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--white-mid);
-  background: var(--white-ghost);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 3px 10px;
-  white-space: nowrap;
-}
-
-/* ── PANEL FOOTER (controls when no video) ── */
-.panel-footer {
-  padding: 12px 18px;
-  border-top: 1px solid var(--border);
-  background: rgba(0,0,0,0.15);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.clear-btn {
-  background: rgba(255,70,70,0.1);
-  border: 1px solid rgba(255,70,70,0.25);
-  color: rgba(255,130,130,0.85);
-  padding: 6px 12px;
-  border-radius: 7px;
-  cursor: pointer;
-  font-size: 0.72rem;
-  font-weight: 600;
-  font-family: inherit;
-  transition: background 0.13s;
-}
-.clear-btn:hover { background: rgba(255,70,70,0.22); }
-
+/* ── PANEL FOOTER ── */
+.panel-footer { padding: 11px 18px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.12); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.clear-btn { background: rgba(255,70,70,0.09); border: 1px solid rgba(255,70,70,0.22); color: rgba(255,130,130,0.82); padding: 6px 12px; border-radius: 7px; cursor: pointer; font-size: 0.72rem; font-weight: 600; font-family: inherit; transition: background 0.13s; }
+.clear-btn:hover { background: rgba(255,70,70,0.2); }
 .analyze-btn {
-  margin-left: auto;
-  background: var(--green-dim);
-  border: 1px solid rgba(61,220,110,0.4);
-  color: var(--green-accent);
-  padding: 7px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.78rem;
-  font-weight: 700;
-  font-family: inherit;
-  display: none;
-  align-items: center;
-  gap: 7px;
-  letter-spacing: 0.02em;
-  transition: all 0.15s;
+  margin-left: auto; background: var(--accent-dim); border: 1px solid rgba(61,220,110,0.38);
+  color: var(--accent); padding: 7px 18px; border-radius: 8px; cursor: pointer;
+  font-size: 0.78rem; font-weight: 700; font-family: inherit; display: none;
+  align-items: center; gap: 7px; letter-spacing: 0.02em; transition: all 0.15s;
 }
-.analyze-btn:hover:not(:disabled) {
-  background: rgba(61,220,110,0.28);
-  box-shadow: 0 0 18px rgba(61,220,110,0.2);
-}
-.analyze-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.analyze-btn:hover { background: rgba(61,220,110,0.26); box-shadow: 0 0 18px rgba(61,220,110,0.18); }
 
-/* ── AI ANALYSIS PANEL ── */
-.analysis-panel {
-  background: var(--green-panel);
-  border: 1px solid var(--border-hi);
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin-bottom: 20px;
-  display: none;
-  box-shadow: var(--shadow);
+/* ── ANNOTATION PANEL ── */
+.annotation-panel {
+  background: var(--panel); border: 1px solid var(--border-hi);
+  border-radius: var(--radius); overflow: hidden; margin-bottom: 18px;
+  display: none; box-shadow: var(--shadow);
   animation: fadeUp 0.3s ease both;
 }
-
-.analysis-header {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.annotation-header {
+  padding: 13px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
 }
+.annotation-title { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.1em; color: var(--accent); }
 
-.analysis-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.1em;
-  color: var(--green-accent);
-}
-
-.close-btn {
-  background: var(--white-ghost);
-  border: 1px solid var(--border);
-  color: var(--white-mid);
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.13s;
-}
-.close-btn:hover { background: var(--white-lo); color: var(--white-hi); }
-
-.analysis-body { padding: 22px 24px; }
-
-.analysis-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 40px 20px;
-  color: var(--white-mid);
-  font-size: 0.84rem;
-}
-
-.spinner {
-  width: 28px;
-  height: 28px;
-  border: 2px solid var(--border);
-  border-top-color: var(--green-accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
+/* Frame strip */
 .frame-strip {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
+  display: flex; gap: 6px; padding: 12px 16px;
+  overflow-x: auto; border-bottom: 1px solid var(--border);
+  scrollbar-width: none; background: rgba(0,0,0,0.15);
 }
 .frame-strip::-webkit-scrollbar { display: none; }
-
-.frame-item { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
-.frame-item img {
-  height: 72px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  object-fit: cover;
+.frame-thumb {
+  flex-shrink: 0; cursor: pointer; border-radius: 7px; overflow: hidden;
+  border: 2px solid transparent; transition: all 0.14s; position: relative;
 }
-.frame-item span {
-  font-size: 0.58rem;
-  color: var(--white-mid);
-  margin-top: 4px;
-  text-align: center;
-  white-space: nowrap;
+.frame-thumb:hover { border-color: var(--w22); }
+.frame-thumb.active { border-color: var(--accent); }
+.frame-thumb img { display: block; height: 68px; width: auto; object-fit: cover; }
+.frame-thumb-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.65); font-size: 0.55rem; font-weight: 600;
+  letter-spacing: 0.04em; text-align: center; padding: 2px 4px;
+  color: var(--w90); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.analysis-content h3 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.95rem;
-  letter-spacing: 0.1em;
-  color: var(--green-accent);
-  margin: 22px 0 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(61,220,110,0.18);
+/* Canvas area */
+.canvas-wrap {
+  position: relative; background: #000;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 280px;
+  touch-action: none;
 }
-.analysis-content h3:first-child { margin-top: 0; }
-.analysis-content p { font-size: 0.85rem; color: rgba(255,255,255,0.72); line-height: 1.75; margin: 0 0 8px; }
-.analysis-content ul { padding-left: 18px; margin: 4px 0 10px; }
-.analysis-content li { font-size: 0.84rem; color: rgba(255,255,255,0.68); line-height: 1.7; margin-bottom: 5px; }
-.analysis-error { color: #f08080; font-size: 0.85rem; padding: 24px 0; text-align: center; }
+#frameImg { display: block; max-width: 100%; max-height: 480px; user-select: none; -webkit-user-drag: none; }
+#drawCanvas {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  cursor: crosshair; touch-action: none;
+}
+
+/* Phase label */
+.phase-label {
+  padding: 7px 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--border);
+  background: rgba(61,220,110,0.06);
+}
+
+/* Tools bar */
+.tools-bar {
+  padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.15);
+}
+.tool-group { display: flex; gap: 4px; }
+.tool-btn {
+  background: var(--w08); border: 1px solid var(--border); color: var(--w55);
+  padding: 7px 12px; border-radius: 7px; cursor: pointer;
+  font-size: 0.72rem; font-weight: 600; font-family: inherit;
+  transition: all 0.13s; display: flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.tool-btn:hover { background: var(--w22); color: var(--w90); border-color: var(--border-hi); }
+.tool-btn.active { background: rgba(61,220,110,0.18); border-color: rgba(61,220,110,0.4); color: var(--accent); }
+.color-group { display: flex; gap: 6px; align-items: center; }
+.color-swatch {
+  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.13s; flex-shrink: 0;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.active { border-color: var(--w90); transform: scale(1.1); }
+.tools-divider { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+.action-group { display: flex; gap: 6px; margin-left: auto; }
+.action-btn {
+  background: var(--w08); border: 1px solid var(--border); color: var(--w55);
+  padding: 7px 12px; border-radius: 7px; cursor: pointer;
+  font-size: 0.72rem; font-weight: 600; font-family: inherit;
+  transition: all 0.13s; display: flex; align-items: center; gap: 5px;
+}
+.action-btn:hover { background: var(--w22); color: var(--w90); }
+.angle-hint {
+  font-size: 0.68rem; color: var(--gold); display: none;
+  padding: 4px 10px; background: rgba(200,168,75,0.1);
+  border: 1px solid rgba(200,168,75,0.25); border-radius: 6px;
+}
 
 /* ── TIPS PANEL ── */
 .tips-panel {
-  background: var(--green-panel);
-  border: 1px solid var(--border-hi);
-  border-radius: var(--radius);
-  padding: 22px 24px;
-  margin-bottom: 24px;
-  box-shadow: var(--shadow);
-  animation: fadeUp 0.5s 0.1s ease both;
+  background: var(--panel); border: 1px solid var(--border-hi);
+  border-radius: var(--radius); padding: 20px 22px; margin-bottom: 24px;
+  box-shadow: var(--shadow); animation: fadeUp 0.5s 0.1s ease both;
 }
+.tips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 10px; margin-top: 12px; }
+.tip-card { background: var(--w08); border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; border-left: 2px solid rgba(61,220,110,0.45); transition: border-color 0.15s; }
+.tip-card:hover { border-left-color: var(--accent); }
+.tip-card h3 { font-size: 0.77rem; font-weight: 700; color: var(--w90); margin-bottom: 5px; }
+.tip-card p  { font-size: 0.72rem; color: var(--w55); line-height: 1.6; }
 
-.tips-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--white-mid);
-  margin-bottom: 14px;
-}
-
-.tips-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-}
-
-.tip-card {
-  background: var(--white-ghost);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
-  border-left: 2px solid rgba(61,220,110,0.5);
-  transition: border-color 0.15s;
-}
-.tip-card:hover { border-left-color: var(--green-accent); }
-.tip-card h3 { font-size: 0.78rem; font-weight: 700; color: var(--white-hi); margin-bottom: 5px; }
-.tip-card p { font-size: 0.73rem; color: var(--white-mid); line-height: 1.6; }
-
-/* ── API MODAL ── */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.modal {
-  background: #0f2214;
-  border: 1px solid var(--border-hi);
-  border-radius: 18px;
-  padding: 30px 32px;
-  max-width: 420px;
-  width: 92%;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.7);
-}
-
-.modal h2 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.4rem;
-  letter-spacing: 0.1em;
-  color: var(--white-hi);
-  margin-bottom: 8px;
-}
-.modal p { font-size: 0.8rem; color: var(--white-mid); margin-bottom: 20px; line-height: 1.65; }
-
-.modal input {
-  width: 100%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 11px 14px;
-  color: var(--white-hi);
-  font-size: 0.82rem;
-  font-family: 'Courier New', monospace;
-  outline: none;
-  margin-bottom: 8px;
-}
-.modal input:focus { border-color: rgba(61,220,110,0.5); }
-
-.modal-note { font-size: 0.7rem; color: rgba(255,255,255,0.28); margin-bottom: 22px; }
-.modal-note strong { color: var(--white-mid); }
-
-.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-
-.btn {
-  background: var(--white-ghost);
-  border: 1px solid var(--border);
-  color: var(--white-mid);
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.77rem;
-  font-weight: 600;
-  font-family: inherit;
-  transition: all 0.13s;
-}
-.btn:hover { background: var(--white-lo); color: var(--white-hi); }
-
-.btn-primary {
-  background: var(--green-dim);
-  border-color: rgba(61,220,110,0.4);
-  color: var(--green-accent);
-}
-.btn-primary:hover { background: rgba(61,220,110,0.28); }
+/* Close button */
+.close-btn { background: var(--w08); border: 1px solid var(--border); color: var(--w55); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; transition: all 0.13s; }
+.close-btn:hover { background: var(--w22); color: var(--w90); }
 
 /* ── ANIMATIONS ── */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 600px) {
-  header { padding: 0 16px; }
+  header { padding: 0 14px; }
   .logo-sub { display: none; }
-  .container { padding: 20px 14px 48px; }
-  .video-area { min-height: 240px; }
-  .upload-prompt { padding: 32px 16px; gap: 16px; }
-  .upload-option { padding: 14px; min-width: 80px; }
+  .container { padding: 18px 12px 48px; }
+  .video-area { min-height: 220px; }
+  .upload-prompt { padding: 28px 14px; }
   .tips-grid { grid-template-columns: 1fr 1fr; }
-  .analysis-body { padding: 16px; }
-  .settings-btn span { display: none; }
-  .speed-btn { padding: 3px 6px; }
+  .tools-bar { gap: 6px; }
+  .tool-btn { padding: 7px 9px; font-size: 0.68rem; }
+  .action-group { margin-left: 0; }
+  .frame-thumb img { height: 54px; }
 }
 </style>
-<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-BGHRWYV841"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-BGHRWYV841');
-</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-BGHRWYV841');</script>
 </head>
 <body>
 
-<!-- API Modal -->
-<div id="apiModal" class="modal-backdrop" style="display:none" onclick="if(event.target===this)closeApiModal()">
-  <div class="modal">
-    <h2>API-nyckel</h2>
-    <p>Nyckeln används enbart i din webbläsare för att anropa Claude. Den sparas lokalt och skickas aldrig till någon annan server.</p>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" autocomplete="off" onkeydown="if(event.key==='Enter')saveApiKey()">
-    <div class="modal-note">Hämta på <strong>console.anthropic.com</strong> → API Keys</div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeApiModal()">Avbryt</button>
-      <button class="btn btn-primary" onclick="saveApiKey()">Spara</button>
-    </div>
-  </div>
-</div>
-
 <header>
-  <div class="logo">
-    <div class="logo-icon">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="5" r="3" fill="#3ddc6e"/>
-        <rect x="7.2" y="8" width="1.6" height="5" rx="0.8" fill="#3ddc6e"/>
-        <rect x="4" y="13" width="8" height="1.2" rx="0.6" fill="rgba(61,220,110,0.5)"/>
-      </svg>
-    </div>
-    <div>
-      <div class="logo-text">Swing Analyzer</div>
-      <div class="logo-sub">AI-driven coaching</div>
-    </div>
+  <div class="logo-icon">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="5" r="3" fill="#3ddc6e"/>
+      <rect x="7.2" y="8" width="1.6" height="5" rx="0.8" fill="#3ddc6e"/>
+      <rect x="4" y="13" width="8" height="1.2" rx="0.6" fill="rgba(61,220,110,0.45)"/>
+    </svg>
   </div>
-  <div class="header-right">
-    <button class="settings-btn" id="settingsBtn" onclick="openApiModal()">
-      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      <span id="settingsBtnLabel">API-nyckel</span>
-    </button>
+  <div>
+    <div class="logo-text">Swing Analyzer</div>
+    <div class="logo-sub">Gratis · Offline · Direkt i webbläsaren</div>
   </div>
 </header>
 
@@ -806,7 +313,7 @@ input[type="file"] { display: none; }
 
   <!-- Club selector -->
   <div class="club-bar">
-    <div class="club-bar-label">Välj klubba</div>
+    <div class="section-label">Välj klubba</div>
     <div class="club-scroll" id="clubGroups"></div>
   </div>
 
@@ -822,23 +329,17 @@ input[type="file"] { display: none; }
         <div class="upload-prompt-title">Ladda upp din swing</div>
         <div class="upload-options">
           <label for="swingUpload" class="upload-option">
-            <div class="upload-option-icon">
-              <svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-            </div>
+            <div class="upload-icon-wrap"><svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div>
             <span class="upload-option-label">Ladda upp</span>
             <span class="upload-option-sub">Välj fil</span>
           </label>
           <label for="swingGallery" class="upload-option">
-            <div class="upload-option-icon">
-              <svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-            </div>
+            <div class="upload-icon-wrap"><svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></div>
             <span class="upload-option-label">Kamerarulle</span>
             <span class="upload-option-sub">Från telefon</span>
           </label>
           <label for="swingRecord" class="upload-option">
-            <div class="upload-option-icon">
-              <svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-            </div>
+            <div class="upload-icon-wrap"><svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
             <span class="upload-option-label">Spela in</span>
             <span class="upload-option-sub">Öppna kamera</span>
           </label>
@@ -846,173 +347,214 @@ input[type="file"] { display: none; }
       </div>
       <input type="file" id="swingUpload" accept="video/*">
       <input type="file" id="swingGallery" accept="video/*">
-      <input type="file" id="swingRecord" accept="video/*" capture="camcorder">
+      <input type="file" id="swingRecord"  accept="video/*" capture="camcorder">
     </div>
 
     <!-- Custom video controls -->
     <div class="video-controls-bar" id="videoControlsBar">
       <div class="scrubber-row">
         <input type="range" class="scrubber" id="scrubber" min="0" step="0.01" value="0">
-        <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+        <span class="time-label" id="timeLabel">0:00 / 0:00</span>
       </div>
       <div class="controls-row">
-        <button class="play-btn" id="playBtn" onclick="togglePlay()" title="Spela/Pausa (mellanslag)">
+        <button class="play-btn" id="playBtn" onclick="togglePlay()">
           <svg id="playIcon" width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
         </button>
-        <button class="ctrl-btn loop-btn" id="loopBtn" onclick="toggleLoop()" title="Loopa">
+        <button class="ctrl-btn active" id="loopBtn" onclick="toggleLoop()" title="Loop">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="17,1 21,5 17,9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
         </button>
         <span class="club-pill" id="clubPill">—</span>
         <div class="speed-group">
           <button class="speed-btn" data-speed="0.25" onclick="setSpeed(0.25)">¼×</button>
-          <button class="speed-btn" data-speed="0.5" onclick="setSpeed(0.5)">½×</button>
+          <button class="speed-btn" data-speed="0.5"  onclick="setSpeed(0.5)">½×</button>
           <button class="speed-btn active" data-speed="1" onclick="setSpeed(1)">1×</button>
         </div>
       </div>
     </div>
 
-    <!-- Footer (clear + analyze) -->
+    <!-- Footer -->
     <div class="panel-footer" id="panelFooter" style="display:none">
       <button class="clear-btn" onclick="clearVideo()">✕ Ta bort</button>
-      <button class="analyze-btn" id="analyzeBtn" onclick="analyzeSwing()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <button class="analyze-btn" id="analyzeBtn" onclick="startAnnotation()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
         Analysera swing
       </button>
     </div>
   </div>
 
-  <!-- AI Analysis panel -->
-  <div class="analysis-panel" id="analysisPanel">
-    <div class="analysis-header">
-      <span class="analysis-title">AI-analys</span>
-      <button class="close-btn" onclick="closeAnalysis()">✕</button>
+  <!-- Annotation panel -->
+  <div class="annotation-panel" id="annotationPanel">
+    <div class="annotation-header">
+      <span class="annotation-title">Swing-analys</span>
+      <button class="close-btn" onclick="closeAnnotation()">✕</button>
     </div>
-    <div class="analysis-body" id="analysisBody"></div>
+
+    <!-- Frame thumbnails -->
+    <div class="frame-strip" id="frameStrip"></div>
+
+    <!-- Phase label -->
+    <div class="phase-label" id="phaseLabel">—</div>
+
+    <!-- Drawing canvas -->
+    <div class="canvas-wrap" id="canvasWrap">
+      <img id="frameImg" draggable="false">
+      <canvas id="drawCanvas"></canvas>
+    </div>
+
+    <!-- Tools -->
+    <div class="tools-bar">
+      <div class="tool-group" id="toolGroup">
+        <button class="tool-btn active" data-tool="arrow">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+          Pil
+        </button>
+        <button class="tool-btn" data-tool="line">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="21" x2="21" y2="3"/></svg>
+          Linje
+        </button>
+        <button class="tool-btn" data-tool="angle">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3,20 12,4 21,20"/></svg>
+          Vinkel
+        </button>
+        <button class="tool-btn" data-tool="circle">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg>
+          Cirkel
+        </button>
+      </div>
+      <div class="tools-divider"></div>
+      <div class="color-group" id="colorGroup">
+        <div class="color-swatch active" data-color="#3ddc6e" style="background:#3ddc6e"></div>
+        <div class="color-swatch" data-color="#ff4f4f" style="background:#ff4f4f"></div>
+        <div class="color-swatch" data-color="#ffd700" style="background:#ffd700"></div>
+        <div class="color-swatch" data-color="#ffffff" style="background:#ffffff"></div>
+        <div class="color-swatch" data-color="#60b4ff" style="background:#60b4ff"></div>
+      </div>
+      <div class="tools-divider"></div>
+      <span class="angle-hint" id="angleHint">Klicka: centrum → arm 1 → arm 2</span>
+      <div class="action-group">
+        <button class="action-btn" onclick="undoDrawing()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9,14 4,9 9,4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
+          Ångra
+        </button>
+        <button class="action-btn" onclick="clearDrawings()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          Rensa
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Tips panel -->
   <div class="tips-panel">
-    <div class="tips-label" id="tipsTitle">Välj en klubba för att se tips</div>
+    <div class="section-label" id="tipsTitle">Välj en klubba för att se tips</div>
     <div class="tips-grid" id="tipsGrid">
-      <div class="tip-card">
-        <h3>Kom igång</h3>
-        <p>Välj klubba ovan, ladda upp din swing och tryck Analysera för AI-coaching.</p>
-      </div>
-      <div class="tip-card">
-        <h3>Bästa kameravinkel</h3>
-        <p>Filma framifrån eller bakifrån längs bollen för tydligast analys.</p>
-      </div>
-      <div class="tip-card">
-        <h3>Slow motion</h3>
-        <p>Använd ½× eller ¼× för att studera din teknik i detalj.</p>
-      </div>
+      <div class="tip-card"><h3>Kom igång</h3><p>Välj klubba, ladda upp din swing och tryck Analysera för att rita på dina frames.</p></div>
+      <div class="tip-card"><h3>Bästa vinkel</h3><p>Filma framifrån eller bakifrån längs bollen för tydligast analys.</p></div>
+      <div class="tip-card"><h3>Slow motion</h3><p>Använd ½× eller ¼× för att studera tekniken i detalj innan du analyserar.</p></div>
     </div>
   </div>
 
 </div>
 
 <script>
-// ── CLUBS & TIPS ──
+// ══════════════════════════════════
+//  CLUBS & TIPS
+// ══════════════════════════════════
 const CLUBS = [
-  { id: 'driver', label: 'Driver',   group: 'Woods' },
-  { id: '3w',     label: '3-Wood',   group: 'Woods' },
-  { id: '5w',     label: '5-Wood',   group: 'Woods' },
-  { id: '3h',     label: '3-Hybrid', group: 'Hybrids' },
-  { id: '4h',     label: '4-Hybrid', group: 'Hybrids' },
-  { id: '4i',     label: '4-Iron',   group: 'Irons' },
-  { id: '5i',     label: '5-Iron',   group: 'Irons' },
-  { id: '6i',     label: '6-Iron',   group: 'Irons' },
-  { id: '7i',     label: '7-Iron',   group: 'Irons' },
-  { id: '8i',     label: '8-Iron',   group: 'Irons' },
-  { id: '9i',     label: '9-Iron',   group: 'Irons' },
-  { id: 'pw',     label: 'PW',       group: 'Wedges' },
-  { id: 'gw',     label: 'GW',       group: 'Wedges' },
-  { id: 'sw',     label: 'SW',       group: 'Wedges' },
-  { id: 'lw',     label: 'LW/60°',   group: 'Wedges' },
-  { id: 'putter', label: 'Putter',   group: 'Putter' },
+  {id:'driver',label:'Driver',  group:'Woods'},
+  {id:'3w',    label:'3-Wood', group:'Woods'},
+  {id:'5w',    label:'5-Wood', group:'Woods'},
+  {id:'3h',    label:'3-Hybrid',group:'Hybrids'},
+  {id:'4h',    label:'4-Hybrid',group:'Hybrids'},
+  {id:'4i',    label:'4-Iron', group:'Irons'},
+  {id:'5i',    label:'5-Iron', group:'Irons'},
+  {id:'6i',    label:'6-Iron', group:'Irons'},
+  {id:'7i',    label:'7-Iron', group:'Irons'},
+  {id:'8i',    label:'8-Iron', group:'Irons'},
+  {id:'9i',    label:'9-Iron', group:'Irons'},
+  {id:'pw',    label:'PW',     group:'Wedges'},
+  {id:'gw',    label:'GW',     group:'Wedges'},
+  {id:'sw',    label:'SW',     group:'Wedges'},
+  {id:'lw',    label:'LW/60°',group:'Wedges'},
+  {id:'putter',label:'Putter', group:'Putter'},
 ];
-
 const TIPS = {
-  driver: [
-    { title: 'Bollposition', body: 'Innanför vänster häl. Tee högt — halva bollen ovanför klubbhuvudet.' },
-    { title: 'Ryggradslutning', body: 'Lätt lutning bort från målet vid address för uppåtgående slagvinkel.' },
-    { title: 'Bred båge', body: 'Håll klubbhuvudet lågt och långsamt i takeaway för maximal svängbåge.' },
-    { title: 'Höftrotation', body: 'Höfterna roterar hårt genom impact innan armarna sträcks mot målet.' },
-    { title: 'Huvud bakom bollen', body: 'Huvudet stannar bakom bollen vid impact — tecken på uppåtgående slag.' },
-    { title: 'Hög finish', body: 'Avsluta högt och balanserat med all vikt på det ledande benet.' },
+  driver:[
+    {title:'Bollposition',body:'Innanför vänster häl. Tee högt — halva bollen ovanför klubbhuvudet.'},
+    {title:'Ryggradslutning',body:'Lätt lutning bort från målet vid address för uppåtgående slagvinkel.'},
+    {title:'Bred båge',body:'Håll klubbhuvudet lågt och långsamt i takeaway för maximal svängbåge.'},
+    {title:'Höftrotation',body:'Höfterna roterar hårt genom impact innan armarna sträcks mot målet.'},
+    {title:'Huvud bakom bollen',body:'Huvudet stannar bakom bollen vid impact — tecken på uppåtgående slag.'},
+    {title:'Hög finish',body:'Avsluta högt och balanserat med all vikt på det ledande benet.'},
   ],
-  '3w': [
-    { title: 'Bollposition', body: 'En bollbredd innanför vänster häl.' },
-    { title: 'Svep, gräv inte', body: 'Svep över gräset eller träffa svagt uppåt från tee. Ingen divot behövs.' },
-    { title: 'Minimal skaftlutning', body: 'Händerna knappt framför bollen vid address, till skillnad från järn.' },
-    { title: 'Mjuk övergång', body: 'Proffsen rusar aldrig nedsvingen. Notera pausen vid toppen.' },
+  '3w':[
+    {title:'Bollposition',body:'En bollbredd innanför vänster häl.'},
+    {title:'Svep, gräv inte',body:'Svep över gräset eller träffa svagt uppåt. Ingen divot behövs.'},
+    {title:'Minimal skaftlutning',body:'Händerna knappt framför bollen, till skillnad från järn.'},
+    {title:'Mjuk övergång',body:'Proffsen rusar aldrig nedsvingen — notera pausen vid toppen.'},
   ],
-  '5w': [
-    { title: 'Bollposition', body: 'En till två bollbredder innanför vänster häl.' },
-    { title: 'Grunt angrepp', body: 'Lite mer upprätt plan än driver men fortfarande svepande rörelse.' },
-    { title: 'Full handledsgångjärn', body: 'Klubban bör nå parallellt eller strax under vid toppen.' },
+  '5w':[
+    {title:'Bollposition',body:'En till två bollbredder innanför vänster häl.'},
+    {title:'Grunt angrepp',body:'Lite mer upprätt plan än driver men fortfarande svepande.'},
+    {title:'Full handledsgångjärn',body:'Klubban bör nå parallellt eller strax under vid toppen.'},
   ],
-  '3h': [
-    { title: 'Mångsidigt kontakt', body: 'Hybrid kan svepas från fairway eller slås med lätt nedåtgående slag.' },
-    { title: 'Stancebredd', body: 'Lite bredare än mellanjärn. Bollposition mitten till framåt.' },
-    { title: 'Grunt angrepp', body: 'Mer som ett fairway wood än ett järn. Undvik brant, hackande svingar.' },
+  '3h':[
+    {title:'Mångsidigt kontakt',body:'Hybrid kan svepas från fairway eller slås med lätt nedåtgående slag.'},
+    {title:'Stancebredd',body:'Lite bredare än mellanjärn. Bollposition mitten till framåt.'},
+    {title:'Grunt angrepp',body:'Mer som ett fairway wood. Undvik brant, hackande svingar.'},
   ],
-  '4h': [
-    { title: 'Attackvinkel', body: 'Lätt nedåtgående slag (1–2°) är mest konsekvent. Undvik scooping.' },
-    { title: 'Jämn rytm', body: 'Hybrid belönar rytm framför hastighet. Titta på övergången i prosvingar.' },
+  '4h':[
+    {title:'Attackvinkel',body:'Lätt nedåtgående slag (1–2°) är mest konsekvent. Undvik scooping.'},
+    {title:'Jämn rytm',body:'Hybrid belönar rytm framför hastighet. Titta på övergången.'},
   ],
-  default_iron: [
-    { title: 'Bollposition', body: 'Centrum för korta järn; en bollbredd framåt per klubba längre ut.' },
-    { title: 'Boll-först kontakt', body: 'Proffsen träffar bollen först, sedan torv. Notera var divoten börjar.' },
-    { title: 'Framåt skaftlutning', body: 'Händerna framför bollen vid impact. Komprimerar och kontrollerar bollen.' },
-    { title: 'Höftrensning', body: 'Ledande höft roterar mot målet och skapar utrymme för armarna att svinga.' },
-    { title: 'Konstant knäböjning', body: 'Undvik att räta ut det ledande benet tidigt i nedsvingen.' },
-    { title: 'Balanserad finish', body: 'Vikt på ledande fot, bröstet mot målet, klubban över ledande axel.' },
+  default_iron:[
+    {title:'Bollposition',body:'Centrum för korta järn; en bollbredd framåt per klubba längre ut.'},
+    {title:'Boll-först kontakt',body:'Proffsen träffar bollen först, sedan torv. Notera var divoten börjar.'},
+    {title:'Framåt skaftlutning',body:'Händerna framför bollen vid impact. Komprimerar bollen.'},
+    {title:'Höftrensning',body:'Ledande höft roterar mot målet och skapar utrymme för armarna.'},
+    {title:'Konstant knäböjning',body:'Undvik att räta ut det ledande benet tidigt i nedsvingen.'},
+    {title:'Balanserad finish',body:'Vikt på ledande fot, bröstet mot målet, klubban över axeln.'},
   ],
-  pw: [
-    { title: 'Bollposition', body: 'Centrum av stance. Händerna lätt framför vid address.' },
-    { title: 'Tre-kvarts sving', body: 'De flesta proffs förkortar backswingen för bättre kontroll på wedge.' },
-    { title: 'Accelerera igenom', body: 'Sakta aldrig ner mot bollen. Accelerera jämnt och bestämt.' },
-    { title: 'Skarp divot', body: 'En divot mot målet efter impact är kännetecknet för ett bra wedgeslag.' },
+  pw:[
+    {title:'Bollposition',body:'Centrum av stance. Händerna lätt framför vid address.'},
+    {title:'Tre-kvarts sving',body:'De flesta proffs förkortar backswingen för bättre kontroll.'},
+    {title:'Accelerera igenom',body:'Sakta aldrig ner mot bollen. Accelerera jämnt och bestämt.'},
+    {title:'Skarp divot',body:'En divot mot målet efter impact är kännetecknet för ett bra wedgeslag.'},
   ],
-  gw: [
-    { title: 'Distans via längd', body: 'Variera backswingen, inte svinghastigheten, för att kontrollera distansen.' },
-    { title: 'Kontrollerad bana', body: 'Gap wedge ger medelhög bana med måttligt backspin.' },
+  gw:[
+    {title:'Distans via längd',body:'Variera backswingen, inte svinghastigheten, för att kontrollera distansen.'},
+    {title:'Kontrollerad bana',body:'Gap wedge ger medelhög bana med måttligt backspin.'},
   ],
-  sw: [
-    { title: 'Bunker vs full sving', body: 'Bunkerslag: öppen klubbface, träff i sanden bakom bollen.' },
-    { title: 'Öppen face', body: 'Sand wedge spelas ofta med lätt öppen face för extra studs och loft.' },
-    { title: 'Mjuka händer', body: 'Avslappnat grepp — låt loftet och studsen göra jobbet.' },
+  sw:[
+    {title:'Bunker',body:'Öppen klubbface, träff i sanden bakom bollen — svep inte upp bollen.'},
+    {title:'Öppen face',body:'Sand wedge spelas ofta med lätt öppen face för extra studs och loft.'},
+    {title:'Mjuka händer',body:'Avslappnat grepp — låt loftet och studsen göra jobbet.'},
   ],
-  lw: [
-    { title: 'Öppen face', body: 'Ofta dramatiskt öppen för höga lob shots. Clubface pekar mot himlen.' },
-    { title: 'Brant plan', body: 'Mer upprätt svingplan än andra klubbor. Studera hur proffsen går brant.' },
-    { title: 'Accelerera alltid', body: 'Sakta aldrig ner. Satsa fullt ut även på korta lob shots.' },
+  lw:[
+    {title:'Öppen face',body:'Ofta dramatiskt öppen för höga lob shots. Clubface mot himlen.'},
+    {title:'Brant plan',body:'Mer upprätt svingplan än andra klubbor. Studera hur proffsen går brant.'},
+    {title:'Accelerera alltid',body:'Sakta aldrig ner. Satsa fullt ut även på korta lob shots.'},
   ],
-  putter: [
-    { title: 'Ögon över bollen', body: 'Ögonen direkt ovanför eller lätt innanför bollen vid address.' },
-    { title: 'Pendelrörelse', body: 'Axlarna vaggar, armar och handleder är stilla. Notera eventuell handledsnedbrytning.' },
-    { title: 'Symmetrisk stroke', body: 'Follow-through speglar backswing-längden. Konsekvent tempo.' },
-    { title: 'Stilla huvud', body: 'Huvudet är helt stilla tills bollen är långt på väg.' },
-    { title: 'Facevinkel vid impact', body: 'Facevinkel vid impact styr ~80% av startlinjen. Titta noga.' },
+  putter:[
+    {title:'Ögon över bollen',body:'Ögonen direkt ovanför eller lätt innanför bollen vid address.'},
+    {title:'Pendelrörelse',body:'Axlarna vaggar, armar och handleder är stilla.'},
+    {title:'Symmetrisk stroke',body:'Follow-through speglar backswing-längden. Konsekvent tempo.'},
+    {title:'Stilla huvud',body:'Huvudet är helt stilla tills bollen är långt på väg.'},
+    {title:'Facevinkel vid impact',body:'Facevinkel vid impact styr ~80% av startlinjen.'},
   ],
 };
 
-// ── INIT ──
+// ── Build club buttons
 let selectedClub = null;
-let videoEl = null;
-let isLooping = true;
-
 const clubGroupsEl = document.getElementById('clubGroups');
-const groups = [...new Set(CLUBS.map(c => c.group))];
-groups.forEach(g => {
+[...new Set(CLUBS.map(c=>c.group))].forEach(g => {
   const wrap = document.createElement('div');
   wrap.className = 'club-group';
   const lbl = document.createElement('span');
   lbl.className = 'club-group-label';
   lbl.textContent = g;
   wrap.appendChild(lbl);
-  CLUBS.filter(c => c.group === g).forEach(club => {
+  CLUBS.filter(c=>c.group===g).forEach(club => {
     const btn = document.createElement('button');
     btn.className = 'club-btn';
     btn.textContent = club.label;
@@ -1025,276 +567,409 @@ groups.forEach(g => {
 
 function selectClub(club) {
   selectedClub = club;
-  document.querySelectorAll('.club-btn').forEach(b => b.classList.toggle('active', b.dataset.id === club.id));
+  document.querySelectorAll('.club-btn').forEach(b => b.classList.toggle('active', b.dataset.id===club.id));
   document.getElementById('clubBadge').textContent = club.label;
-  document.getElementById('clubPill').textContent = club.label;
-
+  document.getElementById('clubPill').textContent  = club.label;
   const key = TIPS[club.id] ? club.id : 'default_iron';
-  const tips = TIPS[key];
   document.getElementById('tipsTitle').textContent = `Tips — ${club.label}`;
-  document.getElementById('tipsGrid').innerHTML = tips.map(t =>
+  document.getElementById('tipsGrid').innerHTML = TIPS[key].map(t=>
     `<div class="tip-card"><h3>${t.title}</h3><p>${t.body}</p></div>`
   ).join('');
 }
 
-// ── VIDEO LOADING ──
+// ══════════════════════════════════
+//  VIDEO PLAYER
+// ══════════════════════════════════
+let videoEl = null;
+let isLooping = true;
+
 function loadVideo(file) {
   if (!file) return;
-  const url = URL.createObjectURL(file);
-
   document.getElementById('uploadPrompt').style.display = 'none';
   if (videoEl) videoEl.remove();
-
   videoEl = document.createElement('video');
-  videoEl.src = url;
+  videoEl.src = URL.createObjectURL(file);
   videoEl.playsInline = true;
-  videoEl.setAttribute('playsinline', '');
-  videoEl.setAttribute('webkit-playsinline', '');
+  videoEl.setAttribute('playsinline','');
+  videoEl.setAttribute('webkit-playsinline','');
   videoEl.loop = isLooping;
-  videoEl.style.cssText = 'width:100%;max-height:520px;object-fit:contain;display:block;';
+  videoEl.style.cssText = 'width:100%;max-height:500px;object-fit:contain;display:block;';
   document.getElementById('videoArea').appendChild(videoEl);
-
-  videoEl.addEventListener('loadedmetadata', initControls);
-  videoEl.addEventListener('timeupdate', updateScrubber);
-  videoEl.addEventListener('play', () => updatePlayIcon(true));
-  videoEl.addEventListener('pause', () => updatePlayIcon(false));
-  videoEl.addEventListener('ended', () => { if (!isLooping) updatePlayIcon(false); });
-
+  videoEl.addEventListener('loadedmetadata', initScrubber);
+  videoEl.addEventListener('timeupdate', tickScrubber);
+  videoEl.addEventListener('play',  () => setPlayIcon(true));
+  videoEl.addEventListener('pause', () => setPlayIcon(false));
   document.getElementById('videoControlsBar').classList.add('visible');
   document.getElementById('panelFooter').style.display = 'flex';
-  document.getElementById('analyzeBtn').style.display = 'flex';
-
-  videoEl.play().catch(() => {});
+  document.getElementById('analyzeBtn').style.display  = 'flex';
+  videoEl.play().catch(()=>{});
 }
-
-document.getElementById('swingUpload').addEventListener('change', e => loadVideo(e.target.files[0]));
-document.getElementById('swingGallery').addEventListener('change', e => loadVideo(e.target.files[0]));
-document.getElementById('swingRecord').addEventListener('change', e => loadVideo(e.target.files[0]));
+['swingUpload','swingGallery','swingRecord'].forEach(id => {
+  document.getElementById(id).addEventListener('change', e => loadVideo(e.target.files[0]));
+});
 
 function clearVideo() {
   if (videoEl) { videoEl.pause(); videoEl.remove(); videoEl = null; }
   document.getElementById('uploadPrompt').style.display = 'flex';
   document.getElementById('videoControlsBar').classList.remove('visible');
   document.getElementById('panelFooter').style.display = 'none';
-  document.getElementById('analyzeBtn').style.display = 'none';
+  document.getElementById('analyzeBtn').style.display  = 'none';
   document.getElementById('swingUpload').value = '';
-  document.getElementById('timeDisplay').textContent = '0:00 / 0:00';
-  document.getElementById('scrubber').value = 0;
-  closeAnalysis();
+  closeAnnotation();
 }
 
-// ── CUSTOM CONTROLS ──
-function initControls() {
-  const s = document.getElementById('scrubber');
-  s.max = videoEl.duration;
-  updateScrubber();
+function initScrubber() {
+  document.getElementById('scrubber').max = videoEl.duration;
+  tickScrubber();
 }
-
-function updateScrubber() {
+function tickScrubber() {
   if (!videoEl) return;
   const s = document.getElementById('scrubber');
   s.value = videoEl.currentTime;
-  document.getElementById('timeDisplay').textContent = `${fmt(videoEl.currentTime)} / ${fmt(videoEl.duration)}`;
-
   const pct = (videoEl.currentTime / videoEl.duration) * 100;
-  s.style.background = `linear-gradient(to right, #3ddc6e ${pct}%, rgba(255,255,255,0.12) ${pct}%)`;
+  s.style.background = `linear-gradient(to right,#3ddc6e ${pct}%,rgba(255,255,255,0.12) ${pct}%)`;
+  document.getElementById('timeLabel').textContent = `${fmt(videoEl.currentTime)} / ${fmt(videoEl.duration)}`;
 }
-
 function fmt(s) {
-  if (!s || isNaN(s)) return '0:00';
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60).toString().padStart(2, '0');
-  return `${m}:${sec}`;
+  if (!s||isNaN(s)) return '0:00';
+  return `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 }
-
-document.getElementById('scrubber').addEventListener('input', e => {
-  if (videoEl) videoEl.currentTime = e.target.value;
-});
-
-function togglePlay() {
-  if (!videoEl) return;
-  videoEl.paused ? videoEl.play() : videoEl.pause();
-}
-
-function updatePlayIcon(playing) {
+document.getElementById('scrubber').addEventListener('input', e => { if (videoEl) videoEl.currentTime = e.target.value; });
+function togglePlay() { if (!videoEl) return; videoEl.paused ? videoEl.play() : videoEl.pause(); }
+function setPlayIcon(playing) {
   document.getElementById('playIcon').innerHTML = playing
     ? '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
     : '<polygon points="5,3 19,12 5,21"/>';
 }
-
 function toggleLoop() {
   isLooping = !isLooping;
   if (videoEl) videoEl.loop = isLooping;
-  document.getElementById('loopBtn').style.color = isLooping ? '#3ddc6e' : '';
+  document.getElementById('loopBtn').classList.toggle('active', isLooping);
 }
-
-function setSpeed(speed) {
-  if (videoEl) videoEl.playbackRate = speed;
-  document.querySelectorAll('.speed-btn').forEach(b => {
-    b.classList.toggle('active', parseFloat(b.dataset.speed) === speed);
-  });
+function setSpeed(sp) {
+  if (videoEl) videoEl.playbackRate = sp;
+  document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.speed)===sp));
 }
-
-// Spacebar to play/pause
 document.addEventListener('keydown', e => {
-  if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
-    e.preventDefault();
-    togglePlay();
-  }
+  if (e.code==='Space' && e.target.tagName!=='INPUT') { e.preventDefault(); togglePlay(); }
 });
 
-// Init loop button state
-document.getElementById('loopBtn').style.color = '#3ddc6e';
+// ══════════════════════════════════
+//  FRAME EXTRACTION
+// ══════════════════════════════════
+const FRAME_POSITIONS = [0.04, 0.20, 0.38, 0.55, 0.72, 0.92];
+const FRAME_LABELS    = ['Address','Takeaway','Topp av backswing','Transition','Impact','Follow-through'];
 
-// ── API KEY ──
-function openApiModal() {
-  document.getElementById('apiKeyInput').value = localStorage.getItem('anthropic_api_key') || '';
-  document.getElementById('apiModal').style.display = 'flex';
-  setTimeout(() => document.getElementById('apiKeyInput').focus(), 60);
-}
-function closeApiModal() {
-  document.getElementById('apiModal').style.display = 'none';
-}
-function saveApiKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  key ? localStorage.setItem('anthropic_api_key', key) : localStorage.removeItem('anthropic_api_key');
-  updateSettingsBtn();
-  closeApiModal();
-}
-function updateSettingsBtn() {
-  const has = !!localStorage.getItem('anthropic_api_key');
-  document.getElementById('settingsBtn').classList.toggle('has-key', has);
-  document.getElementById('settingsBtnLabel').textContent = has ? 'Nyckel ✓' : 'API-nyckel';
-}
-updateSettingsBtn();
-
-// ── FRAME EXTRACTION ──
-async function extractFrames(video) {
+async function extractFrames() {
+  const video = videoEl;
   const canvas = document.createElement('canvas');
-  canvas.width = Math.min(video.videoWidth, 640);
+  canvas.width  = Math.min(video.videoWidth, 720);
   canvas.height = Math.round(canvas.width * video.videoHeight / video.videoWidth);
   const ctx = canvas.getContext('2d');
-
-  const positions = [0.04, 0.20, 0.38, 0.55, 0.72, 0.92];
-  const labels    = ['Address', 'Takeaway', 'Topp', 'Transition', 'Impact', 'Follow-through'];
-
   const wasPaused = video.paused;
   video.pause();
-
-  const frames = [], thumbs = [];
-  for (let i = 0; i < positions.length; i++) {
-    video.currentTime = video.duration * positions[i];
-    await new Promise(r => video.addEventListener('seeked', r, { once: true }));
+  const frames = [];
+  for (let i=0; i<FRAME_POSITIONS.length; i++) {
+    video.currentTime = video.duration * FRAME_POSITIONS[i];
+    await new Promise(r => video.addEventListener('seeked', r, {once:true}));
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const url = canvas.toDataURL('image/jpeg', 0.78);
-    frames.push({ b64: url.split(',')[1], label: labels[i] });
-    thumbs.push({ src: url, label: labels[i] });
+    frames.push({ src: canvas.toDataURL('image/jpeg', 0.85), label: FRAME_LABELS[i] });
   }
-
   video.currentTime = 0;
   if (!wasPaused) video.play();
-  return { frames, thumbs };
+  return frames;
 }
 
-// ── CLAUDE API ──
-async function callClaude(frames, clubLabel, apiKey) {
-  const content = [
-    {
-      type: 'text',
-      text: `Du är en PGA-certifierad golfcoach med djup expertkunskap i swingbiomekanik. Analysera dessa ${frames.length} bilder från en golfswing med ${clubLabel}.\n\nFaserna är: ${frames.map(f => f.label).join(', ')}.\n\nGe en detaljerad coaching-analys på svenska med exakt dessa fyra sektioner (## som rubrik):\n\n## Sammanfattning\n## Styrkor\n## Förbättringsområden\n## Nästa steg\n\nVar konkret och hänvisa till vad du ser i bilderna. Fokusera på det viktigaste för ${clubLabel}.`
-    },
-    ...frames.flatMap(f => [
-      { type: 'text', text: `[${f.label}]` },
-      { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: f.b64 } }
-    ])
-  ];
+// ══════════════════════════════════
+//  ANNOTATION SYSTEM
+// ══════════════════════════════════
+let frames        = [];       // [{src, label}]
+let drawings      = {};       // {frameIdx: [{tool,color,pts}]}
+let currentFrame  = 0;
+let activeTool    = 'arrow';
+let activeColor   = '#3ddc6e';
+let painting      = false;
+let startPt       = null;
+let anglePhase    = 0;        // 0=idle, 1=vertex set, 2=arm1 set
+let anglePts      = [];
 
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-calls': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-opus-4-8',
-      max_tokens: 1600,
-      messages: [{ role: 'user', content }]
-    })
-  });
+const canvas  = document.getElementById('drawCanvas');
+const ctx     = canvas.getContext('2d');
+const frameImg = document.getElementById('frameImg');
 
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error?.message || `HTTP ${resp.status} — kontrollera API-nyckeln`);
-  }
-  return (await resp.json()).content[0].text;
-}
-
-// ── MARKDOWN → HTML ──
-function mdToHtml(text) {
-  const lines = text.split('\n');
-  let html = '', inList = false;
-  for (const line of lines) {
-    if (line.startsWith('## ')) {
-      if (inList) { html += '</ul>'; inList = false; }
-      html += `<h3>${line.slice(3).trim()}</h3>`;
-    } else if (/^[-*]\s/.test(line)) {
-      if (!inList) { html += '<ul>'; inList = true; }
-      html += `<li>${line.slice(2).trim()}</li>`;
-    } else if (/^\d+\.\s/.test(line)) {
-      if (!inList) { html += '<ul>'; inList = true; }
-      html += `<li>${line.replace(/^\d+\.\s/, '').trim()}</li>`;
-    } else {
-      if (inList) { html += '</ul>'; inList = false; }
-      if (line.trim()) html += `<p>${line}</p>`;
-    }
-  }
-  if (inList) html += '</ul>';
-  return html;
-}
-
-// ── ANALYZE ──
-async function analyzeSwing() {
-  const apiKey = localStorage.getItem('anthropic_api_key');
-  if (!apiKey) { openApiModal(); return; }
+async function startAnnotation() {
   if (!videoEl || !videoEl.duration) return;
-
-  const clubLabel = selectedClub ? selectedClub.label : 'golf';
   const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Analyserar…';
+  btn.style.opacity = '0.5';
+  btn.textContent = '⏳ Extraherar frames…';
 
-  const panel = document.getElementById('analysisPanel');
-  const body  = document.getElementById('analysisBody');
-  panel.style.display = 'block';
-  body.innerHTML = `<div class="analysis-loading"><div class="spinner"></div><span>Extraherar frames…</span></div>`;
-  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  frames   = await extractFrames();
+  drawings = {};
+  FRAME_POSITIONS.forEach((_,i) => drawings[i] = []);
 
-  try {
-    const { frames, thumbs } = await extractFrames(videoEl);
+  btn.style.opacity = '';
+  btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg> Analysera swing';
 
-    const strip = `<div class="frame-strip">${thumbs.map(t =>
-      `<div class="frame-item"><img src="${t.src}" alt="${t.label}"><span>${t.label}</span></div>`
-    ).join('')}</div>`;
+  buildFrameStrip();
+  document.getElementById('annotationPanel').style.display = 'block';
+  selectFrame(0);
+  document.getElementById('annotationPanel').scrollIntoView({behavior:'smooth', block:'start'});
+}
 
-    body.innerHTML = `${strip}<div class="analysis-loading"><div class="spinner"></div><span>Claude analyserar din ${clubLabel}-teknik…</span></div>`;
+function buildFrameStrip() {
+  const strip = document.getElementById('frameStrip');
+  strip.innerHTML = '';
+  frames.forEach((f,i) => {
+    const div = document.createElement('div');
+    div.className = 'frame-thumb';
+    div.dataset.idx = i;
+    div.onclick = () => selectFrame(i);
+    const img = document.createElement('img');
+    img.src = f.src;
+    img.alt = f.label;
+    const lbl = document.createElement('div');
+    lbl.className = 'frame-thumb-label';
+    lbl.textContent = f.label;
+    div.appendChild(img);
+    div.appendChild(lbl);
+    strip.appendChild(div);
+  });
+}
 
-    const text = await callClaude(frames, clubLabel, apiKey);
-    body.innerHTML = `${strip}<div class="analysis-content">${mdToHtml(text)}</div>`;
+function selectFrame(idx) {
+  currentFrame = idx;
+  document.querySelectorAll('.frame-thumb').forEach((el,i) => el.classList.toggle('active', i===idx));
+  frameImg.src = frames[idx].src;
+  document.getElementById('phaseLabel').textContent = frames[idx].label;
+  frameImg.onload = () => { resizeCanvas(); redraw(); };
+  if (frameImg.complete) { resizeCanvas(); redraw(); }
+  resetAngle();
+}
 
-  } catch (err) {
-    body.innerHTML = `<div class="analysis-error">⚠️ ${err.message}</div>`;
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Analysera swing';
+function resizeCanvas() {
+  const rect = frameImg.getBoundingClientRect();
+  canvas.width  = rect.width;
+  canvas.height = rect.height;
+  canvas.style.width  = rect.width  + 'px';
+  canvas.style.height = rect.height + 'px';
+}
+
+function getPt(e) {
+  const rect = canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - rect.left) / rect.width,
+    y: (src.clientY - rect.top)  / rect.height,
+  };
+}
+
+function toCanvas(pt) {
+  return { x: pt.x * canvas.width, y: pt.y * canvas.height };
+}
+
+// ── Pointer events (mouse + touch)
+canvas.addEventListener('mousedown',  onDown);
+canvas.addEventListener('mousemove',  onMove);
+canvas.addEventListener('mouseup',    onUp);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); onDown(e); }, {passive:false});
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e); }, {passive:false});
+canvas.addEventListener('touchend',   e => { e.preventDefault(); onUp(e);   }, {passive:false});
+
+function onDown(e) {
+  if (activeTool === 'angle') { handleAngleClick(getPt(e)); return; }
+  painting = true;
+  startPt  = getPt(e);
+}
+function onMove(e) {
+  if (!painting) return;
+  const pt = getPt(e);
+  redraw();
+  drawShape(ctx, activeTool, activeColor, startPt, pt, true);
+}
+function onUp(e) {
+  if (!painting) return;
+  painting = false;
+  const pt = getPt(e);
+  if (Math.hypot(pt.x - startPt.x, pt.y - startPt.y) > 0.01) {
+    drawings[currentFrame].push({ tool: activeTool, color: activeColor, pts: [startPt, pt] });
+  }
+  redraw();
+}
+
+// ── Angle tool
+function handleAngleClick(pt) {
+  if (anglePhase === 0) {
+    anglePts = [pt];
+    anglePhase = 1;
+    updateAngleHint();
+    drawDot(pt);
+  } else if (anglePhase === 1) {
+    anglePts.push(pt);
+    anglePhase = 2;
+    updateAngleHint();
+    redraw();
+    drawShape(ctx, 'angle-preview', activeColor, anglePts[0], pt, true);
+  } else {
+    anglePts.push(pt);
+    drawings[currentFrame].push({ tool: 'angle', color: activeColor, pts: [...anglePts] });
+    resetAngle();
+    redraw();
   }
 }
 
-function closeAnalysis() {
-  const p = document.getElementById('analysisPanel');
-  if (p) p.style.display = 'none';
+function resetAngle() {
+  anglePhase = 0;
+  anglePts   = [];
+  updateAngleHint();
 }
+
+function updateAngleHint() {
+  const el = document.getElementById('angleHint');
+  if (activeTool !== 'angle') { el.style.display = 'none'; return; }
+  el.style.display = 'inline-block';
+  el.textContent = anglePhase === 0 ? 'Klick 1: centrum'
+                 : anglePhase === 1 ? 'Klick 2: arm 1'
+                 :                    'Klick 3: arm 2';
+}
+
+function drawDot(pt) {
+  const p = toCanvas(pt);
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+  ctx.fillStyle = activeColor;
+  ctx.fill();
+}
+
+// ── Core draw function
+function drawShape(ctx, tool, color, a, b, preview) {
+  const A = toCanvas(a), B = toCanvas(b);
+  ctx.strokeStyle = color;
+  ctx.fillStyle   = color;
+  ctx.lineWidth   = 2.5;
+  ctx.lineCap     = 'round';
+
+  if (tool === 'arrow') {
+    strokeLine(ctx, A, B);
+    drawArrowHead(ctx, A, B, color);
+  } else if (tool === 'line') {
+    strokeLine(ctx, A, B);
+  } else if (tool === 'circle') {
+    const r = Math.hypot(B.x - A.x, B.y - A.y);
+    ctx.beginPath();
+    ctx.arc(A.x, A.y, r, 0, Math.PI*2);
+    ctx.stroke();
+  } else if (tool === 'angle') {
+    // stored as 3 pts
+  } else if (tool === 'angle-preview') {
+    strokeLine(ctx, A, B);
+    drawDot(a);
+  }
+}
+
+function drawAngleFull(ctx, pts, color) {
+  if (pts.length < 3) return;
+  const V  = toCanvas(pts[0]);
+  const P1 = toCanvas(pts[1]);
+  const P2 = toCanvas(pts[2]);
+  ctx.strokeStyle = color;
+  ctx.fillStyle   = color;
+  ctx.lineWidth   = 2.5;
+  ctx.lineCap     = 'round';
+  strokeLine(ctx, V, P1);
+  strokeLine(ctx, V, P2);
+
+  const a1  = Math.atan2(P1.y - V.y, P1.x - V.x);
+  const a2  = Math.atan2(P2.y - V.y, P2.x - V.x);
+  let deg   = Math.abs((a2 - a1) * 180 / Math.PI);
+  if (deg > 180) deg = 360 - deg;
+
+  const r = Math.min(28, Math.hypot(P1.x-V.x, P1.y-V.y)*0.3, Math.hypot(P2.x-V.x, P2.y-V.y)*0.3);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(V.x, V.y, r, Math.min(a1,a2), Math.max(a1,a2));
+  ctx.stroke();
+
+  const mid = (a1+a2)/2;
+  ctx.font = 'bold 12px Inter, sans-serif';
+  ctx.fillText(`${Math.round(deg)}°`, V.x + (r+10)*Math.cos(mid), V.y + (r+10)*Math.sin(mid));
+
+  // dot at vertex
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.arc(V.x, V.y, 3.5, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function strokeLine(ctx, A, B) {
+  ctx.beginPath();
+  ctx.moveTo(A.x, A.y);
+  ctx.lineTo(B.x, B.y);
+  ctx.stroke();
+}
+
+function drawArrowHead(ctx, A, B, color) {
+  const len   = 13;
+  const angle = Math.atan2(B.y - A.y, B.x - A.x);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(B.x, B.y);
+  ctx.lineTo(B.x - len*Math.cos(angle - Math.PI/6), B.y - len*Math.sin(angle - Math.PI/6));
+  ctx.lineTo(B.x - len*Math.cos(angle + Math.PI/6), B.y - len*Math.sin(angle + Math.PI/6));
+  ctx.closePath();
+  ctx.fill();
+}
+
+function redraw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  (drawings[currentFrame] || []).forEach(d => {
+    if (d.tool === 'angle') {
+      drawAngleFull(ctx, d.pts, d.color);
+    } else {
+      drawShape(ctx, d.tool, d.color, d.pts[0], d.pts[1]);
+    }
+  });
+  // angle preview dots
+  if (activeTool === 'angle' && anglePts.length > 0) {
+    anglePts.forEach(p => drawDot(p));
+    if (anglePts.length === 2) drawShape(ctx, 'angle-preview', activeColor, anglePts[0], anglePts[1]);
+  }
+}
+
+function undoDrawing() {
+  if (drawings[currentFrame].length) drawings[currentFrame].pop();
+  redraw();
+}
+function clearDrawings() {
+  drawings[currentFrame] = [];
+  resetAngle();
+  redraw();
+}
+function closeAnnotation() {
+  document.getElementById('annotationPanel').style.display = 'none';
+  frames = [];
+  resetAngle();
+}
+
+// Re-resize canvas when image loads or window resizes
+window.addEventListener('resize', () => { if (frames.length) { resizeCanvas(); redraw(); } });
+
+// ── Tool buttons
+document.getElementById('toolGroup').addEventListener('click', e => {
+  const btn = e.target.closest('.tool-btn');
+  if (!btn) return;
+  activeTool = btn.dataset.tool;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b===btn));
+  resetAngle();
+  updateAngleHint();
+});
+
+// ── Color swatches
+document.getElementById('colorGroup').addEventListener('click', e => {
+  const sw = e.target.closest('.color-swatch');
+  if (!sw) return;
+  activeColor = sw.dataset.color;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.toggle('active', s===sw));
+});
 </script>
 </body>
 </html>
