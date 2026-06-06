@@ -1,457 +1,761 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sv">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Golf Swing Analyzer</title>
+<title>Swing Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --green-deep:   #07120a;
+  --green-mid:    #0f2214;
+  --green-panel:  #122718;
+  --green-accent: #3ddc6e;
+  --green-dim:    rgba(61,220,110,0.18);
+  --gold:         #c8a84b;
+  --white-hi:     rgba(255,255,255,0.92);
+  --white-mid:    rgba(255,255,255,0.55);
+  --white-lo:     rgba(255,255,255,0.22);
+  --white-ghost:  rgba(255,255,255,0.08);
+  --border:       rgba(255,255,255,0.1);
+  --border-hi:    rgba(255,255,255,0.18);
+  --shadow:       0 12px 40px rgba(0,0,0,0.55);
+  --radius:       16px;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-    color: #1e1e1e;
-    min-height: 100vh;
-    background: #3a6040;
-    position: relative;
-  }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--green-deep);
+  color: var(--white-hi);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  /* Golfare-silhuett i bakgrunden */
-  body::after {
-    content: '';
-    position: fixed;
-    bottom: -20px;
-    right: 6%;
-    width: 340px;
-    height: 580px;
-    z-index: -1;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 580'%3E%3Cg fill='%23182e1a' opacity='0.82'%3E%3C!-- Huvud --%3E%3Cellipse cx='178' cy='52' rx='28' ry='30'/%3E%3C!-- Hals --%3E%3Crect x='170' y='78' width='16' height='18' rx='6'/%3E%3C!-- Överkropp (vriden i follow-through) --%3E%3Cellipse cx='172' cy='130' rx='38' ry='48'/%3E%3C!-- Höfter --%3E%3Cellipse cx='168' cy='198' rx='30' ry='22'/%3E%3C!-- Vänster arm uppe (slagen) --%3E%3Cellipse cx='128' cy='98' rx='12' ry='40' transform='rotate(-30 128 98)'/%3E%3Cellipse cx='100' cy='60' rx='10' ry='36' transform='rotate(-50 100 60)'/%3E%3C!-- Höger arm nere mot höften --%3E%3Cellipse cx='205' cy='140' rx='11' ry='38' transform='rotate(20 205 140)'/%3E%3Cellipse cx='220' cy='175' rx='10' ry='28' transform='rotate(35 220 175)'/%3E%3C!-- Klubbskaft (lång linje uppåt-vänster) --%3E%3Crect x='58' y='10' width='8' height='110' rx='4' transform='rotate(35 58 10)'/%3E%3C!-- Klubbhuvud --%3E%3Cellipse cx='52' cy='22' rx='18' ry='10' transform='rotate(35 52 22)'/%3E%3C!-- Vänster lår --%3E%3Cellipse cx='155' cy='255' rx='18' ry='50' transform='rotate(-8 155 255)'/%3E%3C!-- Höger lår (viktöverföring framåt) --%3E%3Cellipse cx='185' cy='250' rx='16' ry='48' transform='rotate(12 185 250)'/%3E%3C!-- Vänster underben --%3E%3Cellipse cx='148' cy='340' rx='13' ry='46' transform='rotate(-5 148 340)'/%3E%3C!-- Höger underben (lite bakåt, på tå) --%3E%3Cellipse cx='190' cy='335' rx='12' ry='44' transform='rotate(18 190 335)'/%3E%3C!-- Vänster fot --%3E%3Cellipse cx='143' cy='390' rx='28' ry='11' transform='rotate(-5 143 390)'/%3E%3C!-- Höger fot (på tå) --%3E%3Cellipse cx='200' cy='382' rx='16' ry='9' transform='rotate(15 200 382)'/%3E%3C!-- Skugga under fötterna --%3E%3Cellipse cx='170' cy='400' rx='55' ry='10' opacity='0.3'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
-    filter: blur(6px) brightness(0.55);
-    opacity: 0.75;
-  }
+/* ── ANIMATED BACKGROUND ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 20%, #0e2d12 0%, transparent 65%),
+    radial-gradient(ellipse 60% 45% at 88% 75%, #0b2410 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 50% 50%, #122a16 0%, transparent 70%),
+    linear-gradient(160deg, #07120a 0%, #0c1e0f 40%, #081408 100%);
+}
 
-  /* Golf-landskap i CSS, bluras ut till en mjuk bakgrundsbild */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: -80px;
-    z-index: -1;
-    background:
-      /* Himmel — mer dominant */
-      linear-gradient(180deg, #8ec8e8 0%, #b8d8ee 28%, #cde0ee 50%, transparent 68%),
-      /* Sandgropar — mer framträdande */
-      radial-gradient(ellipse 160px 80px at 72% 62%, #c8ab6a 0%, transparent 65%),
-      radial-gradient(ellipse 100px 50px at 30% 78%, #c2a45e 0%, transparent 65%),
-      radial-gradient(ellipse 80px 40px at 85% 44%, #caa85e 0%, transparent 60%),
-      /* Putting greens — dämpad grön */
-      radial-gradient(circle 80px at 65% 52%, #4a9050 0%, transparent 60%),
-      radial-gradient(circle 55px at 18% 64%, #468a48 0%, transparent 55%),
-      /* Fairway — nertonat, mer beige/brun inslag */
-      linear-gradient(150deg,
-        #4a6e4a 0%, #5a7850 10%, #4e6c46 22%,
-        #8a8a60 32%, #7a7a52 42%, #4e6a46 54%,
-        #5a7450 64%, #8e8c62 74%, #4a6a44 84%,
-        #607858 94%, #4e6848 100%),
-      /* Mörkare djup */
-      radial-gradient(ellipse 300px 200px at 8% 32%, #2a3a28 0%, transparent 65%),
-      radial-gradient(ellipse 250px 180px at 92% 22%, #283628 0%, transparent 60%);
-    filter: blur(38px) saturate(0.9) brightness(0.92);
-  }
+/* Subtle grain */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
 
-  header {
-    background: rgba(0,0,0,0.18);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 14px 32px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
+/* ── HEADER ── */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(7,18,10,0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
 
-  header h1 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: rgba(255,255,255,0.85);
-    letter-spacing: 0.02em;
-  }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
 
-  header p { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--green-dim);
+  border: 1px solid rgba(61,220,110,0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .container { max-width: 1180px; margin: 0 auto; padding: 28px 24px; }
+.logo-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.12em;
+  color: var(--white-hi);
+  line-height: 1;
+}
 
-  /* Klubbrad */
-  .club-bar {
-    background: rgba(255,255,255,0.18);
-    backdrop-filter: blur(22px) saturate(1.4);
-    -webkit-backdrop-filter: blur(22px) saturate(1.4);
-    border: 1px solid rgba(255,255,255,0.32);
-    border-radius: 14px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.4);
-  }
+.logo-sub {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--green-accent);
+  opacity: 0.75;
+  margin-top: 1px;
+}
 
-  .club-bar > span { color: rgba(255,255,255,0.6); }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 
-  .club-bar > span {
-    display: block;
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #aaa;
-    margin-bottom: 11px;
-  }
+.settings-btn {
+  background: var(--white-ghost);
+  border: 1px solid var(--border);
+  color: var(--white-mid);
+  border-radius: 8px;
+  padding: 7px 13px;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 600;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.settings-btn:hover { background: var(--white-lo); color: var(--white-hi); border-color: var(--border-hi); }
+.settings-btn.has-key { color: var(--green-accent); border-color: rgba(61,220,110,0.35); }
 
-  .club-groups { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+/* ── MAIN LAYOUT ── */
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
 
-  .club-group-label {
-    font-size: 0.63rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #c8c0b4;
-    padding: 0 8px;
-  }
+/* ── CLUB BAR ── */
+.club-bar {
+  margin-bottom: 24px;
+  animation: fadeUp 0.4s ease both;
+}
 
-  .club-btn {
-    background: #f2ede6;
-    border: 1px solid #ddd6ca;
-    color: #555;
-    padding: 5px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.78rem;
-    font-weight: 500;
-    transition: all 0.14s;
-    font-family: inherit;
-  }
+.club-bar-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--white-mid);
+  margin-bottom: 10px;
+}
 
-  .club-btn:hover { background: #e8e2d8; border-color: #bbb4a8; color: #222; }
+.club-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.club-scroll::-webkit-scrollbar { display: none; }
 
-  .club-btn.active {
-    background: #2a3d2c;
-    border-color: #2a3d2c;
-    color: #f0ede6;
-    font-weight: 600;
-  }
+.club-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
 
-  /* Jämförelsepaneler — lika höga */
-  .comparison {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
-    align-items: stretch;
-  }
+.club-group + .club-group {
+  padding-left: 10px;
+  margin-left: 4px;
+  border-left: 1px solid var(--border);
+}
 
-  @media (max-width: 680px) { .comparison { grid-template-columns: 1fr; } }
+.club-group-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+  padding-right: 4px;
+  white-space: nowrap;
+}
 
-  .panel {
-    background: rgba(255,255,255,0.14);
-    backdrop-filter: blur(28px) saturate(1.5);
-    -webkit-backdrop-filter: blur(28px) saturate(1.5);
-    border: 1px solid rgba(255,255,255,0.28);
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.35);
-    display: flex;
-    flex-direction: column;
-  }
+.club-btn {
+  background: var(--white-ghost);
+  border: 1px solid var(--border);
+  color: var(--white-mid);
+  padding: 5px 13px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 500;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: all 0.13s;
+  flex-shrink: 0;
+}
+.club-btn:hover { background: var(--white-lo); color: var(--white-hi); border-color: var(--border-hi); }
+.club-btn.active {
+  background: var(--green-accent);
+  border-color: var(--green-accent);
+  color: #04100a;
+  font-weight: 700;
+}
 
-  .panel-header {
-    padding: 12px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(255,255,255,0.15);
-    flex-shrink: 0;
-  }
+/* ── VIDEO PANEL ── */
+.video-panel {
+  background: var(--green-panel);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.06);
+  margin-bottom: 20px;
+  animation: fadeUp 0.45s 0.05s ease both;
+}
 
-  .panel-title { font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+.video-panel-header {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
 
-  .panel-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 2px 9px;
-    border-radius: 20px;
-    letter-spacing: 0.06em;
-  }
+.panel-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--white-hi);
+}
 
-  .label-you { background: rgba(80,200,120,0.25); color: #b6f0c6; border: 1px solid rgba(80,200,120,0.3); }
-  .label-pro { background: rgba(240,180,80,0.25); color: #f5d98a; border: 1px solid rgba(240,180,80,0.3); }
+.panel-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--green-dim);
+  color: var(--green-accent);
+  border: 1px solid rgba(61,220,110,0.3);
+}
 
-  /* Videoyta — fast höjd, ingen aspect-ratio som skapar ojämnheter */
-  .video-area {
-    flex: 1;
-    min-height: 220px;
-    background: rgba(0,0,0,0.25);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
+/* ── VIDEO AREA ── */
+.video-area {
+  position: relative;
+  background: #000;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .video-area video { width: 100%; height: 100%; object-fit: contain; }
+.video-area video {
+  width: 100%;
+  height: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  display: block;
+}
 
-  .upload-prompt {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    padding: 28px 20px;
-    text-align: center;
-    transition: opacity 0.18s;
-  }
+/* ── UPLOAD PROMPT ── */
+.upload-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 48px 24px;
+  width: 100%;
+}
 
-  .upload-prompt:hover { opacity: 0.72; }
+.upload-prompt-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.1em;
+  color: var(--white-mid);
+}
 
-  .upload-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #242424;
-    border: 1.5px dashed #4a4a4a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.upload-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-  .upload-prompt p { color: #bbb; font-size: 0.84rem; font-weight: 500; }
-  .upload-prompt span { color: #666; font-size: 0.71rem; }
+.upload-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--white-ghost);
+  min-width: 100px;
+  transition: all 0.15s;
+}
+.upload-option:hover {
+  background: var(--white-lo);
+  border-color: var(--border-hi);
+  transform: translateY(-1px);
+}
 
-  input[type="file"] { display: none; }
+.upload-option-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(61,220,110,0.1);
+  border: 1px solid rgba(61,220,110,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .panel-footer {
-    padding: 10px 16px;
-    border-top: 1px solid rgba(255,255,255,0.12);
-    background: rgba(0,0,0,0.08);
-    flex-shrink: 0;
-  }
+.upload-option-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--white-hi);
+}
 
-  .btn {
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.35);
-    color: #fff;
-    padding: 6px 14px;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 0.77rem;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: background 0.14s;
-    font-family: inherit;
-    backdrop-filter: blur(8px);
-  }
+.upload-option-sub {
+  font-size: 0.62rem;
+  color: var(--white-mid);
+}
 
-  .btn:hover { background: rgba(255,255,255,0.32); }
-  .btn-sm { padding: 5px 11px; font-size: 0.72rem; }
+input[type="file"] { display: none; }
 
-  /* Tips-panel */
-  .tips-panel {
-    background: rgba(255,255,255,0.13);
-    backdrop-filter: blur(24px) saturate(1.4);
-    -webkit-backdrop-filter: blur(24px) saturate(1.4);
-    border: 1px solid rgba(255,255,255,0.24);
-    border-radius: 14px;
-    padding: 20px 22px;
-    margin-bottom: 24px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3);
-  }
+/* ── CUSTOM VIDEO CONTROLS ── */
+.video-controls-bar {
+  display: none;
+  flex-direction: column;
+  gap: 0;
+  background: rgba(7,18,10,0.92);
+  backdrop-filter: blur(12px);
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--border);
+}
 
-  .tips-panel h2 {
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.45);
-    margin-bottom: 14px;
-  }
+.video-controls-bar.visible { display: flex; }
 
-  .tips-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
-    gap: 10px;
-  }
+/* Scrubber */
+.scrubber-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
 
-  .tip-card {
-    background: rgba(255,255,255,0.1);
-    border-radius: 8px;
-    padding: 13px 15px;
-    border-left: 3px solid rgba(100,200,120,0.6);
-    border-top: 1px solid rgba(255,255,255,0.18);
-  }
+.time-display {
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  color: var(--white-mid);
+  white-space: nowrap;
+  min-width: 72px;
+  text-align: right;
+}
 
-  .tip-card h3 { font-size: 0.77rem; font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 4px; }
-  .tip-card p { font-size: 0.74rem; color: rgba(255,255,255,0.6); line-height: 1.55; }
+.scrubber {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+.scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--green-accent);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(61,220,110,0.5);
+}
+.scrubber::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--green-accent);
+  cursor: pointer;
+  border: none;
+}
 
-  .video-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .club-name-display { font-size: 0.76rem; color: rgba(255,255,255,0.45); }
+/* Controls row */
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-  .sync-btn {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.28);
-    color: rgba(255,255,255,0.8);
-    padding: 5px 12px;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 0.72rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-left: auto;
-    font-family: inherit;
-    transition: all 0.14s;
-  }
+.ctrl-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--white-mid);
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.13s;
+  font-family: inherit;
+}
+.ctrl-btn:hover { background: var(--white-ghost); color: var(--white-hi); }
 
-  .sync-btn:hover { background: rgba(255,255,255,0.25); }
+.play-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--green-accent);
+  color: #04100a;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.13s;
+  flex-shrink: 0;
+}
+.play-btn:hover { background: #5aeB82; transform: scale(1.05); }
+.play-btn:active { transform: scale(0.96); }
 
-  /* Mobil */
-  @media (max-width: 500px) {
-    header { padding: 14px 16px; }
-    header h1 { font-size: 1rem; }
-    .container { padding: 16px 12px; }
-    .club-bar { padding: 12px 14px; }
-    .club-btn { padding: 7px 14px; font-size: 0.82rem; }
-    .panel-header { padding: 11px 14px; }
-    .panel-footer { padding: 9px 12px; }
-    .video-area { min-height: 180px; }
-    .upload-prompt > div { gap: 8px; }
-    .upload-prompt label { padding: 12px 10px; min-width: 80px; min-height: 90px; }
-    .tips-grid { grid-template-columns: 1fr 1fr; }
-  }
+.speed-group {
+  display: flex;
+  gap: 3px;
+  background: var(--white-ghost);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px;
+  margin-left: auto;
+}
 
-  .club-btn {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.25);
-    color: rgba(255,255,255,0.85);
-  }
+.speed-btn {
+  background: none;
+  border: none;
+  color: var(--white-mid);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.speed-btn:hover { color: var(--white-hi); background: var(--white-ghost); }
+.speed-btn.active { background: var(--green-accent); color: #04100a; }
 
-  .club-btn:hover { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.4); color: #fff; }
+.loop-btn.active { color: var(--green-accent); }
 
-  .club-btn.active {
-    background: rgba(255,255,255,0.9);
-    border-color: rgba(255,255,255,0.9);
-    color: #1e3d22;
-    font-weight: 700;
-  }
+.club-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--white-mid);
+  background: var(--white-ghost);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
 
-  .club-group-label { color: rgba(255,255,255,0.3); }
+/* ── PANEL FOOTER (controls when no video) ── */
+.panel-footer {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
-  /* === AI-ANALYS === */
-  .api-modal-backdrop {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  }
-  .api-modal {
-    background: #1a2e1c; border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 16px; padding: 28px 32px; max-width: 420px; width: 90%;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
-  }
-  .api-modal h2 { color: rgba(255,255,255,0.9); font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
-  .api-modal p { color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-bottom: 18px; line-height: 1.65; }
-  .api-modal input {
-    width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 0.84rem;
-    font-family: 'Courier New', monospace; margin-bottom: 8px; outline: none; box-sizing: border-box;
-  }
-  .api-modal input:focus { border-color: rgba(100,200,120,0.6); }
-  .api-modal-note { font-size: 0.72rem; color: rgba(255,255,255,0.3); margin-bottom: 20px; }
-  .api-modal-note strong { color: rgba(255,255,255,0.5); }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.clear-btn {
+  background: rgba(255,70,70,0.1);
+  border: 1px solid rgba(255,70,70,0.25);
+  color: rgba(255,130,130,0.85);
+  padding: 6px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: inherit;
+  transition: background 0.13s;
+}
+.clear-btn:hover { background: rgba(255,70,70,0.22); }
 
-  .settings-btn {
-    margin-left: auto; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
-    color: rgba(255,255,255,0.6); border-radius: 8px; padding: 6px 12px;
-    cursor: pointer; font-size: 0.76rem; font-weight: 500; display: flex; align-items: center; gap: 6px;
-    transition: background 0.14s; font-family: inherit; white-space: nowrap;
-  }
-  .settings-btn:hover { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); }
-  .settings-btn.has-key { color: rgba(100,210,130,0.85); border-color: rgba(100,200,120,0.3); }
+.analyze-btn {
+  margin-left: auto;
+  background: var(--green-dim);
+  border: 1px solid rgba(61,220,110,0.4);
+  color: var(--green-accent);
+  padding: 7px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: inherit;
+  display: none;
+  align-items: center;
+  gap: 7px;
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+}
+.analyze-btn:hover:not(:disabled) {
+  background: rgba(61,220,110,0.28);
+  box-shadow: 0 0 18px rgba(61,220,110,0.2);
+}
+.analyze-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-  .clear-btn {
-    background: rgba(255,80,80,0.12); border: 1px solid rgba(255,80,80,0.28);
-    color: rgba(255,150,150,0.85); padding: 5px 11px; border-radius: 7px;
-    cursor: pointer; font-size: 0.72rem; font-weight: 600; font-family: inherit;
-    transition: background 0.14s;
-  }
-  .clear-btn:hover { background: rgba(255,80,80,0.25); }
+/* ── AI ANALYSIS PANEL ── */
+.analysis-panel {
+  background: var(--green-panel);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 20px;
+  display: none;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.3s ease both;
+}
 
-  .analyze-btn {
-    background: rgba(100,200,120,0.2); border: 1px solid rgba(100,200,120,0.38);
-    color: #b6f0c6; padding: 6px 14px; border-radius: 7px; cursor: pointer;
-    font-size: 0.77rem; font-weight: 600; transition: all 0.14s; font-family: inherit;
-    display: none; align-items: center; gap: 6px; white-space: nowrap; margin-left: auto;
-  }
-  .analyze-btn:hover:not(:disabled) { background: rgba(100,200,120,0.35); }
-  .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.analysis-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  .analysis-panel {
-    background: rgba(255,255,255,0.11); backdrop-filter: blur(24px) saturate(1.4);
-    -webkit-backdrop-filter: blur(24px) saturate(1.4);
-    border: 1px solid rgba(255,255,255,0.2); border-radius: 14px;
-    overflow: hidden; margin-bottom: 24px; display: none;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.25);
-  }
-  .analysis-header {
-    padding: 13px 20px; border-bottom: 1px solid rgba(255,255,255,0.12);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .analysis-header h2 {
-    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.1em; color: rgba(255,255,255,0.45); margin: 0;
-  }
-  .analysis-body { padding: 20px 24px; }
-  .analysis-loading {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 14px; padding: 36px 20px; color: rgba(255,255,255,0.55); font-size: 0.84rem;
-  }
-  .spinner {
-    width: 30px; height: 30px; border: 2px solid rgba(255,255,255,0.12);
-    border-top-color: rgba(100,200,120,0.75); border-radius: 50%;
-    animation: spin 0.75s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+.analysis-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--green-accent);
+}
 
-  .frame-strip { display: flex; gap: 6px; margin-bottom: 18px; overflow-x: auto; padding-bottom: 4px; }
-  .frame-strip img {
-    height: 68px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.14);
-    flex-shrink: 0; object-fit: cover;
-  }
-  .frame-label {
-    font-size: 0.6rem; color: rgba(255,255,255,0.35); text-align: center;
-    margin-top: 3px; white-space: nowrap;
-  }
-  .frame-item { display: flex; flex-direction: column; }
+.close-btn {
+  background: var(--white-ghost);
+  border: 1px solid var(--border);
+  color: var(--white-mid);
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.13s;
+}
+.close-btn:hover { background: var(--white-lo); color: var(--white-hi); }
 
-  .analysis-content h3 {
-    font-size: 0.72rem; font-weight: 700; color: rgba(100,215,130,0.85);
-    text-transform: uppercase; letter-spacing: 0.09em; margin: 20px 0 9px;
-    padding-bottom: 5px; border-bottom: 1px solid rgba(100,200,120,0.2);
-  }
-  .analysis-content h3:first-child { margin-top: 0; }
-  .analysis-content p { font-size: 0.85rem; color: rgba(255,255,255,0.72); line-height: 1.72; margin: 0 0 8px; }
-  .analysis-content ul, .analysis-content ol { padding-left: 18px; margin: 4px 0 10px; }
-  .analysis-content li { font-size: 0.84rem; color: rgba(255,255,255,0.7); line-height: 1.65; margin-bottom: 5px; }
-  .analysis-error { color: #f08080; font-size: 0.85rem; padding: 24px 0; }
+.analysis-body { padding: 22px 24px; }
 
-  @media (max-width: 500px) {
-    .settings-btn span { display: none; }
-    .analysis-body { padding: 16px; }
-  }
+.analysis-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 40px 20px;
+  color: var(--white-mid);
+  font-size: 0.84rem;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--border);
+  border-top-color: var(--green-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.frame-strip {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.frame-strip::-webkit-scrollbar { display: none; }
+
+.frame-item { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.frame-item img {
+  height: 72px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  object-fit: cover;
+}
+.frame-item span {
+  font-size: 0.58rem;
+  color: var(--white-mid);
+  margin-top: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.analysis-content h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  color: var(--green-accent);
+  margin: 22px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(61,220,110,0.18);
+}
+.analysis-content h3:first-child { margin-top: 0; }
+.analysis-content p { font-size: 0.85rem; color: rgba(255,255,255,0.72); line-height: 1.75; margin: 0 0 8px; }
+.analysis-content ul { padding-left: 18px; margin: 4px 0 10px; }
+.analysis-content li { font-size: 0.84rem; color: rgba(255,255,255,0.68); line-height: 1.7; margin-bottom: 5px; }
+.analysis-error { color: #f08080; font-size: 0.85rem; padding: 24px 0; text-align: center; }
+
+/* ── TIPS PANEL ── */
+.tips-panel {
+  background: var(--green-panel);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.5s 0.1s ease both;
+}
+
+.tips-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--white-mid);
+  margin-bottom: 14px;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.tip-card {
+  background: var(--white-ghost);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  border-left: 2px solid rgba(61,220,110,0.5);
+  transition: border-color 0.15s;
+}
+.tip-card:hover { border-left-color: var(--green-accent); }
+.tip-card h3 { font-size: 0.78rem; font-weight: 700; color: var(--white-hi); margin-bottom: 5px; }
+.tip-card p { font-size: 0.73rem; color: var(--white-mid); line-height: 1.6; }
+
+/* ── API MODAL ── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modal {
+  background: #0f2214;
+  border: 1px solid var(--border-hi);
+  border-radius: 18px;
+  padding: 30px 32px;
+  max-width: 420px;
+  width: 92%;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+}
+
+.modal h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+  color: var(--white-hi);
+  margin-bottom: 8px;
+}
+.modal p { font-size: 0.8rem; color: var(--white-mid); margin-bottom: 20px; line-height: 1.65; }
+
+.modal input {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 14px;
+  color: var(--white-hi);
+  font-size: 0.82rem;
+  font-family: 'Courier New', monospace;
+  outline: none;
+  margin-bottom: 8px;
+}
+.modal input:focus { border-color: rgba(61,220,110,0.5); }
+
+.modal-note { font-size: 0.7rem; color: rgba(255,255,255,0.28); margin-bottom: 22px; }
+.modal-note strong { color: var(--white-mid); }
+
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+.btn {
+  background: var(--white-ghost);
+  border: 1px solid var(--border);
+  color: var(--white-mid);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.77rem;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.13s;
+}
+.btn:hover { background: var(--white-lo); color: var(--white-hi); }
+
+.btn-primary {
+  background: var(--green-dim);
+  border-color: rgba(61,220,110,0.4);
+  color: var(--green-accent);
+}
+.btn-primary:hover { background: rgba(61,220,110,0.28); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  header { padding: 0 16px; }
+  .logo-sub { display: none; }
+  .container { padding: 20px 14px 48px; }
+  .video-area { min-height: 240px; }
+  .upload-prompt { padding: 32px 16px; gap: 16px; }
+  .upload-option { padding: 14px; min-width: 80px; }
+  .tips-grid { grid-template-columns: 1fr 1fr; }
+  .analysis-body { padding: 16px; }
+  .settings-btn span { display: none; }
+  .speed-btn { padding: 3px 6px; }
+}
 </style>
-<!-- Google Analytics — ersätt G-BGHRWYV841 med ditt mätnings-ID -->
+<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-BGHRWYV841"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -462,187 +766,145 @@
 </head>
 <body>
 
-<!-- API-nyckel modal -->
-<div id="apiModal" class="api-modal-backdrop" style="display:none;" onclick="if(event.target===this)closeApiModal()">
-  <div class="api-modal">
-    <h2>Anthropic API-nyckel</h2>
-    <p>Nyckeln används enbart i din webbläsare för att anropa Claude. Den sparas lokalt på din enhet och skickas aldrig till någon annan server.</p>
+<!-- API Modal -->
+<div id="apiModal" class="modal-backdrop" style="display:none" onclick="if(event.target===this)closeApiModal()">
+  <div class="modal">
+    <h2>API-nyckel</h2>
+    <p>Nyckeln används enbart i din webbläsare för att anropa Claude. Den sparas lokalt och skickas aldrig till någon annan server.</p>
     <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" autocomplete="off" onkeydown="if(event.key==='Enter')saveApiKey()">
-    <div class="api-modal-note">Hämta din nyckel på <strong>console.anthropic.com</strong> → API Keys</div>
+    <div class="modal-note">Hämta på <strong>console.anthropic.com</strong> → API Keys</div>
     <div class="modal-actions">
-      <button class="btn btn-sm" onclick="closeApiModal()">Avbryt</button>
-      <button class="btn btn-sm" style="background:rgba(100,200,120,0.28);border-color:rgba(100,200,120,0.45);color:#b6f0c6;" onclick="saveApiKey()">Spara nyckel</button>
+      <button class="btn" onclick="closeApiModal()">Avbryt</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">Spara</button>
     </div>
   </div>
 </div>
 
 <header>
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-    <circle cx="14" cy="10" r="5" fill="#7a9a7e"/>
-    <rect x="13" y="15" width="2" height="9" rx="1" fill="#7a9a7e"/>
-    <rect x="7" y="24" width="14" height="1.5" rx="0.75" fill="#4a6a4e"/>
-  </svg>
-  <div>
-    <h1>Swing Analyzer</h1>
-    <p>Välj klubba · Ladda upp din swing · Jämför med proffsen</p>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="5" r="3" fill="#3ddc6e"/>
+        <rect x="7.2" y="8" width="1.6" height="5" rx="0.8" fill="#3ddc6e"/>
+        <rect x="4" y="13" width="8" height="1.2" rx="0.6" fill="rgba(61,220,110,0.5)"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">Swing Analyzer</div>
+      <div class="logo-sub">AI-driven coaching</div>
+    </div>
   </div>
-  <button class="settings-btn" id="settingsBtn" onclick="openApiModal()">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <span id="settingsBtnLabel">API-nyckel</span>
-  </button>
+  <div class="header-right">
+    <button class="settings-btn" id="settingsBtn" onclick="openApiModal()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span id="settingsBtnLabel">API-nyckel</span>
+    </button>
+  </div>
 </header>
 
 <div class="container">
 
+  <!-- Club selector -->
   <div class="club-bar">
-    <span>Välj klubba</span>
-    <div class="club-groups" id="clubGroups"></div>
+    <div class="club-bar-label">Välj klubba</div>
+    <div class="club-scroll" id="clubGroups"></div>
   </div>
 
-  <div class="comparison">
-    <div class="panel">
-      <div class="panel-header">
-        <span class="panel-title">Din swing</span>
-        <span class="panel-label label-you">DU</span>
-      </div>
-      <div class="video-area" id="yourVideoArea">
-        <div class="upload-prompt" id="uploadPrompt" style="gap:18px;">
-          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-            <!-- Ladda upp fil (original) -->
-            <label for="swingUpload" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
-              <div class="upload-icon">
-                <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-              </div>
-              <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Ladda upp</span>
-              <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Välj fil</span>
-            </label>
-            <!-- Kamerarulle (mobil) -->
-            <label for="swingGallery" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
-              <div class="upload-icon">
-                <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-              </div>
-              <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Kamerarulle</span>
-              <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Från telefon</span>
-            </label>
-            <!-- Spela in direkt -->
-            <label for="swingRecord" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
-              <div class="upload-icon">
-                <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-              </div>
-              <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Spela in</span>
-              <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Öppna kamera</span>
-            </label>
-          </div>
-        </div>
-        <input type="file" id="swingUpload" accept="video/*">
-        <input type="file" id="swingGallery" accept="video/*" accept="video/*">
-        <input type="file" id="swingRecord" accept="video/*" capture="camcorder">
-      </div>
-      <div class="panel-footer">
-        <div class="video-controls">
-          <span class="club-name-display" id="yourClubLabel">Ingen klubba vald</span>
-          <button class="clear-btn" id="clearYourBtn" style="display:none" onclick="clearYourVideo()">✕ Ta bort</button>
-          <button class="sync-btn" id="syncBtn" onclick="syncVideos()" style="display:none">⟳ Starta om båda</button>
-          <button class="analyze-btn" id="analyzeBtn" onclick="analyzeSwing()">✦ Analysera swing</button>
-        </div>
-      </div>
+  <!-- Video panel -->
+  <div class="video-panel">
+    <div class="video-panel-header">
+      <span class="panel-title">Din Swing</span>
+      <span class="panel-badge" id="clubBadge">Välj klubba</span>
     </div>
 
-    <div class="panel">
-      <div class="panel-header">
-        <span class="panel-title">Pro swing</span>
-        <span class="panel-label label-pro">PRO</span>
-      </div>
-      <!-- Tab bar -->
-      <div style="display:flex;border-bottom:1px solid #f0ede8;">
-        <button id="proTab1" onclick="switchProTab('find')" style="flex:1;padding:9px 0;font-size:0.73rem;font-weight:600;cursor:pointer;border:none;border-bottom:2px solid rgba(255,255,255,0.9);background:transparent;color:rgba(255,255,255,0.95);font-family:inherit;">1 · Hitta &amp; ladda ner</button>
-        <button id="proTab2" onclick="switchProTab('upload')" style="flex:1;padding:9px 0;font-size:0.73rem;font-weight:600;cursor:pointer;border:none;border-bottom:2px solid transparent;background:transparent;color:rgba(255,255,255,0.4);font-family:inherit;">2 · Ladda upp video</button>
-      </div>
-
-      <!-- Step 1: find & download -->
-      <div id="proFindPane" style="display:flex;flex-direction:column;height:calc(100% - 37px);">
-        <div class="video-area" style="flex-direction:column;gap:0;overflow-y:auto;align-items:stretch;justify-content:flex-start;flex:1;">
-          <div id="proPlaceholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;padding:20px;">
-            <svg width="40" height="40" fill="none" stroke="#ccc" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:0.6"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
-            <p style="color:#bbb;font-size:0.85rem;text-align:center;">Välj en klubba ovan för att se förvalda pro-svingar</p>
-          </div>
-          <div id="proClips" style="display:none;width:100%;"></div>
-        </div>
-        <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.1);">
-          <p style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Så här gör du</p>
-          <ol style="font-size:0.75rem;color:rgba(255,255,255,0.7);padding-left:16px;line-height:2;">
-            <li>Klicka på en pro nedan — YouTube öppnas</li>
-            <li>Kopiera videons URL</li>
-            <li>Gå till <a href="https://cobalt.tools" target="_blank" rel="noopener" style="color:#1c2b1e;font-weight:600;text-decoration:underline;">cobalt.tools</a> och klistra in URL:en</li>
-            <li>Ladda ner videon till datorn</li>
-            <li>Gå till fliken <strong>2 · Ladda upp video</strong></li>
-          </ol>
-        </div>
-      </div>
-
-      <!-- Step 2: upload -->
-      <div id="proUploadPane" style="display:none;flex-direction:column;height:calc(100% - 37px);">
-        <div class="video-area" id="proVideoArea" style="flex:1;">
-          <div class="upload-prompt" id="proUploadPrompt" style="gap:18px;">
-            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-              <label for="proUpload" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
-                <div class="upload-icon">
-                  <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                </div>
-                <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Ladda upp</span>
-                <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Välj fil</span>
-              </label>
-              <label for="proGallery" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
-                <div class="upload-icon">
-                  <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-                </div>
-                <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Kamerarulle</span>
-                <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Från telefon</span>
-              </label>
-              <label for="proRecord" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
-                <div class="upload-icon">
-                  <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-                </div>
-                <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Spela in</span>
-                <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Öppna kamera</span>
-              </label>
+    <div class="video-area" id="videoArea">
+      <div class="upload-prompt" id="uploadPrompt">
+        <div class="upload-prompt-title">Ladda upp din swing</div>
+        <div class="upload-options">
+          <label for="swingUpload" class="upload-option">
+            <div class="upload-option-icon">
+              <svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
             </div>
-          </div>
-          <input type="file" id="proUpload" accept="video/*">
-          <input type="file" id="proGallery" accept="video/*" accept="video/*">
-          <input type="file" id="proRecord" accept="video/*" capture="camcorder">
+            <span class="upload-option-label">Ladda upp</span>
+            <span class="upload-option-sub">Välj fil</span>
+          </label>
+          <label for="swingGallery" class="upload-option">
+            <div class="upload-option-icon">
+              <svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+            </div>
+            <span class="upload-option-label">Kamerarulle</span>
+            <span class="upload-option-sub">Från telefon</span>
+          </label>
+          <label for="swingRecord" class="upload-option">
+            <div class="upload-option-icon">
+              <svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            </div>
+            <span class="upload-option-label">Spela in</span>
+            <span class="upload-option-sub">Öppna kamera</span>
+          </label>
         </div>
-        <div style="padding:10px 16px;border-top:1px solid #2d5a3d;display:flex;align-items:center;gap:8px;">
-          <span class="club-name-display" id="proClubLabel">Ingen video vald</span>
-          <button class="clear-btn" id="clearProBtn" style="display:none" onclick="clearProVideo()">✕ Ta bort</button>
+      </div>
+      <input type="file" id="swingUpload" accept="video/*">
+      <input type="file" id="swingGallery" accept="video/*">
+      <input type="file" id="swingRecord" accept="video/*" capture="camcorder">
+    </div>
+
+    <!-- Custom video controls -->
+    <div class="video-controls-bar" id="videoControlsBar">
+      <div class="scrubber-row">
+        <input type="range" class="scrubber" id="scrubber" min="0" step="0.01" value="0">
+        <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+      </div>
+      <div class="controls-row">
+        <button class="play-btn" id="playBtn" onclick="togglePlay()" title="Spela/Pausa (mellanslag)">
+          <svg id="playIcon" width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+        <button class="ctrl-btn loop-btn" id="loopBtn" onclick="toggleLoop()" title="Loopa">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="17,1 21,5 17,9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+        </button>
+        <span class="club-pill" id="clubPill">—</span>
+        <div class="speed-group">
+          <button class="speed-btn" data-speed="0.25" onclick="setSpeed(0.25)">¼×</button>
+          <button class="speed-btn" data-speed="0.5" onclick="setSpeed(0.5)">½×</button>
+          <button class="speed-btn active" data-speed="1" onclick="setSpeed(1)">1×</button>
         </div>
       </div>
     </div>
+
+    <!-- Footer (clear + analyze) -->
+    <div class="panel-footer" id="panelFooter" style="display:none">
+      <button class="clear-btn" onclick="clearVideo()">✕ Ta bort</button>
+      <button class="analyze-btn" id="analyzeBtn" onclick="analyzeSwing()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Analysera swing
+      </button>
+    </div>
   </div>
 
-  <!-- AI-analys panel -->
+  <!-- AI Analysis panel -->
   <div class="analysis-panel" id="analysisPanel">
     <div class="analysis-header">
-      <h2>✦ AI-analys av din swing</h2>
-      <button class="btn btn-sm" onclick="closeAnalysis()">✕ Stäng</button>
+      <span class="analysis-title">AI-analys</span>
+      <button class="close-btn" onclick="closeAnalysis()">✕</button>
     </div>
     <div class="analysis-body" id="analysisBody"></div>
   </div>
 
+  <!-- Tips panel -->
   <div class="tips-panel">
-    <h2 id="tipsTitle">Vad du ska titta efter — välj en klubba ovan</h2>
+    <div class="tips-label" id="tipsTitle">Välj en klubba för att se tips</div>
     <div class="tips-grid" id="tipsGrid">
       <div class="tip-card">
         <h3>Kom igång</h3>
-        <p>Välj din klubba ovan, ladda upp din swing till vänster, och hitta en pro-swing till höger att jämföra med.</p>
+        <p>Välj klubba ovan, ladda upp din swing och tryck Analysera för AI-coaching.</p>
       </div>
       <div class="tip-card">
-        <h3>Kameravinkel</h3>
-        <p>Filma framifrån eller bakifrån längs bollen. Försök matcha samma vinkel som pro-videon för en rättvis jämförelse.</p>
+        <h3>Bästa kameravinkel</h3>
+        <p>Filma framifrån eller bakifrån längs bollen för tydligast analys.</p>
       </div>
       <div class="tip-card">
-        <h3>Pausa och jämför</h3>
-        <p>Pausa båda videorna vid samma position — adress, topp av backswing, impact, finish — och jämför bild för bild.</p>
+        <h3>Slow motion</h3>
+        <p>Använd ½× eller ¼× för att studera din teknik i detalj.</p>
       </div>
     </div>
   </div>
@@ -650,6 +912,7 @@
 </div>
 
 <script>
+// ── CLUBS & TIPS ──
 const CLUBS = [
   { id: 'driver', label: 'Driver',   group: 'Woods' },
   { id: '3w',     label: '3-Wood',   group: 'Woods' },
@@ -671,102 +934,84 @@ const CLUBS = [
 
 const TIPS = {
   driver: [
-    { title: 'Ball position', body: 'Inside the left heel. Tee it high — half the ball above the club face.' },
-    { title: 'Spine tilt', body: 'Slight tilt away from the target at address to promote an upward attack angle.' },
-    { title: 'Wide arc', body: 'Pros keep the club head low and slow in the takeaway, creating a wide swing arc.' },
-    { title: 'Hip rotation', body: 'Hips clear hard through impact before the arms fully extend toward the target.' },
-    { title: 'Head behind ball', body: 'Head stays behind the ball at impact — a key indicator of an upward strike.' },
-    { title: 'High finish', body: 'Finish high and balanced, all weight transferred onto the lead foot.' },
+    { title: 'Bollposition', body: 'Innanför vänster häl. Tee högt — halva bollen ovanför klubbhuvudet.' },
+    { title: 'Ryggradslutning', body: 'Lätt lutning bort från målet vid address för uppåtgående slagvinkel.' },
+    { title: 'Bred båge', body: 'Håll klubbhuvudet lågt och långsamt i takeaway för maximal svängbåge.' },
+    { title: 'Höftrotation', body: 'Höfterna roterar hårt genom impact innan armarna sträcks mot målet.' },
+    { title: 'Huvud bakom bollen', body: 'Huvudet stannar bakom bollen vid impact — tecken på uppåtgående slag.' },
+    { title: 'Hög finish', body: 'Avsluta högt och balanserat med all vikt på det ledande benet.' },
   ],
   '3w': [
-    { title: 'Ball position', body: 'One ball width inside the left heel. Slightly forward of iron position.' },
-    { title: 'Sweep, don\'t dig', body: 'Sweep the turf or catch it slightly on the upswing from a tee. No divot needed.' },
-    { title: 'Minimal shaft lean', body: 'Unlike irons, hands are barely ahead of the ball at address.' },
-    { title: 'Smooth transition', body: 'Pros never rush the downswing. Watch the pause at the top.' },
+    { title: 'Bollposition', body: 'En bollbredd innanför vänster häl.' },
+    { title: 'Svep, gräv inte', body: 'Svep över gräset eller träffa svagt uppåt från tee. Ingen divot behövs.' },
+    { title: 'Minimal skaftlutning', body: 'Händerna knappt framför bollen vid address, till skillnad från järn.' },
+    { title: 'Mjuk övergång', body: 'Proffsen rusar aldrig nedsvingen. Notera pausen vid toppen.' },
   ],
   '5w': [
-    { title: 'Ball position', body: 'One to two ball widths inside the left heel.' },
-    { title: 'Shallow attack', body: 'Slightly more upright plane than driver but still a sweeping motion.' },
-    { title: 'Full wrist hinge', body: 'Club should reach parallel or just short at the top of the backswing.' },
+    { title: 'Bollposition', body: 'En till två bollbredder innanför vänster häl.' },
+    { title: 'Grunt angrepp', body: 'Lite mer upprätt plan än driver men fortfarande svepande rörelse.' },
+    { title: 'Full handledsgångjärn', body: 'Klubban bör nå parallellt eller strax under vid toppen.' },
   ],
   '3h': [
-    { title: 'Versatile contact', body: 'Hybrids can be swept off the fairway or struck with a slight downward blow — both work.' },
-    { title: 'Stance width', body: 'Slightly wider than mid-irons. Ball position mid-to-forward.' },
-    { title: 'Shallow angle', body: 'More like a fairway wood than an iron. Avoid steep, chopping swings.' },
+    { title: 'Mångsidigt kontakt', body: 'Hybrid kan svepas från fairway eller slås med lätt nedåtgående slag.' },
+    { title: 'Stancebredd', body: 'Lite bredare än mellanjärn. Bollposition mitten till framåt.' },
+    { title: 'Grunt angrepp', body: 'Mer som ett fairway wood än ett järn. Undvik brant, hackande svingar.' },
   ],
   '4h': [
-    { title: 'Attack angle', body: 'A slight downward strike (1–2°) is most consistent. Avoid scooping.' },
-    { title: 'Smooth tempo', body: 'Hybrids reward rhythm over speed. Watch the transition in pro swings.' },
+    { title: 'Attackvinkel', body: 'Lätt nedåtgående slag (1–2°) är mest konsekvent. Undvik scooping.' },
+    { title: 'Jämn rytm', body: 'Hybrid belönar rytm framför hastighet. Titta på övergången i prosvingar.' },
   ],
   default_iron: [
-    { title: 'Ball position', body: 'Center for short irons; one ball forward per club as you go longer.' },
-    { title: 'Ball-first contact', body: 'Pros strike the ball first, then turf. Watch where the divot starts.' },
-    { title: 'Forward shaft lean', body: 'Hands ahead of the ball at impact. This compresses and controls the ball.' },
-    { title: 'Hip clearance', body: 'Lead hip rotates toward the target, creating room for the arms to swing through.' },
-    { title: 'Consistent knee flex', body: 'Avoid straightening the lead leg early in the downswing.' },
-    { title: 'Balanced finish', body: 'Weight on lead foot, chest facing target, club over lead shoulder.' },
+    { title: 'Bollposition', body: 'Centrum för korta järn; en bollbredd framåt per klubba längre ut.' },
+    { title: 'Boll-först kontakt', body: 'Proffsen träffar bollen först, sedan torv. Notera var divoten börjar.' },
+    { title: 'Framåt skaftlutning', body: 'Händerna framför bollen vid impact. Komprimerar och kontrollerar bollen.' },
+    { title: 'Höftrensning', body: 'Ledande höft roterar mot målet och skapar utrymme för armarna att svinga.' },
+    { title: 'Konstant knäböjning', body: 'Undvik att räta ut det ledande benet tidigt i nedsvingen.' },
+    { title: 'Balanserad finish', body: 'Vikt på ledande fot, bröstet mot målet, klubban över ledande axel.' },
   ],
   pw: [
-    { title: 'Ball position', body: 'Center of stance. Hands slightly ahead at address.' },
-    { title: 'Three-quarter swing', body: 'Most pros shorten the backswing for better control on wedge shots.' },
-    { title: 'Accelerate through', body: 'Never decelerate into the ball. Commit to a smooth, accelerating strike.' },
-    { title: 'Crisp divot', body: 'A divot pointing at the target after impact is the hallmark of a good wedge.' },
+    { title: 'Bollposition', body: 'Centrum av stance. Händerna lätt framför vid address.' },
+    { title: 'Tre-kvarts sving', body: 'De flesta proffs förkortar backswingen för bättre kontroll på wedge.' },
+    { title: 'Accelerera igenom', body: 'Sakta aldrig ner mot bollen. Accelerera jämnt och bestämt.' },
+    { title: 'Skarp divot', body: 'En divot mot målet efter impact är kännetecknet för ett bra wedgeslag.' },
   ],
   gw: [
-    { title: 'Distance by length', body: 'Vary backswing length, not swing speed, to control distance.' },
-    { title: 'Controlled flight', body: 'Gap wedge should produce a mid-high trajectory with moderate spin.' },
+    { title: 'Distans via längd', body: 'Variera backswingen, inte svinghastigheten, för att kontrollera distansen.' },
+    { title: 'Kontrollerad bana', body: 'Gap wedge ger medelhög bana med måttligt backspin.' },
   ],
   sw: [
-    { title: 'Bunker vs. full', body: 'Watch two things: bunker play (open face, enter sand behind ball) vs. full swing.' },
-    { title: 'Open face', body: 'Sand wedge is often played with a slightly open face for extra bounce and loft.' },
-    { title: 'Soft hands', body: 'Relaxed grip pressure — let the loft and bounce do the work.' },
+    { title: 'Bunker vs full sving', body: 'Bunkerslag: öppen klubbface, träff i sanden bakom bollen.' },
+    { title: 'Öppen face', body: 'Sand wedge spelas ofta med lätt öppen face för extra studs och loft.' },
+    { title: 'Mjuka händer', body: 'Avslappnat grepp — låt loftet och studsen göra jobbet.' },
   ],
   lw: [
-    { title: 'Open face', body: 'Often dramatically open for high lob shots. Club face points skyward at address.' },
-    { title: 'Steep plane', body: 'More upright swing plane than other clubs. Watch how pros get steep through impact.' },
-    { title: 'Always accelerate', body: 'Never decelerate. Commit fully even on short lob shots.' },
+    { title: 'Öppen face', body: 'Ofta dramatiskt öppen för höga lob shots. Clubface pekar mot himlen.' },
+    { title: 'Brant plan', body: 'Mer upprätt svingplan än andra klubbor. Studera hur proffsen går brant.' },
+    { title: 'Accelerera alltid', body: 'Sakta aldrig ner. Satsa fullt ut även på korta lob shots.' },
   ],
   putter: [
-    { title: 'Eyes over ball', body: 'Eyes directly over or slightly inside the ball at address.' },
-    { title: 'Pendulum motion', body: 'Shoulders rock, arms and wrists stay quiet. Watch for any wrist breakdown.' },
-    { title: 'Symmetrical stroke', body: 'Follow-through mirrors backswing length. Consistent tempo throughout.' },
-    { title: 'Still head', body: 'Head stays completely still until the ball is well on its way.' },
-    { title: 'Face angle at impact', body: 'Face angle at impact controls ~80% of starting direction. Watch the putter face closely.' },
+    { title: 'Ögon över bollen', body: 'Ögonen direkt ovanför eller lätt innanför bollen vid address.' },
+    { title: 'Pendelrörelse', body: 'Axlarna vaggar, armar och handleder är stilla. Notera eventuell handledsnedbrytning.' },
+    { title: 'Symmetrisk stroke', body: 'Follow-through speglar backswing-längden. Konsekvent tempo.' },
+    { title: 'Stilla huvud', body: 'Huvudet är helt stilla tills bollen är långt på väg.' },
+    { title: 'Facevinkel vid impact', body: 'Facevinkel vid impact styr ~80% av startlinjen. Titta noga.' },
   ],
 };
 
-const SEARCH = {
-  driver: 'pro golfer driver swing slow motion',
-  '3w':   '3 wood golf swing pro slow motion',
-  '5w':   '5 wood golf swing pro slow motion',
-  '3h':   '3 hybrid golf swing slow motion',
-  '4h':   '4 hybrid golf swing slow motion',
-  '4i':   '4 iron golf swing pro slow motion',
-  '5i':   '5 iron golf swing pro slow motion',
-  '6i':   '6 iron golf swing pro slow motion',
-  '7i':   '7 iron golf swing pro slow motion',
-  '8i':   '8 iron golf swing pro slow motion',
-  '9i':   '9 iron golf swing pro slow motion',
-  pw:     'pitching wedge swing pro slow motion',
-  gw:     'gap wedge golf swing slow motion',
-  sw:     'sand wedge golf swing pro slow motion',
-  lw:     'lob wedge 60 degree golf swing slow motion',
-  putter: 'pro golfer putting stroke slow motion',
-};
-
+// ── INIT ──
 let selectedClub = null;
-let yourVideoEl = null;
+let videoEl = null;
+let isLooping = true;
 
-// Build club buttons
-const container = document.getElementById('clubGroups');
+const clubGroupsEl = document.getElementById('clubGroups');
 const groups = [...new Set(CLUBS.map(c => c.group))];
-groups.forEach((g, gi) => {
+groups.forEach(g => {
   const wrap = document.createElement('div');
-  wrap.style.cssText = `display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-right:${gi < groups.length-1 ? '14px' : '0'};${gi < groups.length-1 ? 'border-right:1px solid #e0dbd4;margin-right:2px;' : ''}`;
-  const gl = document.createElement('span');
-  gl.className = 'club-group-label';
-  gl.textContent = g;
-  wrap.appendChild(gl);
+  wrap.className = 'club-group';
+  const lbl = document.createElement('span');
+  lbl.className = 'club-group-label';
+  lbl.textContent = g;
+  wrap.appendChild(lbl);
   CLUBS.filter(c => c.group === g).forEach(club => {
     const btn = document.createElement('button');
     btn.className = 'club-btn';
@@ -775,282 +1020,191 @@ groups.forEach((g, gi) => {
     btn.onclick = () => selectClub(club);
     wrap.appendChild(btn);
   });
-  container.appendChild(wrap);
+  clubGroupsEl.appendChild(wrap);
 });
 
 function selectClub(club) {
   selectedClub = club;
   document.querySelectorAll('.club-btn').forEach(b => b.classList.toggle('active', b.dataset.id === club.id));
-  document.getElementById('yourClubLabel').textContent = club.label;
-
-  renderProClips(club);
+  document.getElementById('clubBadge').textContent = club.label;
+  document.getElementById('clubPill').textContent = club.label;
 
   const key = TIPS[club.id] ? club.id : 'default_iron';
   const tips = TIPS[key];
-  document.getElementById('tipsTitle').textContent = `Vad du ska titta efter — ${club.label}`;
+  document.getElementById('tipsTitle').textContent = `Tips — ${club.label}`;
   document.getElementById('tipsGrid').innerHTML = tips.map(t =>
     `<div class="tip-card"><h3>${t.title}</h3><p>${t.body}</p></div>`
   ).join('');
 }
 
-function loadYourVideo(file) {
+// ── VIDEO LOADING ──
+function loadVideo(file) {
   if (!file) return;
   const url = URL.createObjectURL(file);
+
   document.getElementById('uploadPrompt').style.display = 'none';
-  if (yourVideoEl) yourVideoEl.remove();
-  yourVideoEl = document.createElement('video');
-  yourVideoEl.src = url;
-  yourVideoEl.controls = true;
-  yourVideoEl.loop = true;
-  yourVideoEl.style.cssText = 'width:100%;height:100%;object-fit:contain;';
-  document.getElementById('yourVideoArea').appendChild(yourVideoEl);
-  document.getElementById('clearYourBtn').style.display = 'inline-block';
-  document.getElementById('syncBtn').style.display = 'flex';
+  if (videoEl) videoEl.remove();
+
+  videoEl = document.createElement('video');
+  videoEl.src = url;
+  videoEl.playsInline = true;
+  videoEl.setAttribute('playsinline', '');
+  videoEl.setAttribute('webkit-playsinline', '');
+  videoEl.loop = isLooping;
+  videoEl.style.cssText = 'width:100%;max-height:520px;object-fit:contain;display:block;';
+  document.getElementById('videoArea').appendChild(videoEl);
+
+  videoEl.addEventListener('loadedmetadata', initControls);
+  videoEl.addEventListener('timeupdate', updateScrubber);
+  videoEl.addEventListener('play', () => updatePlayIcon(true));
+  videoEl.addEventListener('pause', () => updatePlayIcon(false));
+  videoEl.addEventListener('ended', () => { if (!isLooping) updatePlayIcon(false); });
+
+  document.getElementById('videoControlsBar').classList.add('visible');
+  document.getElementById('panelFooter').style.display = 'flex';
   document.getElementById('analyzeBtn').style.display = 'flex';
+
+  videoEl.play().catch(() => {});
 }
 
-document.getElementById('swingUpload').addEventListener('change', e => loadYourVideo(e.target.files[0]));
-document.getElementById('swingGallery').addEventListener('change', e => loadYourVideo(e.target.files[0]));
-document.getElementById('swingRecord').addEventListener('change', e => loadYourVideo(e.target.files[0]));
+document.getElementById('swingUpload').addEventListener('change', e => loadVideo(e.target.files[0]));
+document.getElementById('swingGallery').addEventListener('change', e => loadVideo(e.target.files[0]));
+document.getElementById('swingRecord').addEventListener('change', e => loadVideo(e.target.files[0]));
 
-function clearYourVideo() {
-  if (yourVideoEl) { yourVideoEl.remove(); yourVideoEl = null; }
+function clearVideo() {
+  if (videoEl) { videoEl.pause(); videoEl.remove(); videoEl = null; }
   document.getElementById('uploadPrompt').style.display = 'flex';
-  document.getElementById('clearYourBtn').style.display = 'none';
-  document.getElementById('syncBtn').style.display = 'none';
+  document.getElementById('videoControlsBar').classList.remove('visible');
+  document.getElementById('panelFooter').style.display = 'none';
   document.getElementById('analyzeBtn').style.display = 'none';
   document.getElementById('swingUpload').value = '';
+  document.getElementById('timeDisplay').textContent = '0:00 / 0:00';
+  document.getElementById('scrubber').value = 0;
   closeAnalysis();
 }
 
-let proVideoEl = null;
-
-function switchProTab(tab) {
-  const find = tab === 'find';
-  document.getElementById('proFindPane').style.display = find ? 'flex' : 'none';
-  document.getElementById('proUploadPane').style.display = find ? 'none' : 'flex';
-  document.getElementById('proTab1').style.borderBottomColor = find ? 'rgba(255,255,255,0.9)' : 'transparent';
-  document.getElementById('proTab1').style.color = find ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.35)';
-  document.getElementById('proTab2').style.borderBottomColor = find ? 'transparent' : 'rgba(255,255,255,0.9)';
-  document.getElementById('proTab2').style.color = find ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.95)';
+// ── CUSTOM CONTROLS ──
+function initControls() {
+  const s = document.getElementById('scrubber');
+  s.max = videoEl.duration;
+  updateScrubber();
 }
 
-function loadProVideoFile(file) {
-  if (!file) return;
-  const url = URL.createObjectURL(file);
-  document.getElementById('proUploadPrompt').style.display = 'none';
-  if (proVideoEl) proVideoEl.remove();
-  proVideoEl = document.createElement('video');
-  proVideoEl.src = url;
-  proVideoEl.controls = true;
-  proVideoEl.loop = true;
-  proVideoEl.style.cssText = 'width:100%;height:100%;object-fit:contain;';
-  document.getElementById('proVideoArea').appendChild(proVideoEl);
-  document.getElementById('clearProBtn').style.display = 'inline-block';
-  document.getElementById('proClubLabel').textContent = file.name;
-  document.getElementById('syncBtn').style.display = 'flex';
+function updateScrubber() {
+  if (!videoEl) return;
+  const s = document.getElementById('scrubber');
+  s.value = videoEl.currentTime;
+  document.getElementById('timeDisplay').textContent = `${fmt(videoEl.currentTime)} / ${fmt(videoEl.duration)}`;
+
+  const pct = (videoEl.currentTime / videoEl.duration) * 100;
+  s.style.background = `linear-gradient(to right, #3ddc6e ${pct}%, rgba(255,255,255,0.12) ${pct}%)`;
 }
 
-document.getElementById('proUpload').addEventListener('change', e => loadProVideoFile(e.target.files[0]));
-document.getElementById('proGallery').addEventListener('change', e => loadProVideoFile(e.target.files[0]));
-document.getElementById('proRecord').addEventListener('change', e => loadProVideoFile(e.target.files[0]));
-
-function clearProVideo() {
-  if (proVideoEl) { proVideoEl.remove(); proVideoEl = null; }
-  document.getElementById('proUploadPrompt').style.display = 'flex';
-  document.getElementById('clearProBtn').style.display = 'none';
-  document.getElementById('proClubLabel').textContent = 'Ingen video vald';
-  document.getElementById('proUpload').value = '';
-  if (!yourVideoEl) document.getElementById('syncBtn').style.display = 'none';
+function fmt(s) {
+  if (!s || isNaN(s)) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60).toString().padStart(2, '0');
+  return `${m}:${sec}`;
 }
 
-// Curated pro swings per club — search queries open on YouTube
-const PRO_CLIPS = {
-  driver: [
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy driver swing slow motion' },
-    { name: 'Dustin Johnson',  query: 'Dustin Johnson driver swing slow motion' },
-    { name: 'Tiger Woods',     query: 'Tiger Woods driver swing slow motion' },
-    { name: 'Jon Rahm',        query: 'Jon Rahm driver swing slow motion' },
-  ],
-  '3w': [
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy 3 wood swing slow motion' },
-    { name: 'Tiger Woods',     query: 'Tiger Woods 3 wood swing slow motion' },
-    { name: 'Dustin Johnson',  query: 'Dustin Johnson fairway wood slow motion' },
-  ],
-  '5w': [
-    { name: 'Collin Morikawa', query: 'Collin Morikawa fairway wood swing slow motion' },
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy 5 wood swing slow motion' },
-    { name: 'Tiger Woods',     query: 'Tiger Woods 5 wood swing slow motion' },
-  ],
-  '3h': [
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy hybrid swing slow motion' },
-    { name: 'Tiger Woods',     query: 'Tiger Woods hybrid iron slow motion' },
-  ],
-  '4h': [
-    { name: 'Adam Scott',      query: 'Adam Scott hybrid swing slow motion' },
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy hybrid swing slow motion' },
-  ],
-  '4i': [
-    { name: 'Tiger Woods',     query: 'Tiger Woods 4 iron swing slow motion' },
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy long iron swing slow motion' },
-  ],
-  '5i': [
-    { name: 'Adam Scott',      query: 'Adam Scott 5 iron swing slow motion' },
-    { name: 'Tiger Woods',     query: 'Tiger Woods 5 iron swing slow motion' },
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy 5 iron swing slow motion' },
-  ],
-  '6i': [
-    { name: 'Collin Morikawa', query: 'Collin Morikawa iron swing slow motion' },
-    { name: 'Tiger Woods',     query: 'Tiger Woods 6 iron swing slow motion' },
-    { name: 'Adam Scott',      query: 'Adam Scott iron swing slow motion' },
-  ],
-  '7i': [
-    { name: 'Tiger Woods',     query: 'Tiger Woods 7 iron swing slow motion' },
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy 7 iron swing slow motion' },
-    { name: 'Justin Rose',     query: 'Justin Rose 7 iron swing slow motion' },
-    { name: 'Adam Scott',      query: 'Adam Scott 7 iron swing slow motion' },
-  ],
-  '8i': [
-    { name: 'Collin Morikawa', query: 'Collin Morikawa 8 iron swing slow motion' },
-    { name: 'Tiger Woods',     query: 'Tiger Woods 8 iron swing slow motion' },
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy 8 iron swing slow motion' },
-  ],
-  '9i': [
-    { name: 'Tiger Woods',     query: 'Tiger Woods 9 iron swing slow motion' },
-    { name: 'Jon Rahm',        query: 'Jon Rahm 9 iron swing slow motion' },
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy 9 iron swing slow motion' },
-  ],
-  pw: [
-    { name: 'Tiger Woods',     query: 'Tiger Woods pitching wedge swing slow motion' },
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy wedge swing slow motion' },
-    { name: 'Collin Morikawa', query: 'Collin Morikawa wedge swing slow motion' },
-  ],
-  gw: [
-    { name: 'Phil Mickelson',  query: 'Phil Mickelson gap wedge swing slow motion' },
-    { name: 'Tiger Woods',     query: 'Tiger Woods gap wedge swing slow motion' },
-  ],
-  sw: [
-    { name: 'Phil Mickelson',  query: 'Phil Mickelson sand wedge bunker slow motion' },
-    { name: 'Tiger Woods',     query: 'Tiger Woods sand wedge swing slow motion' },
-    { name: 'Seve Ballesteros',query: 'Seve Ballesteros bunker shot slow motion' },
-  ],
-  lw: [
-    { name: 'Phil Mickelson',  query: 'Phil Mickelson lob wedge flop shot slow motion' },
-    { name: 'Tiger Woods',     query: 'Tiger Woods 60 degree wedge slow motion' },
-    { name: 'Seve Ballesteros',query: 'Seve Ballesteros lob shot slow motion' },
-  ],
-  putter: [
-    { name: 'Tiger Woods',     query: 'Tiger Woods putting stroke slow motion' },
-    { name: 'Rory McIlroy',    query: 'Rory McIlroy putting slow motion' },
-    { name: 'Ben Crenshaw',    query: 'Ben Crenshaw putting stroke slow motion' },
-    { name: 'Jordan Spieth',   query: 'Jordan Spieth putting stroke slow motion' },
-  ],
-};
+document.getElementById('scrubber').addEventListener('input', e => {
+  if (videoEl) videoEl.currentTime = e.target.value;
+});
 
-function renderProClips(club) {
-  const clips = PRO_CLIPS[club.id] || PRO_CLIPS['7i'];
-  document.getElementById('proPlaceholder').style.display = 'none';
-  const container = document.getElementById('proClips');
-  container.style.display = 'block';
-  container.innerHTML = clips.map(c => {
-    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(c.query)}`;
-    return `
-      <a href="${url}" target="_blank" rel="noopener" style="
-        display:flex;align-items:center;gap:14px;padding:13px 18px;
-        border-bottom:1px solid #f5f3f0;text-decoration:none;
-        background:rgba(255,255,255,0.07);transition:background 0.12s;
-      " onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
-        <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="13" height="13" fill="rgba(255,255,255,0.9)" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:0.85rem;font-weight:600;color:rgba(255,255,255,0.9);">${c.name}</div>
-          <div style="font-size:0.71rem;color:rgba(255,255,255,0.45);margin-top:1px;">${club.label} · öppnar YouTube</div>
-        </div>
-        <svg width="12" height="12" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      </a>
-    `;
-  }).join('');
+function togglePlay() {
+  if (!videoEl) return;
+  videoEl.paused ? videoEl.play() : videoEl.pause();
 }
 
-function syncVideos() {
-  if (yourVideoEl) { yourVideoEl.currentTime = 0; yourVideoEl.play(); }
+function updatePlayIcon(playing) {
+  document.getElementById('playIcon').innerHTML = playing
+    ? '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
+    : '<polygon points="5,3 19,12 5,21"/>';
 }
 
-// ========== API-NYCKEL ==========
+function toggleLoop() {
+  isLooping = !isLooping;
+  if (videoEl) videoEl.loop = isLooping;
+  document.getElementById('loopBtn').style.color = isLooping ? '#3ddc6e' : '';
+}
+
+function setSpeed(speed) {
+  if (videoEl) videoEl.playbackRate = speed;
+  document.querySelectorAll('.speed-btn').forEach(b => {
+    b.classList.toggle('active', parseFloat(b.dataset.speed) === speed);
+  });
+}
+
+// Spacebar to play/pause
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+    e.preventDefault();
+    togglePlay();
+  }
+});
+
+// Init loop button state
+document.getElementById('loopBtn').style.color = '#3ddc6e';
+
+// ── API KEY ──
 function openApiModal() {
-  const saved = localStorage.getItem('anthropic_api_key') || '';
-  document.getElementById('apiKeyInput').value = saved;
+  document.getElementById('apiKeyInput').value = localStorage.getItem('anthropic_api_key') || '';
   document.getElementById('apiModal').style.display = 'flex';
   setTimeout(() => document.getElementById('apiKeyInput').focus(), 60);
 }
-
 function closeApiModal() {
   document.getElementById('apiModal').style.display = 'none';
 }
-
 function saveApiKey() {
   const key = document.getElementById('apiKeyInput').value.trim();
-  if (key) {
-    localStorage.setItem('anthropic_api_key', key);
-  } else {
-    localStorage.removeItem('anthropic_api_key');
-  }
+  key ? localStorage.setItem('anthropic_api_key', key) : localStorage.removeItem('anthropic_api_key');
   updateSettingsBtn();
   closeApiModal();
 }
-
 function updateSettingsBtn() {
-  const hasKey = !!localStorage.getItem('anthropic_api_key');
-  const btn = document.getElementById('settingsBtn');
-  const label = document.getElementById('settingsBtnLabel');
-  btn.classList.toggle('has-key', hasKey);
-  label.textContent = hasKey ? 'API-nyckel ✓' : 'API-nyckel';
+  const has = !!localStorage.getItem('anthropic_api_key');
+  document.getElementById('settingsBtn').classList.toggle('has-key', has);
+  document.getElementById('settingsBtnLabel').textContent = has ? 'Nyckel ✓' : 'API-nyckel';
 }
-
 updateSettingsBtn();
 
-// ========== FRAME-EXTRAKTION ==========
+// ── FRAME EXTRACTION ──
 async function extractFrames(video) {
-  const MAX_W = 640;
   const canvas = document.createElement('canvas');
-  canvas.width = Math.min(video.videoWidth, MAX_W);
+  canvas.width = Math.min(video.videoWidth, 640);
   canvas.height = Math.round(canvas.width * video.videoHeight / video.videoWidth);
   const ctx = canvas.getContext('2d');
 
-  const positions =  [0.04, 0.20, 0.38, 0.55, 0.72, 0.92];
-  const labels     = ['Address', 'Takeaway', 'Topp av backswing', 'Transition', 'Impact', 'Follow-through'];
+  const positions = [0.04, 0.20, 0.38, 0.55, 0.72, 0.92];
+  const labels    = ['Address', 'Takeaway', 'Topp', 'Transition', 'Impact', 'Follow-through'];
 
   const wasPaused = video.paused;
   video.pause();
 
-  const frames = [];
-  const thumbs = [];
-
+  const frames = [], thumbs = [];
   for (let i = 0; i < positions.length; i++) {
     video.currentTime = video.duration * positions[i];
     await new Promise(r => video.addEventListener('seeked', r, { once: true }));
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.78);
-    frames.push({ b64: dataUrl.split(',')[1], label: labels[i] });
-    thumbs.push({ src: dataUrl, label: labels[i] });
+    const url = canvas.toDataURL('image/jpeg', 0.78);
+    frames.push({ b64: url.split(',')[1], label: labels[i] });
+    thumbs.push({ src: url, label: labels[i] });
   }
 
   video.currentTime = 0;
   if (!wasPaused) video.play();
-
   return { frames, thumbs };
 }
 
-// ========== CLAUDE API ==========
+// ── CLAUDE API ──
 async function callClaude(frames, clubLabel, apiKey) {
   const content = [
     {
       type: 'text',
-      text: `Du är en PGA-certifierad golfcoach med djup expertkunskap i swingbiomekanik. Analysera dessa ${frames.length} bilder från en golfswing med ${clubLabel}.\n\nBilderna är tagna vid följande faser: ${frames.map(f => f.label).join(', ')}.\n\nGe en detaljerad coaching-analys på svenska med exakt dessa fyra sektioner (använd ## som rubrik):\n\n## Sammanfattning\nEn övergripande bedömning av swingen i 2–3 meningar.\n\n## Styrkor\nLista 2–4 konkreta styrkor du ser i bilderna.\n\n## Förbättringsområden\nLista 2–4 specifika tekniska saker att jobba på, i prioritetsordning.\n\n## Nästa steg\n1–2 konkreta övningar eller drills att börja med.\n\nVar specifik och hänvisa direkt till vad du ser i bilderna. Fokusera på det viktigaste för ${clubLabel}.`
+      text: `Du är en PGA-certifierad golfcoach med djup expertkunskap i swingbiomekanik. Analysera dessa ${frames.length} bilder från en golfswing med ${clubLabel}.\n\nFaserna är: ${frames.map(f => f.label).join(', ')}.\n\nGe en detaljerad coaching-analys på svenska med exakt dessa fyra sektioner (## som rubrik):\n\n## Sammanfattning\n## Styrkor\n## Förbättringsområden\n## Nästa steg\n\nVar konkret och hänvisa till vad du ser i bilderna. Fokusera på det viktigaste för ${clubLabel}.`
     },
     ...frames.flatMap(f => [
-      { type: 'text', text: `[Fas: ${f.label}]` },
+      { type: 'text', text: `[${f.label}]` },
       { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: f.b64 } }
     ])
   ];
@@ -1072,19 +1226,15 @@ async function callClaude(frames, clubLabel, apiKey) {
 
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error?.message || `HTTP ${resp.status} — kontrollera att API-nyckeln stämmer`);
+    throw new Error(err.error?.message || `HTTP ${resp.status} — kontrollera API-nyckeln`);
   }
-
-  const data = await resp.json();
-  return data.content[0].text;
+  return (await resp.json()).content[0].text;
 }
 
-// ========== MARKDOWN → HTML ==========
+// ── MARKDOWN → HTML ──
 function mdToHtml(text) {
   const lines = text.split('\n');
-  let html = '';
-  let inList = false;
-
+  let html = '', inList = false;
   for (const line of lines) {
     if (line.startsWith('## ')) {
       if (inList) { html += '</ul>'; inList = false; }
@@ -1104,50 +1254,46 @@ function mdToHtml(text) {
   return html;
 }
 
-// ========== ANALYS-FLÖDE ==========
+// ── ANALYZE ──
 async function analyzeSwing() {
   const apiKey = localStorage.getItem('anthropic_api_key');
-  if (!apiKey) {
-    openApiModal();
-    return;
-  }
-  if (!yourVideoEl || !yourVideoEl.duration) return;
+  if (!apiKey) { openApiModal(); return; }
+  if (!videoEl || !videoEl.duration) return;
 
   const clubLabel = selectedClub ? selectedClub.label : 'golf';
   const btn = document.getElementById('analyzeBtn');
   btn.disabled = true;
-  btn.textContent = '⏳ Analyserar…';
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Analyserar…';
 
   const panel = document.getElementById('analysisPanel');
   const body  = document.getElementById('analysisBody');
   panel.style.display = 'block';
-  body.innerHTML = `<div class="analysis-loading"><div class="spinner"></div><span>Extraherar frames ur videon…</span></div>`;
+  body.innerHTML = `<div class="analysis-loading"><div class="spinner"></div><span>Extraherar frames…</span></div>`;
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   try {
-    const { frames, thumbs } = await extractFrames(yourVideoEl);
+    const { frames, thumbs } = await extractFrames(videoEl);
 
-    const stripHtml = `<div class="frame-strip">
-      ${thumbs.map(t => `<div class="frame-item"><img src="${t.src}" alt="${t.label}"><div class="frame-label">${t.label}</div></div>`).join('')}
-    </div>`;
+    const strip = `<div class="frame-strip">${thumbs.map(t =>
+      `<div class="frame-item"><img src="${t.src}" alt="${t.label}"><span>${t.label}</span></div>`
+    ).join('')}</div>`;
 
-    body.innerHTML = `${stripHtml}<div class="analysis-loading"><div class="spinner"></div><span>Claude analyserar din teknik med ${clubLabel}…</span></div>`;
+    body.innerHTML = `${strip}<div class="analysis-loading"><div class="spinner"></div><span>Claude analyserar din ${clubLabel}-teknik…</span></div>`;
 
     const text = await callClaude(frames, clubLabel, apiKey);
-
-    body.innerHTML = `${stripHtml}<div class="analysis-content">${mdToHtml(text)}</div>`;
+    body.innerHTML = `${strip}<div class="analysis-content">${mdToHtml(text)}</div>`;
 
   } catch (err) {
-    body.innerHTML = `<div class="analysis-error">⚠️ Fel: ${err.message}</div>`;
+    body.innerHTML = `<div class="analysis-error">⚠️ ${err.message}</div>`;
   } finally {
     btn.disabled = false;
-    btn.textContent = '✦ Analysera swing';
+    btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Analysera swing';
   }
 }
 
 function closeAnalysis() {
-  const panel = document.getElementById('analysisPanel');
-  if (panel) panel.style.display = 'none';
+  const p = document.getElementById('analysisPanel');
+  if (p) p.style.display = 'none';
 }
 </script>
 </body>
