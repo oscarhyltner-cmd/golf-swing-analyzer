@@ -10,602 +10,295 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-/* ── TOKENS ── */
 :root {
-  --bg:          #060f08;
-  --panel:       #0b1a0e;
-  --panel-hi:    #0f2213;
-  --accent:      #3ddc6e;
-  --accent-dim:  rgba(61,220,110,0.12);
-  --accent-glow: rgba(61,220,110,0.35);
-  --amber:       #c8a84b;
-  --amber-dim:   rgba(200,168,75,0.12);
-  --w90:         rgba(255,255,255,0.90);
-  --w55:         rgba(255,255,255,0.55);
-  --w22:         rgba(255,255,255,0.22);
-  --w08:         rgba(255,255,255,0.07);
-  --border:      rgba(61,220,110,0.10);
-  --border-hi:   rgba(61,220,110,0.22);
-  --corner:      18px;
-  --radius:      0px;
-  --shadow:      0 16px 48px rgba(0,0,0,0.7);
-  --mono:        'JetBrains Mono', monospace;
-  --display:     'Bebas Neue', sans-serif;
+  --bg:         #060f08;
+  --panel:      #0b1a0e;
+  --accent:     #3ddc6e;
+  --accent-dim: rgba(61,220,110,0.12);
+  --amber:      #c8a84b;
+  --w90:        rgba(255,255,255,0.90);
+  --w55:        rgba(255,255,255,0.55);
+  --w08:        rgba(255,255,255,0.07);
+  --border:     rgba(61,220,110,0.10);
+  --border-hi:  rgba(61,220,110,0.22);
+  --corner:     18px;
+  --shadow:     0 16px 48px rgba(0,0,0,0.7);
+  --mono:       'JetBrains Mono', monospace;
+  --display:    'Bebas Neue', sans-serif;
 }
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--w90); min-height:100vh; overflow-x:hidden; }
 
-/* ── RESET ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* ── BODY / BACKGROUND ── */
-body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--w90);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* Grid background */
+/* Grid bg */
 body::before {
-  content: '';
-  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
   background-image:
     linear-gradient(rgba(61,220,110,0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(61,220,110,0.025) 1px, transparent 1px);
-  background-size: 48px 48px;
+  background-size:48px 48px;
 }
-
-/* Gradient vignette over grid */
 body::after {
-  content: '';
-  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
   background:
-    radial-gradient(ellipse 80% 60% at 12% 8%,  rgba(14,36,16,0.88) 0%, transparent 65%),
-    radial-gradient(ellipse 70% 50% at 90% 85%, rgba(10,28,12,0.82) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 70% at 50% 50%, transparent 30%, rgba(6,15,8,0.6) 100%);
+    radial-gradient(ellipse 80% 60% at 12% 8%,  rgba(14,36,16,0.88) 0%,transparent 65%),
+    radial-gradient(ellipse 70% 50% at 90% 85%, rgba(10,28,12,0.82) 0%,transparent 60%);
 }
 
-/* ── CORNER BRACKET MIXIN via custom property ── */
-/* Applied as ::before on .hud-panel — 4 corners using 8 gradient stops */
-.hud-panel { position: relative; }
+/* ── HUD corner brackets ── */
+.hud-panel { position:relative; }
 .hud-panel::before {
-  content: '';
-  position: absolute; inset: 0; z-index: 2;
-  pointer-events: none;
+  content:''; position:absolute; inset:0; z-index:2; pointer-events:none;
   background:
-    /* TL-H */ linear-gradient(var(--accent),var(--accent)) 0 0 / var(--corner) 1.5px no-repeat,
-    /* TL-V */ linear-gradient(var(--accent),var(--accent)) 0 0 / 1.5px var(--corner) no-repeat,
-    /* TR-H */ linear-gradient(var(--accent),var(--accent)) 100% 0 / var(--corner) 1.5px no-repeat,
-    /* TR-V */ linear-gradient(var(--accent),var(--accent)) 100% 0 / 1.5px var(--corner) no-repeat,
-    /* BL-H */ linear-gradient(var(--accent),var(--accent)) 0 100% / var(--corner) 1.5px no-repeat,
-    /* BL-V */ linear-gradient(var(--accent),var(--accent)) 0 100% / 1.5px var(--corner) no-repeat,
-    /* BR-H */ linear-gradient(var(--accent),var(--accent)) 100% 100% / var(--corner) 1.5px no-repeat,
-    /* BR-V */ linear-gradient(var(--accent),var(--accent)) 100% 100% / 1.5px var(--corner) no-repeat;
-  opacity: 0.55;
-  transition: opacity 0.2s;
+    linear-gradient(var(--accent),var(--accent)) 0 0/var(--corner) 1.5px no-repeat,
+    linear-gradient(var(--accent),var(--accent)) 0 0/1.5px var(--corner) no-repeat,
+    linear-gradient(var(--accent),var(--accent)) 100% 0/var(--corner) 1.5px no-repeat,
+    linear-gradient(var(--accent),var(--accent)) 100% 0/1.5px var(--corner) no-repeat,
+    linear-gradient(var(--accent),var(--accent)) 0 100%/var(--corner) 1.5px no-repeat,
+    linear-gradient(var(--accent),var(--accent)) 0 100%/1.5px var(--corner) no-repeat,
+    linear-gradient(var(--accent),var(--accent)) 100% 100%/var(--corner) 1.5px no-repeat,
+    linear-gradient(var(--accent),var(--accent)) 100% 100%/1.5px var(--corner) no-repeat;
+  opacity:0.5; transition:opacity 0.2s;
 }
-.hud-panel:hover::before { opacity: 0.9; }
+.hud-panel:hover::before { opacity:0.88; }
 
 /* ── HEADER ── */
 header {
-  position: sticky; top: 0; z-index: 50;
-  background: rgba(6,15,8,0.92);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(61,220,110,0.12);
+  position:sticky; top:0; z-index:50;
+  background:rgba(6,15,8,0.93);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(61,220,110,0.12);
 }
 .header-inner {
-  max-width: 860px; margin: 0 auto;
-  padding: 0 22px;
-  height: 56px; display: flex; align-items: center; gap: 14px;
+  max-width:860px; margin:0 auto; padding:0 22px;
+  height:56px; display:flex; align-items:center; gap:14px;
 }
-.logo-mark {
-  display: flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; flex-shrink: 0;
-  position: relative;
-}
-.logo-mark svg { width: 28px; height: 28px; }
-.logo-text {
-  display: flex; flex-direction: column; gap: 0;
-  line-height: 1;
-}
-.logo-name {
-  font-family: var(--display); font-size: 1.3rem;
-  letter-spacing: 0.12em; color: var(--w90);
-}
-.logo-sub {
-  font-family: var(--mono); font-size: 0.52rem;
-  letter-spacing: 0.08em; color: var(--accent); opacity: 0.65;
-  margin-top: 2px;
-}
-.header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-.sys-status {
-  display: flex; align-items: center; gap: 6px;
-  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em;
-  color: var(--accent); opacity: 0.7;
-}
-.sys-dot {
-  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
-  animation: blink 2.4s ease-in-out infinite;
-}
-@keyframes blink {
-  0%,100% { opacity: 1; } 50% { opacity: 0.25; }
-}
-/* Header bottom accent bar */
-header::after {
-  content: '';
-  position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
-  background: linear-gradient(to right, transparent, var(--accent) 30%, var(--accent) 70%, transparent);
-  opacity: 0.18;
-}
+.logo-mark { display:flex; align-items:center; justify-content:center; width:30px; height:30px; flex-shrink:0; }
+.logo-text { display:flex; flex-direction:column; gap:0; line-height:1; }
+.logo-name { font-family:var(--display); font-size:1.3rem; letter-spacing:0.12em; }
+.logo-sub  { font-family:var(--mono); font-size:0.52rem; letter-spacing:0.08em; color:var(--accent); opacity:0.65; margin-top:2px; }
+.header-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+.sys-status { display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:0.6rem; letter-spacing:0.1em; color:var(--accent); opacity:0.7; }
+.sys-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 6px var(--accent); animation:blink 2.4s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+header::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--accent) 30%,var(--accent) 70%,transparent); opacity:0.18; }
 
-/* ── HERO STRIP ── */
-.hero-strip {
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(13,28,15,0.7) 0%, transparent 100%);
-  overflow: hidden;
-  padding: 18px 22px 14px;
-}
-.hero-strip-inner { max-width: 860px; margin: 0 auto; }
-.hero-eyebrow {
-  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.18em;
-  text-transform: uppercase; color: var(--amber); opacity: 0.7;
-  margin-bottom: 4px;
-}
-.hero-headline {
-  font-family: var(--display); font-size: clamp(2.4rem, 8vw, 5rem);
-  letter-spacing: 0.04em; line-height: 0.92;
-  color: var(--w90);
-  text-wrap: balance;
-  position: relative; display: inline-block;
-}
-.hero-headline span {
-  color: var(--accent);
-  text-shadow: 0 0 24px rgba(61,220,110,0.45), 0 0 64px rgba(61,220,110,0.15);
-}
-.hero-meta {
-  display: flex; align-items: center; gap: 18px; margin-top: 10px;
-  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em;
-  color: var(--w55);
-}
-.hero-meta-item { display: flex; align-items: center; gap: 6px; }
-.hero-meta-item::before { content: '▸'; color: var(--accent); opacity: 0.6; }
-.hero-divider { width: 1px; height: 12px; background: var(--border-hi); }
+/* ── HERO ── */
+.hero-strip { border-bottom:1px solid var(--border); background:linear-gradient(180deg,rgba(13,28,15,0.7) 0%,transparent 100%); padding:18px 22px 14px; }
+.hero-strip-inner { max-width:860px; margin:0 auto; }
+.hero-eyebrow { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--amber); opacity:0.7; margin-bottom:4px; }
+.hero-headline { font-family:var(--display); font-size:clamp(2.4rem,8vw,5rem); letter-spacing:0.04em; line-height:0.92; text-wrap:balance; }
+.hero-headline span { color:var(--accent); text-shadow:0 0 24px rgba(61,220,110,0.45),0 0 64px rgba(61,220,110,0.15); }
+.hero-meta { display:flex; align-items:center; gap:18px; margin-top:10px; font-family:var(--mono); font-size:0.6rem; letter-spacing:0.1em; color:var(--w55); flex-wrap:wrap; }
+.hero-meta-item::before { content:'▸ '; color:var(--accent); opacity:0.6; }
+.hero-divider { width:1px; height:12px; background:var(--border-hi); }
 
 /* ── LAYOUT ── */
-.container { max-width: 860px; margin: 0 auto; padding: 24px 18px 60px; }
-
-/* ── SECTION LABEL ── */
-.section-label {
-  font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.16em;
-  text-transform: uppercase; color: var(--w55); margin-bottom: 10px;
-  display: flex; align-items: center; gap: 8px;
-}
-.section-label::before { content: '//'; color: var(--accent); opacity: 0.5; font-weight: 600; }
+.container { max-width:860px; margin:0 auto; padding:24px 18px 60px; }
+.section-label { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--w55); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.section-label::before { content:'//'; color:var(--accent); opacity:0.5; font-weight:600; }
 
 /* ── CLUB BAR ── */
-.club-bar { margin-bottom: 22px; animation: fadeUp 0.35s ease both; }
-.club-scroll {
-  display: flex; gap: 5px; overflow-x: auto;
-  padding-bottom: 5px; scrollbar-width: none;
-}
-.club-scroll::-webkit-scrollbar { display: none; }
-.club-group { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-.club-group + .club-group {
-  padding-left: 12px; margin-left: 6px;
-  border-left: 1px solid rgba(61,220,110,0.12);
-}
-.club-group-label {
-  font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.12em;
-  text-transform: uppercase; color: rgba(200,168,75,0.45); padding-right: 2px; white-space: nowrap;
-}
+.club-bar { margin-bottom:22px; animation:fadeUp 0.35s ease both; }
+.club-scroll { display:flex; gap:5px; overflow-x:auto; padding-bottom:5px; scrollbar-width:none; }
+.club-scroll::-webkit-scrollbar { display:none; }
+.club-group { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+.club-group+.club-group { padding-left:12px; margin-left:6px; border-left:1px solid rgba(61,220,110,0.12); }
+.club-group-label { font-family:var(--mono); font-size:0.52rem; letter-spacing:0.12em; text-transform:uppercase; color:rgba(200,168,75,0.45); white-space:nowrap; padding-right:2px; }
 .club-btn {
-  background: rgba(61,220,110,0.05); color: var(--w55);
-  border: 1px solid rgba(61,220,110,0.12);
-  padding: 5px 13px;
-  clip-path: polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
-  cursor: pointer; font-size: 0.73rem; font-weight: 600; font-family: inherit;
-  white-space: nowrap; transition: all 0.14s; flex-shrink: 0;
-  letter-spacing: 0.04em;
+  background:rgba(61,220,110,0.05); color:var(--w55); border:1px solid rgba(61,220,110,0.12);
+  padding:5px 13px; clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
+  cursor:pointer; font-size:0.73rem; font-weight:600; font-family:inherit;
+  white-space:nowrap; transition:all 0.14s; flex-shrink:0; letter-spacing:0.04em;
 }
-.club-btn:hover {
-  background: rgba(61,220,110,0.12); color: var(--w90);
-  border-color: rgba(61,220,110,0.28);
-}
-.club-btn.active {
-  background: var(--accent); color: #030a04; font-weight: 700;
-  border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(61,220,110,0.4), 0 0 28px rgba(61,220,110,0.15);
-}
+.club-btn:hover { background:rgba(61,220,110,0.12); color:var(--w90); border-color:rgba(61,220,110,0.28); }
+.club-btn.active { background:var(--accent); color:#030a04; font-weight:700; border-color:var(--accent); box-shadow:0 0 12px rgba(61,220,110,0.4),0 0 28px rgba(61,220,110,0.15); }
 
 /* ── VIDEO PANEL ── */
 .video-panel {
-  background: var(--panel); border: 1px solid var(--border);
-  margin-bottom: 20px; box-shadow: var(--shadow);
-  animation: fadeUp 0.4s 0.05s ease both;
-  position: relative;
-  /* Clip top-right corner */
-  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
-  overflow: hidden;
+  background:var(--panel); border:1px solid var(--border);
+  margin-bottom:20px; box-shadow:var(--shadow);
+  animation:fadeUp 0.4s 0.05s ease both; position:relative;
+  clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%); overflow:hidden;
 }
-/* Corner accent mark at clip */
 .video-panel::after {
-  content: '';
-  position: absolute; top: 0; right: 0; z-index: 5; pointer-events: none;
-  width: 28px; height: 28px;
-  background: linear-gradient(225deg, rgba(61,220,110,0.55) 0 50%, transparent 50%);
+  content:''; position:absolute; top:0; right:0; z-index:5; pointer-events:none;
+  width:28px; height:28px; background:linear-gradient(225deg,rgba(61,220,110,0.55) 0 50%,transparent 50%);
 }
-
-.video-panel-header {
-  padding: 10px 20px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  background: rgba(0,0,0,0.2);
-}
-.panel-title {
-  font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
-  letter-spacing: 0.12em; text-transform: uppercase; color: var(--w55);
-}
-.panel-badge {
-  font-family: var(--mono); font-size: 0.6rem; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 3px 12px; background: var(--accent-dim);
-  color: var(--accent); border: 1px solid rgba(61,220,110,0.28);
-  clip-path: polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
-}
+.video-panel-header { padding:10px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.2); }
+.panel-title { font-family:var(--mono); font-size:0.65rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--w55); }
+.panel-badge { font-family:var(--mono); font-size:0.6rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:3px 12px; background:var(--accent-dim); color:var(--accent); border:1px solid rgba(61,220,110,0.28); clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%); }
 
 /* ── VIDEO AREA ── */
-.video-area {
-  position: relative; background: #020806;
-  min-height: 280px; display: flex; align-items: center; justify-content: center;
-  overflow: hidden;
-}
-.video-area video { width: 100%; max-height: 500px; object-fit: contain; display: block; }
-
-/* Scan line animation on video area */
+.video-area { position:relative; background:#020806; min-height:280px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.video-area video { width:100%; max-height:500px; object-fit:contain; display:block; }
 .video-area::before {
-  content: '';
-  position: absolute; left: 0; right: 0; height: 1.5px; z-index: 3; pointer-events: none;
-  background: linear-gradient(to right, transparent 0%, var(--accent) 30%, rgba(61,220,110,0.9) 50%, var(--accent) 70%, transparent 100%);
-  box-shadow: 0 0 10px rgba(61,220,110,0.6), 0 0 24px rgba(61,220,110,0.2);
-  animation: scanline 6s linear infinite;
-  opacity: 0;
+  content:''; position:absolute; left:0; right:0; height:1.5px; z-index:3; pointer-events:none;
+  background:linear-gradient(to right,transparent 0%,var(--accent) 30%,rgba(61,220,110,0.9) 50%,var(--accent) 70%,transparent 100%);
+  box-shadow:0 0 10px rgba(61,220,110,0.6),0 0 24px rgba(61,220,110,0.2);
+  animation:scanline 6s linear infinite; opacity:0;
 }
-@keyframes scanline {
-  0%   { top: -2px; opacity: 0; }
-  3%   { opacity: 0.7; }
-  95%  { opacity: 0.5; }
-  100% { top: 100%; opacity: 0; }
-}
-
-/* Corner brackets on video area corners (top-left, top-right, bottom-left) */
+@keyframes scanline { 0%{top:-2px;opacity:0} 3%{opacity:0.7} 95%{opacity:0.5} 100%{top:100%;opacity:0} }
 .video-area::after {
-  content: '';
-  position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  content:''; position:absolute; inset:0; z-index:4; pointer-events:none;
   background:
-    linear-gradient(var(--accent),var(--accent)) 0 0 / 14px 1px no-repeat,
-    linear-gradient(var(--accent),var(--accent)) 0 0 / 1px 14px no-repeat,
-    linear-gradient(var(--accent),var(--accent)) 0 100% / 14px 1px no-repeat,
-    linear-gradient(var(--accent),var(--accent)) 0 100% / 1px 14px no-repeat;
-  opacity: 0.3;
+    linear-gradient(var(--accent),var(--accent)) 0 0/14px 1px no-repeat,
+    linear-gradient(var(--accent),var(--accent)) 0 0/1px 14px no-repeat,
+    linear-gradient(var(--accent),var(--accent)) 0 100%/14px 1px no-repeat,
+    linear-gradient(var(--accent),var(--accent)) 0 100%/1px 14px no-repeat;
+  opacity:0.3;
 }
-
-/* Upload prompt */
-.upload-prompt {
-  display: flex; flex-direction: column; align-items: center; gap: 20px;
-  padding: 48px 20px; width: 100%;
-}
-.upload-prompt-title {
-  font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.2em;
-  text-transform: uppercase; color: var(--w55);
-}
-.upload-options { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.upload-prompt { display:flex; flex-direction:column; align-items:center; gap:20px; padding:48px 20px; width:100%; }
+.upload-prompt-title { font-family:var(--mono); font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--w55); }
+.upload-options { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
 .upload-option {
-  display: flex; flex-direction: column; align-items: center; gap: 9px;
-  cursor: pointer; padding: 16px 18px;
-  background: rgba(61,220,110,0.04); border: 1px solid rgba(61,220,110,0.14);
-  min-width: 96px; transition: all 0.15s;
-  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  display:flex; flex-direction:column; align-items:center; gap:9px; cursor:pointer;
+  padding:16px 18px; background:rgba(61,220,110,0.04); border:1px solid rgba(61,220,110,0.14);
+  min-width:96px; transition:all 0.15s;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
 }
-.upload-option:hover {
-  background: rgba(61,220,110,0.11); border-color: rgba(61,220,110,0.35);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 20px rgba(61,220,110,0.12);
-}
-.upload-icon-wrap {
-  width: 42px; height: 42px;
-  background: rgba(61,220,110,0.1); border: 1px solid rgba(61,220,110,0.22);
-  display: flex; align-items: center; justify-content: center;
-  clip-path: polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px);
-}
-.upload-option-label { font-size: 0.72rem; font-weight: 600; color: var(--w90); }
-.upload-option-sub   { font-family: var(--mono); font-size: 0.58rem; color: var(--w55); letter-spacing: 0.06em; }
-input[type="file"] { display: none; }
+.upload-option:hover { background:rgba(61,220,110,0.11); border-color:rgba(61,220,110,0.35); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.5),0 0 20px rgba(61,220,110,0.12); }
+.upload-icon-wrap { width:42px; height:42px; background:rgba(61,220,110,0.1); border:1px solid rgba(61,220,110,0.22); display:flex; align-items:center; justify-content:center; clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
+.upload-option-label { font-size:0.72rem; font-weight:600; color:var(--w90); }
+.upload-option-sub   { font-family:var(--mono); font-size:0.58rem; color:var(--w55); letter-spacing:0.06em; }
+input[type="file"] { display:none; }
 
-/* ── CUSTOM VIDEO CONTROLS ── */
-.video-controls-bar {
-  display: none; flex-direction: column; gap: 0;
-  background: rgba(3,10,4,0.95);
-  padding: 9px 14px 11px; border-top: 1px solid var(--border);
-}
-.video-controls-bar.visible { display: flex; }
-.scrubber-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
-.time-label {
-  font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
-  color: var(--accent); min-width: 76px; text-align: right;
-  text-shadow: 0 0 8px rgba(61,220,110,0.5);
-}
-.scrubber {
-  flex: 1; -webkit-appearance: none; appearance: none;
-  height: 2px; border-radius: 1px; background: rgba(61,220,110,0.12); outline: none; cursor: pointer;
-}
-.scrubber::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 11px; height: 11px;
-  background: var(--accent); cursor: pointer;
-  box-shadow: 0 0 8px rgba(61,220,110,0.7);
-  clip-path: polygon(50% 0,100% 100%,0 100%); /* diamond */
-}
-.scrubber::-moz-range-thumb {
-  width: 11px; height: 11px; background: var(--accent);
-  border: none; cursor: pointer;
-}
-.controls-row { display: flex; align-items: center; gap: 8px; }
-.play-btn {
-  width: 32px; height: 32px; background: var(--accent); color: #030a04;
-  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: all 0.13s;
-  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
-}
-.play-btn:hover { background: #5aeb82; box-shadow: 0 0 16px rgba(61,220,110,0.55); }
-.play-btn:active { transform: scale(0.96); }
-.ctrl-btn {
-  background: none; border: none; cursor: pointer; color: var(--w55);
-  padding: 5px; border-radius: 0; display: flex; align-items: center; transition: all 0.13s;
-  font-family: inherit;
-}
-.ctrl-btn:hover { color: var(--accent); text-shadow: 0 0 8px rgba(61,220,110,0.5); }
-.ctrl-btn.active { color: var(--accent); text-shadow: 0 0 8px rgba(61,220,110,0.5); }
-.club-pill {
-  font-family: var(--mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em;
-  color: var(--amber); background: rgba(200,168,75,0.08);
-  border: 1px solid rgba(200,168,75,0.18); padding: 2px 10px;
-  clip-path: polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);
-  white-space: nowrap;
-}
-.speed-group {
-  display: flex; gap: 1px; background: rgba(61,220,110,0.06);
-  border: 1px solid rgba(61,220,110,0.14); padding: 2px; margin-left: auto;
-  clip-path: polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);
-}
-.speed-btn {
-  background: none; border: none; color: var(--w55);
-  font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
-  padding: 3px 9px; cursor: pointer; transition: all 0.12s; white-space: nowrap;
-}
-.speed-btn:hover { color: var(--w90); }
-.speed-btn.active { background: var(--accent); color: #030a04; }
+/* ── VIDEO CONTROLS ── */
+.video-controls-bar { display:none; flex-direction:column; gap:0; background:rgba(3,10,4,0.95); padding:9px 14px 11px; border-top:1px solid var(--border); }
+.video-controls-bar.visible { display:flex; }
+.scrubber-row { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+.time-label { font-family:var(--mono); font-size:0.62rem; font-weight:600; color:var(--accent); min-width:76px; text-align:right; text-shadow:0 0 8px rgba(61,220,110,0.5); }
+.scrubber { flex:1; -webkit-appearance:none; appearance:none; height:2px; background:rgba(61,220,110,0.12); outline:none; cursor:pointer; }
+.scrubber::-webkit-slider-thumb { -webkit-appearance:none; width:11px; height:11px; background:var(--accent); cursor:pointer; box-shadow:0 0 8px rgba(61,220,110,0.7); clip-path:polygon(50% 0,100% 100%,0 100%); }
+.scrubber::-moz-range-thumb { width:11px; height:11px; background:var(--accent); border:none; cursor:pointer; }
+.controls-row { display:flex; align-items:center; gap:8px; }
+.play-btn { width:32px; height:32px; background:var(--accent); color:#030a04; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.13s; clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%); }
+.play-btn:hover { background:#5aeb82; box-shadow:0 0 16px rgba(61,220,110,0.55); }
+.play-btn:active { transform:scale(0.96); }
+.ctrl-btn { background:none; border:none; cursor:pointer; color:var(--w55); padding:5px; display:flex; align-items:center; transition:all 0.13s; font-family:inherit; }
+.ctrl-btn:hover,.ctrl-btn.active { color:var(--accent); text-shadow:0 0 8px rgba(61,220,110,0.5); }
+.club-pill { font-family:var(--mono); font-size:0.6rem; font-weight:600; letter-spacing:0.1em; color:var(--amber); background:rgba(200,168,75,0.08); border:1px solid rgba(200,168,75,0.18); padding:2px 10px; clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%); white-space:nowrap; }
+.speed-group { display:flex; gap:1px; background:rgba(61,220,110,0.06); border:1px solid rgba(61,220,110,0.14); padding:2px; margin-left:auto; clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%); }
+.speed-btn { background:none; border:none; color:var(--w55); font-family:var(--mono); font-size:0.62rem; font-weight:600; padding:3px 9px; cursor:pointer; transition:all 0.12s; white-space:nowrap; }
+.speed-btn:hover { color:var(--w90); }
+.speed-btn.active { background:var(--accent); color:#030a04; }
 
 /* ── PANEL FOOTER ── */
-.panel-footer {
-  padding: 9px 16px; border-top: 1px solid var(--border);
-  background: rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px;
-  flex-wrap: wrap;
-}
-.clear-btn {
-  background: rgba(255,70,70,0.07); border: 1px solid rgba(255,70,70,0.18);
-  color: rgba(255,140,140,0.8); padding: 6px 13px; cursor: pointer;
-  font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
-  letter-spacing: 0.08em; text-transform: uppercase; transition: background 0.13s;
-  clip-path: polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
-}
-.clear-btn:hover { background: rgba(255,70,70,0.18); }
-.analyze-btn {
-  margin-left: auto; background: rgba(61,220,110,0.1);
-  border: 1px solid rgba(61,220,110,0.32); color: var(--accent);
-  padding: 7px 18px; cursor: pointer; display: none; align-items: center; gap: 7px;
-  font-family: var(--mono); font-size: 0.67rem; font-weight: 600; letter-spacing: 0.12em;
-  text-transform: uppercase; transition: all 0.15s;
-  clip-path: polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
-}
-.analyze-btn:hover {
-  background: rgba(61,220,110,0.22);
-  box-shadow: 0 0 20px rgba(61,220,110,0.25);
-}
+.panel-footer { padding:9px 16px; border-top:1px solid var(--border); background:rgba(0,0,0,0.2); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.clear-btn { background:rgba(255,70,70,0.07); border:1px solid rgba(255,70,70,0.18); color:rgba(255,140,140,0.8); padding:6px 13px; cursor:pointer; font-family:var(--mono); font-size:0.62rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; transition:background 0.13s; clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%); }
+.clear-btn:hover { background:rgba(255,70,70,0.18); }
+.analyze-btn { margin-left:auto; background:rgba(61,220,110,0.1); border:1px solid rgba(61,220,110,0.32); color:var(--accent); padding:7px 18px; cursor:pointer; display:none; align-items:center; gap:7px; font-family:var(--mono); font-size:0.67rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; transition:all 0.15s; clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%); }
+.analyze-btn:hover { background:rgba(61,220,110,0.22); box-shadow:0 0 20px rgba(61,220,110,0.25); }
 
 /* ── ANNOTATION PANEL ── */
 .annotation-panel {
-  background: var(--panel); border: 1px solid var(--border);
-  margin-bottom: 20px; display: none;
-  box-shadow: var(--shadow);
-  animation: fadeUp 0.28s ease both;
-  position: relative;
-  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
-  overflow: hidden;
+  background:var(--panel); border:1px solid var(--border); margin-bottom:20px;
+  display:none; box-shadow:var(--shadow); animation:fadeUp 0.28s ease both;
+  position:relative; clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%); overflow:hidden;
 }
-.annotation-panel::after {
-  content: '';
-  position: absolute; top: 0; right: 0; z-index: 5; pointer-events: none;
-  width: 28px; height: 28px;
-  background: linear-gradient(225deg, rgba(61,220,110,0.55) 0 50%, transparent 50%);
-}
-
-.annotation-header {
-  padding: 10px 20px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  background: rgba(0,0,0,0.2);
-}
-.annotation-title {
-  font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--accent); text-shadow: 0 0 10px rgba(61,220,110,0.5);
-}
+.annotation-panel::after { content:''; position:absolute; top:0; right:0; z-index:5; pointer-events:none; width:28px; height:28px; background:linear-gradient(225deg,rgba(61,220,110,0.55) 0 50%,transparent 50%); }
+.annotation-header { padding:10px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.2); }
+.annotation-title { font-family:var(--mono); font-size:0.65rem; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); text-shadow:0 0 10px rgba(61,220,110,0.5); }
 
 /* Frame strip */
-.frame-strip {
-  display: flex; gap: 5px; padding: 10px 14px;
-  overflow-x: auto; border-bottom: 1px solid var(--border);
-  scrollbar-width: none; background: rgba(0,0,0,0.2);
+.frame-strip { display:flex; gap:5px; padding:10px 14px; overflow-x:auto; border-bottom:1px solid var(--border); scrollbar-width:none; background:rgba(0,0,0,0.2); }
+.frame-strip::-webkit-scrollbar { display:none; }
+.frame-thumb { flex-shrink:0; cursor:pointer; overflow:hidden; border:1px solid rgba(61,220,110,0.12); transition:all 0.14s; position:relative; clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%); }
+.frame-thumb:hover { border-color:rgba(61,220,110,0.35); }
+.frame-thumb.active { border-color:var(--accent); box-shadow:0 0 14px rgba(61,220,110,0.35); }
+.frame-thumb img { display:block; height:64px; width:auto; object-fit:cover; }
+.frame-thumb-label { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.72); font-family:var(--mono); font-size:0.5rem; font-weight:600; letter-spacing:0.06em; text-align:center; padding:2px 4px; color:var(--amber); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* ── CAMERA ANGLE SELECTOR ── */
+.camera-selector {
+  padding:10px 16px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px; background:rgba(0,0,0,0.15);
 }
-.frame-strip::-webkit-scrollbar { display: none; }
-.frame-thumb {
-  flex-shrink: 0; cursor: pointer; overflow: hidden;
-  border: 1px solid rgba(61,220,110,0.12); transition: all 0.14s; position: relative;
-  clip-path: polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
+.camera-label { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--w55); white-space:nowrap; flex-shrink:0; }
+.camera-label::before { content:'// '; color:var(--accent); opacity:0.5; }
+.camera-toggle { display:flex; gap:2px; background:rgba(61,220,110,0.05); border:1px solid var(--border); padding:3px; clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%); }
+.cam-btn {
+  background:none; border:none; color:var(--w55); cursor:pointer;
+  font-family:var(--mono); font-size:0.62rem; font-weight:600; letter-spacing:0.08em;
+  padding:5px 14px; transition:all 0.14s; white-space:nowrap;
+  clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);
 }
-.frame-thumb:hover { border-color: rgba(61,220,110,0.35); }
-.frame-thumb.active {
-  border-color: var(--accent);
-  box-shadow: 0 0 14px rgba(61,220,110,0.35);
-}
-.frame-thumb img { display: block; height: 64px; width: auto; object-fit: cover; }
-.frame-thumb-label {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  background: rgba(0,0,0,0.72); font-family: var(--mono);
-  font-size: 0.5rem; font-weight: 600; letter-spacing: 0.06em; text-align: center;
-  padding: 2px 4px; color: var(--amber); white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
+.cam-btn:hover { color:var(--w90); background:rgba(61,220,110,0.08); }
+.cam-btn.active { background:var(--accent); color:#030a04; }
+.camera-info {
+  font-family:var(--mono); font-size:0.56rem; letter-spacing:0.06em; color:var(--w55);
+  background:rgba(200,168,75,0.08); border:1px solid rgba(200,168,75,0.18);
+  padding:4px 10px; margin-left:auto;
+  clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);
 }
 
 /* Phase label */
-.phase-label {
-  padding: 6px 18px;
-  font-family: var(--mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--border);
-  background: rgba(61,220,110,0.04);
-  text-shadow: 0 0 8px rgba(61,220,110,0.4);
-  display: flex; align-items: center; gap: 8px;
-}
-.phase-label::before { content: '▸'; opacity: 0.6; }
+.phase-label { padding:6px 18px; font-family:var(--mono); font-size:0.62rem; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); border-bottom:1px solid var(--border); background:rgba(61,220,110,0.04); text-shadow:0 0 8px rgba(61,220,110,0.4); display:flex; align-items:center; gap:8px; }
+.phase-label::before { content:'▸'; opacity:0.6; }
 
-/* Canvas area */
-.canvas-wrap {
-  position: relative; background: #010604;
-  display: flex; align-items: center; justify-content: center;
-  min-height: 260px; touch-action: none;
-}
-#frameImg { display: block; max-width: 100%; max-height: 470px; user-select: none; -webkit-user-drag: none; }
-#drawCanvas {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  cursor: crosshair; touch-action: none;
-}
+/* Canvas */
+.canvas-wrap { position:relative; background:#010604; display:flex; align-items:center; justify-content:center; min-height:260px; }
+#frameImg { display:block; max-width:100%; max-height:470px; user-select:none; -webkit-user-drag:none; }
+#drawCanvas { position:absolute; top:0; left:0; width:100%; height:100%; cursor:default; pointer-events:none; }
 
-/* Tools bar */
-.tools-bar {
-  padding: 9px 14px; display: flex; align-items: center; gap: 8px;
-  flex-wrap: wrap; border-top: 1px solid var(--border);
-  background: rgba(0,0,0,0.2);
+/* Guide-only toolbar */
+.guide-bar {
+  padding:9px 16px; display:flex; align-items:center; gap:10px;
+  border-top:1px solid var(--border); background:rgba(0,0,0,0.2); flex-wrap:wrap;
 }
-.tool-group { display: flex; gap: 3px; }
-.tool-btn {
-  background: rgba(61,220,110,0.05); border: 1px solid rgba(61,220,110,0.14); color: var(--w55);
-  padding: 6px 11px; cursor: pointer; font-size: 0.68rem; font-weight: 600;
-  font-family: var(--mono); transition: all 0.13s; display: flex; align-items: center; gap: 5px;
-  white-space: nowrap; letter-spacing: 0.06em;
-  clip-path: polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);
-}
-.tool-btn:hover { background: rgba(61,220,110,0.12); color: var(--w90); border-color: rgba(61,220,110,0.28); }
-.tool-btn.active {
-  background: rgba(61,220,110,0.16); border-color: rgba(61,220,110,0.45); color: var(--accent);
-  box-shadow: 0 0 10px rgba(61,220,110,0.2);
-}
-.color-group { display: flex; gap: 5px; align-items: center; }
-.color-swatch {
-  width: 18px; height: 18px; cursor: pointer;
-  border: 1.5px solid transparent; transition: all 0.13s; flex-shrink: 0;
-  clip-path: polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);
-}
-.color-swatch:hover { transform: scale(1.2); }
-.color-swatch.active { border-color: var(--w90); transform: scale(1.15); box-shadow: 0 0 8px currentColor; }
-.tools-divider { width: 1px; height: 20px; background: var(--border-hi); flex-shrink: 0; }
-.action-group { display: flex; gap: 5px; margin-left: auto; }
+.guide-note { font-family:var(--mono); font-size:0.56rem; letter-spacing:0.06em; color:var(--w55); }
+.guide-note strong { color:var(--amber); }
 .action-btn {
-  background: rgba(61,220,110,0.05); border: 1px solid rgba(61,220,110,0.12); color: var(--w55);
-  padding: 6px 11px; cursor: pointer; font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
-  letter-spacing: 0.06em; transition: all 0.13s; display: flex; align-items: center; gap: 5px;
-  clip-path: polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);
+  background:rgba(61,220,110,0.05); border:1px solid rgba(61,220,110,0.14); color:var(--w55);
+  padding:6px 14px; cursor:pointer; font-family:var(--mono); font-size:0.65rem; font-weight:600;
+  letter-spacing:0.08em; transition:all 0.13s; display:flex; align-items:center; gap:6px;
+  clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%); margin-left:auto;
 }
-.action-btn:hover { background: rgba(61,220,110,0.12); color: var(--w90); }
-.angle-hint {
-  font-family: var(--mono); font-size: 0.62rem; color: var(--amber); display: none;
-  padding: 4px 10px; background: rgba(200,168,75,0.08);
-  border: 1px solid rgba(200,168,75,0.22);
-  clip-path: polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);
-}
-
-/* Guide toggle btn specific color */
-#guideToggleBtn {
-  border-color: rgba(200,168,75,0.35); color: var(--amber);
-}
-#guideToggleBtn:hover { background: rgba(200,168,75,0.12); border-color: rgba(200,168,75,0.5); }
+.action-btn:hover { background:rgba(61,220,110,0.12); color:var(--w90); }
+#guideToggleBtn { border-color:rgba(200,168,75,0.35); color:var(--amber); }
+#guideToggleBtn:hover { background:rgba(200,168,75,0.12); }
 
 /* ── TIPS PANEL ── */
 .tips-panel {
-  background: var(--panel); border: 1px solid var(--border);
-  padding: 18px 20px 22px; margin-bottom: 24px;
-  box-shadow: var(--shadow);
-  animation: fadeUp 0.45s 0.08s ease both;
-  position: relative;
-  /* Clip bottom-right corner */
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+  background:var(--panel); border:1px solid var(--border); padding:18px 20px 22px;
+  margin-bottom:24px; box-shadow:var(--shadow); animation:fadeUp 0.45s 0.08s ease both;
+  position:relative; clip-path:polygon(0 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%);
 }
-/* Corner mark at clip */
-.tips-panel::before {
-  content: '';
-  position: absolute; bottom: 0; right: 0; z-index: 2; pointer-events: none;
-  width: 26px; height: 26px;
-  background: linear-gradient(45deg, rgba(61,220,110,0.5) 0 50%, transparent 50%);
-}
-.tips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 8px; margin-top: 12px; }
-.tip-card {
-  background: rgba(61,220,110,0.03); border: 1px solid var(--border);
-  padding: 12px 14px; transition: all 0.15s;
-  border-left: 2px solid rgba(61,220,110,0.35);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
-}
-.tip-card:hover {
-  background: rgba(61,220,110,0.07); border-left-color: var(--accent);
-  box-shadow: -2px 0 12px rgba(61,220,110,0.15);
-}
-.tip-card h3 {
-  font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
-  letter-spacing: 0.06em; color: var(--accent); margin-bottom: 5px;
-}
-.tip-card p { font-size: 0.72rem; color: var(--w55); line-height: 1.6; }
+.tips-panel::before { content:''; position:absolute; bottom:0; right:0; z-index:2; pointer-events:none; width:26px; height:26px; background:linear-gradient(45deg,rgba(61,220,110,0.5) 0 50%,transparent 50%); }
 
-/* Close button */
-.close-btn {
-  background: rgba(61,220,110,0.06); border: 1px solid rgba(61,220,110,0.14); color: var(--w55);
-  width: 26px; height: 26px; cursor: pointer; font-family: var(--mono); font-size: 0.7rem;
-  display: flex; align-items: center; justify-content: center; transition: all 0.13s;
-  clip-path: polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);
-}
-.close-btn:hover { background: rgba(255,80,80,0.15); color: #ff8080; }
+/* Camera tips (amber) */
+.camera-tips-label { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--amber); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.camera-tips-label::before { content:'//'; color:var(--amber); opacity:0.6; font-weight:600; }
+.camera-tips-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(185px,1fr)); gap:8px; margin-bottom:16px; }
+.camera-tip-card { background:rgba(200,168,75,0.04); border:1px solid rgba(200,168,75,0.15); padding:12px 14px; border-left:2px solid rgba(200,168,75,0.4); clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%); }
+.camera-tip-card h3 { font-family:var(--mono); font-size:0.65rem; font-weight:600; letter-spacing:0.06em; color:var(--amber); margin-bottom:5px; }
+.camera-tip-card p  { font-size:0.72rem; color:var(--w55); line-height:1.6; }
 
-/* ── ANIMATIONS ── */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* Divider between camera tips and club tips */
+.tips-divider { height:1px; background:var(--border); margin:12px 0; }
 
-/* ── REDUCED MOTION ── */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-}
+.tips-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(185px,1fr)); gap:8px; margin-top:8px; }
+.tip-card { background:rgba(61,220,110,0.03); border:1px solid var(--border); padding:12px 14px; transition:all 0.15s; border-left:2px solid rgba(61,220,110,0.35); clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%); }
+.tip-card:hover { background:rgba(61,220,110,0.07); border-left-color:var(--accent); box-shadow:-2px 0 12px rgba(61,220,110,0.15); }
+.tip-card h3 { font-family:var(--mono); font-size:0.68rem; font-weight:600; letter-spacing:0.06em; color:var(--accent); margin-bottom:5px; }
+.tip-card p  { font-size:0.72rem; color:var(--w55); line-height:1.6; }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 600px) {
-  .header-inner { padding: 0 14px; }
-  .hero-strip { padding: 12px 16px 10px; }
-  .hero-headline { font-size: clamp(1.8rem, 11vw, 2.8rem); }
-  .hero-meta { flex-wrap: wrap; gap: 10px; }
-  .container { padding: 16px 12px 48px; }
-  .video-area { min-height: 200px; }
-  .upload-prompt { padding: 28px 14px; }
-  .tips-grid { grid-template-columns: 1fr 1fr; }
-  .tools-bar { gap: 5px; }
-  .tool-btn { padding: 6px 8px; font-size: 0.64rem; }
-  .action-group { margin-left: 0; }
-  .frame-thumb img { height: 52px; }
-  .sys-status .sys-label { display: none; }
+.close-btn { background:rgba(61,220,110,0.06); border:1px solid rgba(61,220,110,0.14); color:var(--w55); width:26px; height:26px; cursor:pointer; font-family:var(--mono); font-size:0.7rem; display:flex; align-items:center; justify-content:center; transition:all 0.13s; clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%); }
+.close-btn:hover { background:rgba(255,80,80,0.15); color:#ff8080; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+
+@media (max-width:600px) {
+  .header-inner { padding:0 14px; }
+  .hero-strip { padding:12px 16px 10px; }
+  .hero-headline { font-size:clamp(1.8rem,11vw,2.8rem); }
+  .container { padding:16px 12px 48px; }
+  .video-area { min-height:200px; }
+  .upload-prompt { padding:28px 14px; }
+  .tips-grid,.camera-tips-grid { grid-template-columns:1fr 1fr; }
+  .frame-thumb img { height:52px; }
+  .sys-status .sys-label { display:none; }
+  .camera-info { display:none; }
 }
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-BGHRWYV841"></script>
@@ -613,7 +306,6 @@ input[type="file"] { display: none; }
 </head>
 <body>
 
-<!-- ── HEADER ── -->
 <header>
   <div class="header-inner">
     <div class="logo-mark">
@@ -621,8 +313,6 @@ input[type="file"] { display: none; }
         <circle cx="14" cy="9" r="5" stroke="#3ddc6e" stroke-width="1.5" fill="rgba(61,220,110,0.08)"/>
         <rect x="12.8" y="14" width="2.4" height="7" rx="1.2" fill="#3ddc6e" opacity="0.85"/>
         <rect x="7" y="21.5" width="14" height="1.8" rx="0.9" fill="rgba(61,220,110,0.35)"/>
-        <!-- Glow -->
-        <circle cx="14" cy="9" r="5" stroke="#3ddc6e" stroke-width="0.5" fill="none" opacity="0.3" filter="url(#g)"/>
       </svg>
     </div>
     <div class="logo-text">
@@ -638,58 +328,48 @@ input[type="file"] { display: none; }
   </div>
 </header>
 
-<!-- ── HERO STRIP ── -->
 <div class="hero-strip">
   <div class="hero-strip-inner">
     <div class="hero-eyebrow">// GOLF SWING ANALYSIS TERMINAL</div>
     <div class="hero-headline">Analysera &nbsp;<span>din swing.</span></div>
     <div class="hero-meta">
-      <div class="hero-meta-item">Noll kostnad</div>
+      <span class="hero-meta-item">Noll kostnad</span>
       <div class="hero-divider"></div>
-      <div class="hero-meta-item">Körts lokalt i webbläsaren</div>
+      <span class="hero-meta-item">Körs lokalt i webbläsaren</span>
       <div class="hero-divider"></div>
-      <div class="hero-meta-item">Rita guider på dina egna frames</div>
+      <span class="hero-meta-item">Automatiska guidelinjer per fas</span>
     </div>
   </div>
 </div>
 
 <div class="container">
 
-  <!-- Club bar -->
   <div class="club-bar">
     <div class="section-label">Välj klubba</div>
     <div class="club-scroll" id="clubGroups"></div>
   </div>
 
-  <!-- Video panel -->
   <div class="video-panel">
     <div class="video-panel-header">
       <span class="panel-title">// VIDEO_INPUT</span>
       <span class="panel-badge" id="clubBadge">INGEN KLUBBA</span>
     </div>
-
     <div class="video-area" id="videoArea">
       <div class="upload-prompt" id="uploadPrompt">
         <div class="upload-prompt-title">// Välj källa för swing-video</div>
         <div class="upload-options">
           <label for="swingUpload" class="upload-option">
-            <div class="upload-icon-wrap">
-              <svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-            </div>
+            <div class="upload-icon-wrap"><svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div>
             <span class="upload-option-label">Ladda upp</span>
             <span class="upload-option-sub">./local</span>
           </label>
           <label for="swingGallery" class="upload-option">
-            <div class="upload-icon-wrap">
-              <svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-            </div>
+            <div class="upload-icon-wrap"><svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></div>
             <span class="upload-option-label">Kamerarulle</span>
             <span class="upload-option-sub">./gallery</span>
           </label>
           <label for="swingRecord" class="upload-option">
-            <div class="upload-icon-wrap">
-              <svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-            </div>
+            <div class="upload-icon-wrap"><svg width="20" height="20" fill="none" stroke="#3ddc6e" stroke-width="1.8" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
             <span class="upload-option-label">Spela in</span>
             <span class="upload-option-sub">./camera</span>
           </label>
@@ -699,8 +379,6 @@ input[type="file"] { display: none; }
       <input type="file" id="swingGallery" accept="video/*">
       <input type="file" id="swingRecord"  accept="video/*" capture="camcorder">
     </div>
-
-    <!-- Custom video controls -->
     <div class="video-controls-bar" id="videoControlsBar">
       <div class="scrubber-row">
         <input type="range" class="scrubber" id="scrubber" min="0" step="0.01" value="0">
@@ -721,8 +399,6 @@ input[type="file"] { display: none; }
         </div>
       </div>
     </div>
-
-    <!-- Footer -->
     <div class="panel-footer" id="panelFooter" style="display:none">
       <button class="clear-btn" onclick="clearVideo()">✕ Ta bort</button>
       <button class="analyze-btn" id="analyzeBtn" onclick="startAnnotation()">
@@ -740,6 +416,17 @@ input[type="file"] { display: none; }
     </div>
 
     <div class="frame-strip" id="frameStrip"></div>
+
+    <!-- Camera angle selector -->
+    <div class="camera-selector">
+      <span class="camera-label">Kameravinkel</span>
+      <div class="camera-toggle">
+        <button class="cam-btn active" id="camBtnBak" onclick="setCameraAngle('bakifran')">◀ Bakifrån</button>
+        <button class="cam-btn" id="camBtnSida" onclick="setCameraAngle('fran_sidan')">Från sidan ▶</button>
+      </div>
+      <span class="camera-info" id="cameraInfo">Kamera bakom — sikt mot målet</span>
+    </div>
+
     <div class="phase-label" id="phaseLabel">—</div>
 
     <div class="canvas-wrap" id="canvasWrap">
@@ -747,67 +434,38 @@ input[type="file"] { display: none; }
       <canvas id="drawCanvas"></canvas>
     </div>
 
-    <div class="tools-bar">
-      <div class="tool-group" id="toolGroup">
-        <button class="tool-btn active" data-tool="arrow">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
-          PIL
-        </button>
-        <button class="tool-btn" data-tool="line">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="21" x2="21" y2="3"/></svg>
-          LINJE
-        </button>
-        <button class="tool-btn" data-tool="angle">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3,20 12,4 21,20"/></svg>
-          VINKEL
-        </button>
-        <button class="tool-btn" data-tool="circle">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg>
-          CIRKEL
-        </button>
-      </div>
-      <div class="tools-divider"></div>
-      <div class="color-group" id="colorGroup">
-        <div class="color-swatch active" data-color="#3ddc6e" style="background:#3ddc6e"></div>
-        <div class="color-swatch" data-color="#ff4f4f" style="background:#ff4f4f"></div>
-        <div class="color-swatch" data-color="#ffd700" style="background:#ffd700"></div>
-        <div class="color-swatch" data-color="#60b4ff" style="background:#60b4ff"></div>
-        <div class="color-swatch" data-color="#ffffff" style="background:#ffffff"></div>
-      </div>
-      <div class="tools-divider"></div>
-      <span class="angle-hint" id="angleHint">K1: centrum · K2: arm1 · K3: arm2</span>
-      <div class="action-group">
-        <button class="action-btn" id="guideToggleBtn" onclick="toggleGuides()">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          GUIDE: PÅ
-        </button>
-        <button class="action-btn" onclick="undoDrawing()">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9,14 4,9 9,4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
-          ÅNGRA
-        </button>
-        <button class="action-btn" onclick="clearDrawings()">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-          RENSA
-        </button>
-      </div>
+    <div class="guide-bar">
+      <span class="guide-note">
+        <strong>GUIDE</strong> = idealposition för vald kameravinkel &amp; fas. Streckad = rak linje. Pil = rörelseriktning.
+      </span>
+      <button class="action-btn" id="guideToggleBtn" onclick="toggleGuides()">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        GUIDE: PÅ
+      </button>
     </div>
   </div>
 
   <!-- Tips panel -->
   <div class="tips-panel">
+    <!-- Camera-specific observation tips -->
+    <div class="camera-tips-label" id="cameraTipsLabel">Kameravinkel: vad du ska titta på</div>
+    <div class="camera-tips-grid" id="cameraTipsGrid">
+      <div class="camera-tip-card"><h3>KOM_IGÅNG</h3><p>Välj kameravinkel ovan, sedan klubba — tipsen anpassas automatiskt.</p></div>
+    </div>
+    <div class="tips-divider"></div>
+    <!-- Club-specific technique tips -->
     <div class="section-label" id="tipsTitle">Välj en klubba för att se tips</div>
     <div class="tips-grid" id="tipsGrid">
-      <div class="tip-card"><h3>KOM_IGÅNG</h3><p>Välj klubba, ladda upp din swing och tryck Analysera för att rita på dina frames.</p></div>
-      <div class="tip-card"><h3>BÄSTA_VINKEL</h3><p>Filma framifrån eller bakifrån längs bollen för tydligast analys.</p></div>
+      <div class="tip-card"><h3>KOM_IGÅNG</h3><p>Välj klubba, ladda upp din swing och tryck Analysera för att se guidelinjer.</p></div>
       <div class="tip-card"><h3>SLOW_MOTION</h3><p>Använd ½× eller ¼× för att studera tekniken i detalj.</p></div>
     </div>
   </div>
 
-</div><!-- /container -->
+</div>
 
 <script>
 // ══════════════════════════════════
-//  CLUBS & TIPS
+//  DATA: CLUBS & TIPS
 // ══════════════════════════════════
 const CLUBS = [
   {id:'driver',label:'Driver',  group:'Woods'},
@@ -827,74 +485,183 @@ const CLUBS = [
   {id:'lw',    label:'LW/60°',group:'Wedges'},
   {id:'putter',label:'Putter', group:'Putter'},
 ];
+
+// Club tips (same for both camera angles — technical cues)
 const TIPS = {
   driver:[
-    {title:'BOLLPOSITION',body:'Innanför vänster häl. Tee högt — halva bollen ovanför klubbhuvudet.'},
-    {title:'RYGGRADSLUTNING',body:'Lätt lutning bort från målet vid address för uppåtgående slagvinkel.'},
-    {title:'BRED_BÅGE',body:'Håll klubbhuvudet lågt och långsamt i takeaway för maximal svängbåge.'},
-    {title:'HÖFTROTATION',body:'Höfterna roterar hårt genom impact innan armarna sträcks mot målet.'},
-    {title:'HUVUD_BAKOM',body:'Huvudet stannar bakom bollen vid impact — tecken på uppåtgående slag.'},
-    {title:'HÖG_FINISH',body:'Avsluta högt och balanserat med all vikt på det ledande benet.'},
+    {t:'BOLLPOSITION',b:'Innanför vänster häl. Tee högt — halva bollen ovanför klubbhuvudet.'},
+    {t:'RYGGRADSLUTNING',b:'Lätt lutning bort från målet vid address — ger uppåtgående slagvinkel.'},
+    {t:'BRED_BÅGE',b:'Håll klubbhuvudet lågt och långsamt i takeaway för maximal svängbåge.'},
+    {t:'HÖFTROTATION',b:'Höfterna roterar hårt genom impact innan armarna sträcks mot målet.'},
+    {t:'HUVUD_BAKOM',b:'Huvudet stannar bakom bollen vid impact — tecken på uppåtgående slag.'},
+    {t:'HÖG_FINISH',b:'Avsluta högt och balanserat med all vikt på det ledande benet.'},
   ],
   '3w':[
-    {title:'BOLLPOSITION',body:'En bollbredd innanför vänster häl.'},
-    {title:'SVEP_GRÄ_INTE',body:'Svep över gräset eller träffa svagt uppåt. Ingen divot behövs.'},
-    {title:'MINIMAL_SKAFT',body:'Händerna knappt framför bollen, till skillnad från järn.'},
-    {title:'MJUK_ÖVERGÅNG',body:'Proffsen rusar aldrig nedsvingen — notera pausen vid toppen.'},
-  ],
-  '5w':[
-    {title:'BOLLPOSITION',body:'En till två bollbredder innanför vänster häl.'},
-    {title:'GRUNT_ANGREPP',body:'Lite mer upprätt plan än driver men fortfarande svepande.'},
-    {title:'HANDLEDSGÅNGJÄRN',body:'Klubban bör nå parallellt eller strax under vid toppen.'},
-  ],
-  '3h':[
-    {title:'MÅNGSIDIGT',body:'Hybrid kan svepas från fairway eller slås med lätt nedåtgående slag.'},
-    {title:'STANCEBREDD',body:'Lite bredare än mellanjärn. Bollposition mitten till framåt.'},
-    {title:'GRUNT_ANGREPP',body:'Mer som ett fairway wood. Undvik brant, hackande svingar.'},
-  ],
-  '4h':[
-    {title:'ATTACKVINKEL',body:'Lätt nedåtgående slag (1–2°) är mest konsekvent. Undvik scooping.'},
-    {title:'JÄMN_RYTM',body:'Hybrid belönar rytm framför hastighet. Titta på övergången.'},
+    {t:'BOLLPOSITION',b:'En bollbredd innanför vänster häl.'},
+    {t:'SVEP_INTE_GRÄV',b:'Svep över gräset eller träffa svagt uppåt. Ingen divot behövs.'},
+    {t:'MINIMAL_SKAFT',b:'Händerna knappt framför bollen, till skillnad från järn.'},
+    {t:'MJUK_ÖVERGÅNG',b:'Proffsen rusar aldrig nedsvingen — notera pausen vid toppen.'},
   ],
   default_iron:[
-    {title:'BOLLPOSITION',body:'Centrum för korta järn; en bollbredd framåt per klubba längre ut.'},
-    {title:'BOLL_FÖRST',body:'Proffsen träffar bollen först, sedan torv. Notera var divoten börjar.'},
-    {title:'SKAFTLUTNING',body:'Händerna framför bollen vid impact. Komprimerar bollen.'},
-    {title:'HÖFTRENSNING',body:'Ledande höft roterar mot målet och skapar utrymme för armarna.'},
-    {title:'KNÄBÖJNING',body:'Undvik att räta ut det ledande benet tidigt i nedsvingen.'},
-    {title:'BALANSERAD',body:'Vikt på ledande fot, bröstet mot målet, klubban över axeln.'},
+    {t:'BOLLPOSITION',b:'Centrum för korta järn; en bollbredd framåt per klubba längre ut.'},
+    {t:'BOLL_FÖRST',b:'Träff bollen först, sedan torv. Divoten börjar efter bollposition.'},
+    {t:'SKAFTLUTNING',b:'Händerna framför bollen vid impact. Komprimerar bollen.'},
+    {t:'HÖFTRENSNING',b:'Ledande höft roterar mot målet och skapar utrymme för armarna.'},
+    {t:'KNÄBÖJNING',b:'Undvik att räta ut det ledande benet tidigt i nedsvingen.'},
+    {t:'BALANSERAD',b:'Vikt på ledande fot, bröstet mot målet, klubban över axeln.'},
   ],
   pw:[
-    {title:'BOLLPOSITION',body:'Centrum av stance. Händerna lätt framför vid address.'},
-    {title:'TRE_KVARTS',body:'De flesta proffs förkortar backswingen för bättre kontroll.'},
-    {title:'ACCELERERA',body:'Sakta aldrig ner mot bollen. Accelerera jämnt och bestämt.'},
-    {title:'SKARP_DIVOT',body:'En divot mot målet efter impact är kännetecknet för ett bra wedgeslag.'},
+    {t:'BOLLPOSITION',b:'Centrum av stance. Händerna lätt framför vid address.'},
+    {t:'TRE_KVARTS',b:'De flesta proffs förkortar backswingen för bättre kontroll.'},
+    {t:'ACCELERERA',b:'Sakta aldrig ner mot bollen. Accelerera jämnt och bestämt.'},
+    {t:'SKARP_DIVOT',b:'En divot mot målet efter impact är kännetecknet för ett bra wedgeslag.'},
   ],
   gw:[
-    {title:'DISTANS_VIA_LÄNGD',body:'Variera backswingen, inte svinghastigheten, för att kontrollera distansen.'},
-    {title:'KONTROLLERAD',body:'Gap wedge ger medelhög bana med måttligt backspin.'},
+    {t:'DISTANS_VIA_LÄNGD',b:'Variera backswingen, inte svinghastigheten, för att kontrollera distansen.'},
+    {t:'KONTROLLERAD',b:'Gap wedge ger medelhög bana med måttligt backspin.'},
   ],
   sw:[
-    {title:'BUNKER',body:'Öppen klubbface, träff i sanden bakom bollen — svep inte upp bollen.'},
-    {title:'ÖPPEN_FACE',body:'Sand wedge spelas ofta med lätt öppen face för extra studs och loft.'},
-    {title:'MJUKA_HÄNDER',body:'Avslappnat grepp — låt loftet och studsen göra jobbet.'},
+    {t:'BUNKER',b:'Öppen klubbface, träff i sanden bakom bollen — svep inte upp bollen.'},
+    {t:'ÖPPEN_FACE',b:'Sand wedge spelas med lätt öppen face för extra studs och loft.'},
+    {t:'MJUKA_HÄNDER',b:'Avslappnat grepp — låt loftet och studsen göra jobbet.'},
   ],
   lw:[
-    {title:'ÖPPEN_FACE',body:'Ofta dramatiskt öppen för höga lob shots. Clubface mot himlen.'},
-    {title:'BRANT_PLAN',body:'Mer upprätt svingplan än andra klubbor.'},
-    {title:'ACCELERERA',body:'Sakta aldrig ner. Satsa fullt ut även på korta lob shots.'},
+    {t:'ÖPPEN_FACE',b:'Dramatiskt öppen för höga lob shots. Clubface mot himlen.'},
+    {t:'BRANT_PLAN',b:'Mer upprätt svingplan än andra klubbor.'},
+    {t:'ACCELERERA',b:'Satsa fullt ut — accelerera alltid, även på korta lob shots.'},
   ],
   putter:[
-    {title:'ÖGON_ÖVER',body:'Ögonen direkt ovanför eller lätt innanför bollen vid address.'},
-    {title:'PENDELRÖRELSE',body:'Axlarna vaggar, armar och handleder är stilla.'},
-    {title:'SYMMETRISK',body:'Follow-through speglar backswing-längden. Konsekvent tempo.'},
-    {title:'STILLA_HUVUD',body:'Huvudet är helt stilla tills bollen är långt på väg.'},
-    {title:'FACEVINKEL',body:'Facevinkel vid impact styr ~80% av startlinjen.'},
+    {t:'ÖGON_ÖVER',b:'Ögonen direkt ovanför eller lätt innanför bollen vid address.'},
+    {t:'PENDELRÖRELSE',b:'Axlarna vaggar; armar och handleder är stilla.'},
+    {t:'SYMMETRISK',b:'Follow-through speglar backswing-längden. Konsekvent tempo.'},
+    {t:'STILLA_HUVUD',b:'Huvudet är helt stilla tills bollen är långt på väg.'},
+    {t:'FACEVINKEL',b:'Facevinkel vid impact styr ~80% av startlinjen.'},
   ],
 };
 
-// ── Build club buttons
+// Camera-specific observation tips
+const CAM_TIPS = {
+  bakifran: [
+    {t:'MÅLLINJE_REFERENS',b:'Den streckade gula linjen = mållinje. Allt bedöms relativt den.'},
+    {t:'KLUBBANS_VÄG',b:'Titta om klubban går tillbaka innanför, längs, eller utanför målljenjen vid takeaway.'},
+    {t:'TOPP_AV_BACKSWING',b:'Pekar skaftet mot målet (parallellt med mållinje) eller är det för långt/kort?'},
+    {t:'SLAGBANA',b:'Bra sving: klubban kommer inifrån och träffar bollen. Kontrollera pilens riktning vid impact.'},
+    {t:'DIVOT_RIKTNING',b:'En divot som pekar mot målet (eller svagt åt vänster) indikerar rätt bana inifrån-ut.'},
+  ],
+  fran_sidan: [
+    {t:'RYGGRADSLUTNING',b:'Titta om ryggraden håller sin vinkel längs hela svingen — "uppriktar" du dig?'},
+    {t:'HÖFTRENSNING',b:'Ledande höft ska ha roterat tydligt mot målet vid impact. Syns tydligt från sidan.'},
+    {t:'HUVUD_BAKOM',b:'Kontrollera att huvudet stannar bakom bollpositionen vid impact — inte framåt.'},
+    {t:'SKAFTLUTNING',b:'Vid impact: skaftet ska luta framåt (händerna framför bollen). Ses tydligt från sidan.'},
+    {t:'FINISH_HÖJD',b:'Avsluta högt? Lägre finish indikerar ofta att du saktar ner eller vrider för tidigt.'},
+  ],
+};
+
+// ══════════════════════════════════
+//  GUIDES — Bakifrån (DTL-vy)
+//  Kamera bakom golfaren, sikt mot målet.
+//  Mållinje visas som pil/streck UPPÅT i bild (in i bilden).
+// ══════════════════════════════════
+const GUIDES_DTL = [
+  // 0: ADDRESS
+  [
+    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (rakt mot mål)'},
+    {type:'line',  pts:[{x:.28,y:.88},{x:.68,y:.88}], label:'Fotlinje: parallell med mållinje'},
+    {type:'line',  pts:[{x:.30,y:.35},{x:.65,y:.35}], label:'Axellinje: parallell med mållinje'},
+    {type:'arrow', pts:[{x:.48,y:.92},{x:.48,y:.84}], label:'Bollposition'},
+  ],
+  // 1: TAKEAWAY
+  [
+    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (referens)'},
+    {type:'arrow', pts:[{x:.48,y:.80},{x:.60,y:.58}], label:'Klubba: innanför mållinje (rätt)'},
+    {type:'line',  pts:[{x:.28,y:.30},{x:.62,y:.30}], label:'Axlar: börjar rotera'},
+    {type:'arrow', pts:[{x:.42,y:.62},{x:.44,y:.55}], label:'Handleden: börjar gångjärna'},
+  ],
+  // 2: TOPP AV BACKSWING
+  [
+    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (referens)'},
+    {type:'arrow', pts:[{x:.60,y:.42},{x:.40,y:.38}], label:'Skaft: parallellt — pekar mot mål'},
+    {type:'line',  pts:[{x:.28,y:.28},{x:.62,y:.58}], label:'Vänster arm: ~horisontell'},
+    {type:'line',  pts:[{x:.36,y:.68},{x:.54,y:.60}], label:'Höfter: 45° rotation'},
+  ],
+  // 3: TRANSITION
+  [
+    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (referens)'},
+    {type:'arrow', pts:[{x:.58,y:.45},{x:.50,y:.65}], label:'Klubba: faller inåt på insidan'},
+    {type:'arrow', pts:[{x:.52,y:.62},{x:.44,y:.58}], label:'Höfter: leder — roterar mot mål'},
+  ],
+  // 4: IMPACT
+  [
+    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (referens)'},
+    {type:'arrow', pts:[{x:.58,y:.72},{x:.38,y:.82}], label:'Slagbana: inifrån-ut (lätt)'},
+    {type:'arrow', pts:[{x:.48,y:.92},{x:.45,y:.78}], label:'Divot: pekar mot/förbi målet'},
+    {type:'line',  pts:[{x:.44,y:.30},{x:.48,y:.80}], label:'Skaft: framåtlutning vid impact'},
+  ],
+  // 5: FOLLOW-THROUGH
+  [
+    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (referens)'},
+    {type:'arrow', pts:[{x:.48,y:.72},{x:.44,y:.40}], label:'Utsving: längs/innanför mållinje'},
+    {type:'arrow', pts:[{x:.56,y:.72},{x:.54,y:.58}], label:'Höger häl: lyfts från marken'},
+    {type:'line',  pts:[{x:.32,y:.44},{x:.58,y:.36}], label:'Bröst/mage: mot målet'},
+  ],
+];
+
+// ══════════════════════════════════
+//  GUIDES — Från sidan (face-on)
+//  Kamera vid sidan — ser ansikte och mage.
+// ══════════════════════════════════
+const GUIDES_FACEON = [
+  // 0: ADDRESS
+  [
+    {type:'line',  pts:[{x:.48,y:.18},{x:.52,y:.74}], label:'Ryggrad: ~35° framåtlutning'},
+    {type:'line',  pts:[{x:.28,y:.30},{x:.66,y:.28}], label:'Axlar: parallella med mållinje'},
+    {type:'line',  pts:[{x:.30,y:.53},{x:.64,y:.51}], label:'Höfter: parallella med mållinje'},
+    {type:'arrow', pts:[{x:.42,y:.98},{x:.42,y:.87}], label:'Bollpos. (driver: vänster häl)'},
+  ],
+  // 1: TAKEAWAY
+  [
+    {type:'line',  pts:[{x:.48,y:.20},{x:.52,y:.72}], label:'Rygg: hålls stabil'},
+    {type:'arrow', pts:[{x:.48,y:.58},{x:.64,y:.42}], label:'Armar: rör sig längs kroppen'},
+    {type:'arrow', pts:[{x:.30,y:.30},{x:.26,y:.37}], label:'Vänster axel: under hakan'},
+    {type:'arrow', pts:[{x:.56,y:.56},{x:.60,y:.62}], label:'Vikt: laddar höger sida'},
+  ],
+  // 2: TOPP AV BACKSWING
+  [
+    {type:'line',  pts:[{x:.24,y:.27},{x:.58,y:.31}], label:'Vänster arm: horisontell'},
+    {type:'arrow', pts:[{x:.28,y:.30},{x:.62,y:.52}], label:'Axlar: 90° rotation'},
+    {type:'arrow', pts:[{x:.32,y:.52},{x:.56,y:.46}], label:'Höfter: 45° rotation'},
+    {type:'arrow', pts:[{x:.54,y:.84},{x:.44,y:.84}], label:'Vikt: 70-80% höger sida'},
+  ],
+  // 3: TRANSITION
+  [
+    {type:'arrow', pts:[{x:.54,y:.54},{x:.42,y:.51}], label:'Höfter leder: roterar mot mål'},
+    {type:'arrow', pts:[{x:.54,y:.40},{x:.50,y:.48}], label:'Armar/klubba: faller inåt'},
+    {type:'arrow', pts:[{x:.52,y:.80},{x:.38,y:.80}], label:'Vikt: skiftar till vänster'},
+    {type:'line',  pts:[{x:.48,y:.18},{x:.51,y:.72}], label:'Huvud: stilla'},
+  ],
+  // 4: IMPACT
+  [
+    {type:'line',  pts:[{x:.43,y:.26},{x:.49,y:.74}], label:'Skaft: framåtlutning (viktigt!)'},
+    {type:'line',  pts:[{x:.32,y:.50},{x:.57,y:.43}], label:'Höfter: 45° öppna mot mål'},
+    {type:'line',  pts:[{x:.32,y:.28},{x:.55,y:.50}], label:'Vänster sida: rak & fast'},
+    {type:'arrow', pts:[{x:.40,y:.88},{x:.36,y:.74}], label:'Händer: framför bollen'},
+    {type:'arrow', pts:[{x:.48,y:.18},{x:.48,y:.22}], label:'Huvud: bakom bollen'},
+  ],
+  // 5: FOLLOW-THROUGH
+  [
+    {type:'arrow', pts:[{x:.44,y:.60},{x:.38,y:.26}], label:'Finish: hög över vänster axel'},
+    {type:'line',  pts:[{x:.30,y:.52},{x:.54,y:.36}], label:'Bröst/mage: mot målet'},
+    {type:'arrow', pts:[{x:.60,y:.82},{x:.58,y:.68}], label:'Höger häl: upp från marken'},
+    {type:'arrow', pts:[{x:.38,y:.80},{x:.36,y:.72}], label:'Vikt: 100% vänster fot'},
+  ],
+];
+
+// ══════════════════════════════════
+//  BUILD CLUB BUTTONS
+// ══════════════════════════════════
 let selectedClub = null;
+let cameraAngle  = 'bakifran';
+
 const clubGroupsEl = document.getElementById('clubGroups');
 [...new Set(CLUBS.map(c=>c.group))].forEach(g => {
   const wrap = document.createElement('div');
@@ -919,18 +686,47 @@ function selectClub(club) {
   document.querySelectorAll('.club-btn').forEach(b => b.classList.toggle('active', b.dataset.id===club.id));
   document.getElementById('clubBadge').textContent = club.label.toUpperCase();
   document.getElementById('clubPill').textContent  = club.label.toUpperCase();
-  const key = TIPS[club.id] ? club.id : 'default_iron';
-  document.getElementById('tipsTitle').textContent = `// TIPS — ${club.label.toUpperCase()}`;
-  document.getElementById('tipsGrid').innerHTML = TIPS[key].map(t=>
-    `<div class="tip-card"><h3>${t.title}</h3><p>${t.body}</p></div>`
+  updateTips();
+}
+
+function updateTips() {
+  const club = selectedClub;
+  const angle = cameraAngle;
+
+  // Camera-specific tips
+  const camTips = CAM_TIPS[angle] || [];
+  document.getElementById('cameraTipsLabel').textContent =
+    angle === 'bakifran' ? '// Bakifrån — vad du ska titta på' : '// Från sidan — vad du ska titta på';
+  document.getElementById('cameraTipsGrid').innerHTML = camTips.map(t =>
+    `<div class="camera-tip-card"><h3>${t.t}</h3><p>${t.b}</p></div>`
   ).join('');
+
+  // Club tips
+  if (!club) return;
+  const key = TIPS[club.id] ? club.id : 'default_iron';
+  document.getElementById('tipsTitle').textContent = `// Teknik — ${club.label.toUpperCase()}`;
+  document.getElementById('tipsGrid').innerHTML = TIPS[key].map(t =>
+    `<div class="tip-card"><h3>${t.t}</h3><p>${t.b}</p></div>`
+  ).join('');
+}
+
+// ══════════════════════════════════
+//  CAMERA ANGLE
+// ══════════════════════════════════
+function setCameraAngle(angle) {
+  cameraAngle = angle;
+  document.getElementById('camBtnBak').classList.toggle('active',  angle === 'bakifran');
+  document.getElementById('camBtnSida').classList.toggle('active', angle === 'fran_sidan');
+  document.getElementById('cameraInfo').textContent =
+    angle === 'bakifran' ? 'Kamera bakom — sikt mot målet' : 'Kamera vid sidan — ser ansikte & mage';
+  updateTips();
+  if (frames.length) redraw();
 }
 
 // ══════════════════════════════════
 //  VIDEO PLAYER
 // ══════════════════════════════════
-let videoEl = null;
-let isLooping = true;
+let videoEl = null, isLooping = true;
 
 function loadVideo(file) {
   if (!file) return;
@@ -956,7 +752,6 @@ function loadVideo(file) {
 ['swingUpload','swingGallery','swingRecord'].forEach(id => {
   document.getElementById(id).addEventListener('change', e => loadVideo(e.target.files[0]));
 });
-
 function clearVideo() {
   if (videoEl) { videoEl.pause(); videoEl.remove(); videoEl = null; }
   document.getElementById('uploadPrompt').style.display = 'flex';
@@ -966,11 +761,7 @@ function clearVideo() {
   document.getElementById('swingUpload').value = '';
   closeAnnotation();
 }
-
-function initScrubber() {
-  document.getElementById('scrubber').max = videoEl.duration;
-  tickScrubber();
-}
+function initScrubber() { document.getElementById('scrubber').max = videoEl.duration; tickScrubber(); }
 function tickScrubber() {
   if (!videoEl) return;
   const s = document.getElementById('scrubber');
@@ -979,10 +770,7 @@ function tickScrubber() {
   s.style.background = `linear-gradient(to right,#3ddc6e ${pct}%,rgba(61,220,110,0.12) ${pct}%)`;
   document.getElementById('timeLabel').textContent = `${fmt(videoEl.currentTime)} / ${fmt(videoEl.duration)}`;
 }
-function fmt(s) {
-  if (!s||isNaN(s)) return '0:00';
-  return `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-}
+function fmt(s) { if (!s||isNaN(s)) return '0:00'; return `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`; }
 document.getElementById('scrubber').addEventListener('input', e => { if (videoEl) videoEl.currentTime = e.target.value; });
 function togglePlay() { if (!videoEl) return; videoEl.paused ? videoEl.play() : videoEl.pause(); }
 function setPlayIcon(playing) {
@@ -990,23 +778,14 @@ function setPlayIcon(playing) {
     ? '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
     : '<polygon points="5,3 19,12 5,21"/>';
 }
-function toggleLoop() {
-  isLooping = !isLooping;
-  if (videoEl) videoEl.loop = isLooping;
-  document.getElementById('loopBtn').classList.toggle('active', isLooping);
-}
-function setSpeed(sp) {
-  if (videoEl) videoEl.playbackRate = sp;
-  document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.speed)===sp));
-}
-document.addEventListener('keydown', e => {
-  if (e.code==='Space' && e.target.tagName!=='INPUT') { e.preventDefault(); togglePlay(); }
-});
+function toggleLoop() { isLooping=!isLooping; if(videoEl) videoEl.loop=isLooping; document.getElementById('loopBtn').classList.toggle('active',isLooping); }
+function setSpeed(sp) { if(videoEl) videoEl.playbackRate=sp; document.querySelectorAll('.speed-btn').forEach(b=>b.classList.toggle('active',parseFloat(b.dataset.speed)===sp)); }
+document.addEventListener('keydown', e => { if(e.code==='Space'&&e.target.tagName!=='INPUT'){e.preventDefault();togglePlay();} });
 
 // ══════════════════════════════════
 //  FRAME EXTRACTION
 // ══════════════════════════════════
-const FRAME_POSITIONS = [0.04, 0.20, 0.38, 0.55, 0.72, 0.92];
+const FRAME_POSITIONS = [0.04,0.20,0.38,0.55,0.72,0.92];
 const FRAME_LABELS    = ['Address','Takeaway','Topp av backswing','Transition','Impact','Follow-through'];
 
 async function extractFrames() {
@@ -1030,68 +809,11 @@ async function extractFrames() {
 }
 
 // ══════════════════════════════════
-//  IDEAL SWING GUIDES (framifrån-vy)
-//  Koordinater normaliserade 0-1.
+//  ANNOTATION
 // ══════════════════════════════════
-const GUIDES = [
-  // 0: ADDRESS
-  [
-    {type:'line',  pts:[{x:.48,y:.18},{x:.52,y:.74}], label:'Ryggrad ~35° framåtlutning'},
-    {type:'line',  pts:[{x:.28,y:.30},{x:.66,y:.28}], label:'Axlar: parallella med målet'},
-    {type:'line',  pts:[{x:.30,y:.53},{x:.64,y:.51}], label:'Höfter: parallella med målet'},
-    {type:'arrow', pts:[{x:.42,y:.98},{x:.42,y:.87}], label:'Bollpos (driver: vänster häl)'},
-  ],
-  // 1: TAKEAWAY
-  [
-    {type:'line',  pts:[{x:.48,y:.20},{x:.52,y:.72}], label:'Rygg: hålls stabil'},
-    {type:'arrow', pts:[{x:.48,y:.58},{x:.64,y:.42}], label:'Klubban: innanför mållinje'},
-    {type:'arrow', pts:[{x:.30,y:.30},{x:.26,y:.37}], label:'Vänster axel: under haka'},
-    {type:'arrow', pts:[{x:.56,y:.56},{x:.60,y:.62}], label:'Vikt: laddar höger sida'},
-  ],
-  // 2: TOPP AV BACKSWING
-  [
-    {type:'line',  pts:[{x:.24,y:.27},{x:.58,y:.31}], label:'Vänster arm: horisontell'},
-    {type:'arrow', pts:[{x:.28,y:.30},{x:.62,y:.52}], label:'Axlar: 90° rotation'},
-    {type:'arrow', pts:[{x:.32,y:.52},{x:.56,y:.46}], label:'Höfter: 45° rotation'},
-    {type:'arrow', pts:[{x:.54,y:.84},{x:.44,y:.84}], label:'Vikt: 70-80% höger'},
-  ],
-  // 3: TRANSITION
-  [
-    {type:'arrow', pts:[{x:.54,y:.54},{x:.42,y:.51}], label:'Höfter leder: mot mål'},
-    {type:'arrow', pts:[{x:.54,y:.40},{x:.50,y:.48}], label:'Armar/klubba faller inåt'},
-    {type:'arrow', pts:[{x:.52,y:.80},{x:.38,y:.80}], label:'Vikt skiftar vänster'},
-    {type:'line',  pts:[{x:.48,y:.18},{x:.51,y:.72}], label:'Huvud: stilla'},
-  ],
-  // 4: IMPACT
-  [
-    {type:'line',  pts:[{x:.43,y:.26},{x:.49,y:.74}], label:'Skaft: framåtlutning (viktigt!)'},
-    {type:'line',  pts:[{x:.32,y:.50},{x:.57,y:.43}], label:'Höfter: 45° öppna mot mål'},
-    {type:'line',  pts:[{x:.32,y:.28},{x:.55,y:.50}], label:'Vänster sida: rak & fast'},
-    {type:'arrow', pts:[{x:.40,y:.88},{x:.36,y:.74}], label:'Händer: framför bollen'},
-    {type:'arrow', pts:[{x:.48,y:.18},{x:.48,y:.22}], label:'Huvud: bakom bollen'},
-  ],
-  // 5: FOLLOW-THROUGH
-  [
-    {type:'arrow', pts:[{x:.44,y:.60},{x:.38,y:.26}], label:'Finish: hög över vänster axel'},
-    {type:'line',  pts:[{x:.30,y:.52},{x:.54,y:.36}], label:'Bröst/mage: mot mål'},
-    {type:'arrow', pts:[{x:.60,y:.82},{x:.58,y:.68}], label:'Höger häl: upp'},
-    {type:'arrow', pts:[{x:.38,y:.80},{x:.36,y:.72}], label:'Vikt: 100% vänster fot'},
-  ],
-];
-
-// ══════════════════════════════════
-//  ANNOTATION SYSTEM
-// ══════════════════════════════════
-let frames        = [];
-let drawings      = {};
-let currentFrame  = 0;
-let activeTool    = 'arrow';
-let activeColor   = '#3ddc6e';
-let painting      = false;
-let startPt       = null;
-let anglePhase    = 0;
-let anglePts      = [];
-let showGuides    = true;
+let frames       = [];
+let currentFrame = 0;
+let showGuides   = true;
 
 const canvas   = document.getElementById('drawCanvas');
 const ctx      = canvas.getContext('2d');
@@ -1102,18 +824,13 @@ async function startAnnotation() {
   const btn = document.getElementById('analyzeBtn');
   btn.style.opacity = '0.5';
   btn.textContent = '// EXTRAHERAR FRAMES…';
-
-  frames   = await extractFrames();
-  drawings = {};
-  FRAME_POSITIONS.forEach((_,i) => drawings[i] = []);
-
+  frames = await extractFrames();
   btn.style.opacity = '';
   btn.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg> Analysera swing';
-
   buildFrameStrip();
   document.getElementById('annotationPanel').style.display = 'block';
   selectFrame(0);
-  document.getElementById('annotationPanel').scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('annotationPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function buildFrameStrip() {
@@ -1121,16 +838,10 @@ function buildFrameStrip() {
   strip.innerHTML = '';
   frames.forEach((f,i) => {
     const div = document.createElement('div');
-    div.className = 'frame-thumb';
-    div.dataset.idx = i;
-    div.onclick = () => selectFrame(i);
-    const img = document.createElement('img');
-    img.src = f.src; img.alt = f.label;
-    const lbl = document.createElement('div');
-    lbl.className = 'frame-thumb-label';
-    lbl.textContent = FRAME_LABELS[i].toUpperCase();
-    div.appendChild(img); div.appendChild(lbl);
-    strip.appendChild(div);
+    div.className = 'frame-thumb'; div.dataset.idx = i; div.onclick = () => selectFrame(i);
+    const img = document.createElement('img'); img.src = f.src; img.alt = f.label;
+    const lbl = document.createElement('div'); lbl.className = 'frame-thumb-label'; lbl.textContent = FRAME_LABELS[i].toUpperCase();
+    div.appendChild(img); div.appendChild(lbl); strip.appendChild(div);
   });
 }
 
@@ -1141,158 +852,50 @@ function selectFrame(idx) {
   document.getElementById('phaseLabel').textContent = FRAME_LABELS[idx].toUpperCase();
   frameImg.onload = () => { resizeCanvas(); redraw(); };
   if (frameImg.complete) { resizeCanvas(); redraw(); }
-  resetAngle();
 }
-
 function resizeCanvas() {
   const rect = frameImg.getBoundingClientRect();
-  canvas.width  = rect.width;
-  canvas.height = rect.height;
-  canvas.style.width  = rect.width  + 'px';
-  canvas.style.height = rect.height + 'px';
-}
-
-function getPt(e) {
-  const rect = canvas.getBoundingClientRect();
-  const src = e.touches ? e.touches[0] : e;
-  return { x: (src.clientX - rect.left) / rect.width, y: (src.clientY - rect.top) / rect.height };
+  canvas.width  = rect.width; canvas.height = rect.height;
+  canvas.style.width = rect.width+'px'; canvas.style.height = rect.height+'px';
 }
 function toCanvas(pt) { return { x: pt.x * canvas.width, y: pt.y * canvas.height }; }
-
-// ── Pointer events
-canvas.addEventListener('mousedown',  onDown);
-canvas.addEventListener('mousemove',  onMove);
-canvas.addEventListener('mouseup',    onUp);
-canvas.addEventListener('touchstart', e => { e.preventDefault(); onDown(e); }, {passive:false});
-canvas.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e); }, {passive:false});
-canvas.addEventListener('touchend',   e => { e.preventDefault(); onUp(e);   }, {passive:false});
-
-function onDown(e) {
-  if (activeTool === 'angle') { handleAngleClick(getPt(e)); return; }
-  painting = true; startPt = getPt(e);
-}
-function onMove(e) {
-  if (!painting) return;
-  const pt = getPt(e); redraw(); drawShape(ctx, activeTool, activeColor, startPt, pt, true);
-}
-function onUp(e) {
-  if (!painting) return;
-  painting = false;
-  const pt = getPt(e);
-  if (Math.hypot(pt.x - startPt.x, pt.y - startPt.y) > 0.01)
-    drawings[currentFrame].push({ tool: activeTool, color: activeColor, pts: [startPt, pt] });
-  redraw();
-}
-
-// ── Angle tool
-function handleAngleClick(pt) {
-  if (anglePhase === 0) {
-    anglePts = [pt]; anglePhase = 1; updateAngleHint(); drawDot(pt);
-  } else if (anglePhase === 1) {
-    anglePts.push(pt); anglePhase = 2; updateAngleHint(); redraw();
-    drawShape(ctx, 'angle-preview', activeColor, anglePts[0], pt, true);
-  } else {
-    anglePts.push(pt);
-    drawings[currentFrame].push({ tool: 'angle', color: activeColor, pts: [...anglePts] });
-    resetAngle(); redraw();
-  }
-}
-function resetAngle() { anglePhase = 0; anglePts = []; updateAngleHint(); }
-function updateAngleHint() {
-  const el = document.getElementById('angleHint');
-  if (activeTool !== 'angle') { el.style.display = 'none'; return; }
-  el.style.display = 'inline-block';
-  el.textContent = anglePhase === 0 ? 'K1: centrum'
-                 : anglePhase === 1 ? 'K2: arm 1'
-                 :                    'K3: arm 2';
-}
-function drawDot(pt) {
-  const p = toCanvas(pt);
-  ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
-  ctx.fillStyle = activeColor; ctx.fill();
-}
-
-// ── Core draw
-function drawShape(ctx, tool, color, a, b, preview) {
-  const A = toCanvas(a), B = toCanvas(b);
-  ctx.strokeStyle = color; ctx.fillStyle = color;
-  ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-  if (tool === 'arrow') { strokeLine(ctx, A, B); drawArrowHead(ctx, A, B, color); }
-  else if (tool === 'line') { strokeLine(ctx, A, B); }
-  else if (tool === 'circle') {
-    const r = Math.hypot(B.x - A.x, B.y - A.y);
-    ctx.beginPath(); ctx.arc(A.x, A.y, r, 0, Math.PI*2); ctx.stroke();
-  }
-  else if (tool === 'angle-preview') { strokeLine(ctx, A, B); drawDot(a); }
-}
-
-function drawAngleFull(ctx, pts, color) {
-  if (pts.length < 3) return;
-  const V = toCanvas(pts[0]), P1 = toCanvas(pts[1]), P2 = toCanvas(pts[2]);
-  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-  strokeLine(ctx, V, P1); strokeLine(ctx, V, P2);
-  const a1 = Math.atan2(P1.y - V.y, P1.x - V.x);
-  const a2 = Math.atan2(P2.y - V.y, P2.x - V.x);
-  let deg = Math.abs((a2 - a1) * 180 / Math.PI);
-  if (deg > 180) deg = 360 - deg;
-  const r = Math.min(28, Math.hypot(P1.x-V.x,P1.y-V.y)*0.3, Math.hypot(P2.x-V.x,P2.y-V.y)*0.3);
-  ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.arc(V.x, V.y, r, Math.min(a1,a2), Math.max(a1,a2)); ctx.stroke();
-  const mid = (a1+a2)/2;
-  ctx.font = 'bold 12px JetBrains Mono, monospace';
-  ctx.fillText(`${Math.round(deg)}°`, V.x + (r+10)*Math.cos(mid), V.y + (r+10)*Math.sin(mid));
-  ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(V.x, V.y, 3.5, 0, Math.PI*2); ctx.fill();
-}
-function strokeLine(ctx, A, B) {
-  ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
-}
-function drawArrowHead(ctx, A, B, color) {
-  const len = 13, angle = Math.atan2(B.y - A.y, B.x - A.x);
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(B.x, B.y);
-  ctx.lineTo(B.x - len*Math.cos(angle - Math.PI/6), B.y - len*Math.sin(angle - Math.PI/6));
-  ctx.lineTo(B.x - len*Math.cos(angle + Math.PI/6), B.y - len*Math.sin(angle + Math.PI/6));
-  ctx.closePath(); ctx.fill();
-}
 
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawGuides();
-  (drawings[currentFrame] || []).forEach(d => {
-    if (d.tool === 'angle') drawAngleFull(ctx, d.pts, d.color);
-    else drawShape(ctx, d.tool, d.color, d.pts[0], d.pts[1]);
-  });
-  if (activeTool === 'angle' && anglePts.length > 0) {
-    anglePts.forEach(p => drawDot(p));
-    if (anglePts.length === 2) drawShape(ctx, 'angle-preview', activeColor, anglePts[0], anglePts[1]);
-  }
 }
 
 // ── Guide rendering
 function drawGuides() {
   if (!showGuides) return;
-  const guides = GUIDES[currentFrame] || [];
-  const GC = 'rgba(200,168,75,0.82)';
+  const set    = cameraAngle === 'bakifran' ? GUIDES_DTL : GUIDES_FACEON;
+  const guides = set[currentFrame] || [];
+  const GC     = 'rgba(200,168,75,0.88)';
   guides.forEach(g => {
     ctx.save();
-    ctx.strokeStyle = GC; ctx.fillStyle = GC;
-    ctx.lineWidth = 2; ctx.lineCap = 'round';
+    ctx.strokeStyle = GC; ctx.fillStyle = GC; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
     const A = toCanvas(g.pts[0]), B = toCanvas(g.pts[g.pts.length - 1]);
-    if (g.type === 'line') { ctx.setLineDash([7, 5]); strokeLine(ctx, A, B); ctx.setLineDash([]); }
-    else if (g.type === 'arrow') { ctx.setLineDash([]); strokeLine(ctx, A, B); drawArrowHead(ctx, A, B, GC); }
+    if (g.type === 'line') {
+      ctx.setLineDash([7, 5]); strokeLine(ctx, A, B); ctx.setLineDash([]);
+    } else if (g.type === 'arrow') {
+      ctx.setLineDash([]);
+      strokeLine(ctx, A, B);
+      drawArrowHead(ctx, A, B, GC);
+    }
     if (g.label) drawGuideLabel(ctx, A, B, g.label);
     ctx.restore();
   });
+  // Watermark
+  const angleLabel = cameraAngle === 'bakifran' ? 'BAKIFRÅN — sikt mot mål' : 'FRÅN SIDAN — sikt mot ansikte';
   ctx.save();
   ctx.font = '500 9.5px JetBrains Mono, monospace';
   ctx.fillStyle = 'rgba(200,168,75,0.38)';
-  ctx.fillText('▸ IDEAL GUIDE — framifrån-vy', 8, canvas.height - 7);
+  ctx.fillText(`▸ IDEAL GUIDE — ${angleLabel}`, 8, canvas.height - 7);
   ctx.restore();
 }
 
 function drawGuideLabel(ctx, A, B, text) {
-  const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
+  const mx = (A.x+B.x)/2, my = (A.y+B.y)/2;
   ctx.font = '600 9.5px JetBrains Mono, monospace';
   const w = ctx.measureText(text).width, pad = 4, h = 14;
   let lx = mx + 7, ly = my - 2;
@@ -1307,6 +910,17 @@ function drawGuideLabel(ctx, A, B, text) {
   ctx.fillText(text, lx, ly);
 }
 
+function strokeLine(ctx, A, B) { ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke(); }
+function drawArrowHead(ctx, A, B, color) {
+  const len = 13, angle = Math.atan2(B.y-A.y, B.x-A.x);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(B.x, B.y);
+  ctx.lineTo(B.x - len*Math.cos(angle-Math.PI/6), B.y - len*Math.sin(angle-Math.PI/6));
+  ctx.lineTo(B.x - len*Math.cos(angle+Math.PI/6), B.y - len*Math.sin(angle+Math.PI/6));
+  ctx.closePath(); ctx.fill();
+}
+
 function toggleGuides() {
   showGuides = !showGuides;
   const btn = document.getElementById('guideToggleBtn');
@@ -1316,30 +930,11 @@ function toggleGuides() {
   redraw();
 }
 
-function undoDrawing() {
-  if (drawings[currentFrame].length) drawings[currentFrame].pop(); redraw();
-}
-function clearDrawings() { drawings[currentFrame] = []; resetAngle(); redraw(); }
-function closeAnnotation() { document.getElementById('annotationPanel').style.display = 'none'; frames = []; resetAngle(); }
-
+function closeAnnotation() { document.getElementById('annotationPanel').style.display='none'; frames=[]; }
 window.addEventListener('resize', () => { if (frames.length) { resizeCanvas(); redraw(); } });
 
-// ── Tool buttons
-document.getElementById('toolGroup').addEventListener('click', e => {
-  const btn = e.target.closest('.tool-btn');
-  if (!btn) return;
-  activeTool = btn.dataset.tool;
-  document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b===btn));
-  resetAngle(); updateAngleHint();
-});
-
-// ── Color swatches
-document.getElementById('colorGroup').addEventListener('click', e => {
-  const sw = e.target.closest('.color-swatch');
-  if (!sw) return;
-  activeColor = sw.dataset.color;
-  document.querySelectorAll('.color-swatch').forEach(s => s.classList.toggle('active', s===sw));
-});
+// Init tips with default camera angle
+updateTips();
 </script>
 </body>
 </html>
