@@ -1,13 +1,457 @@
 <!DOCTYPE html>
-<!-- v2 -->
-<html lang="sv">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Swing Analyzer</title>
-<!-- Google Analytics -->
+<title>Golf Swing Analyzer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    color: #1e1e1e;
+    min-height: 100vh;
+    background: #3a6040;
+    position: relative;
+  }
+
+  /* Golfare-silhuett i bakgrunden */
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -20px;
+    right: 6%;
+    width: 340px;
+    height: 580px;
+    z-index: -1;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 580'%3E%3Cg fill='%23182e1a' opacity='0.82'%3E%3C!-- Huvud --%3E%3Cellipse cx='178' cy='52' rx='28' ry='30'/%3E%3C!-- Hals --%3E%3Crect x='170' y='78' width='16' height='18' rx='6'/%3E%3C!-- Överkropp (vriden i follow-through) --%3E%3Cellipse cx='172' cy='130' rx='38' ry='48'/%3E%3C!-- Höfter --%3E%3Cellipse cx='168' cy='198' rx='30' ry='22'/%3E%3C!-- Vänster arm uppe (slagen) --%3E%3Cellipse cx='128' cy='98' rx='12' ry='40' transform='rotate(-30 128 98)'/%3E%3Cellipse cx='100' cy='60' rx='10' ry='36' transform='rotate(-50 100 60)'/%3E%3C!-- Höger arm nere mot höften --%3E%3Cellipse cx='205' cy='140' rx='11' ry='38' transform='rotate(20 205 140)'/%3E%3Cellipse cx='220' cy='175' rx='10' ry='28' transform='rotate(35 220 175)'/%3E%3C!-- Klubbskaft (lång linje uppåt-vänster) --%3E%3Crect x='58' y='10' width='8' height='110' rx='4' transform='rotate(35 58 10)'/%3E%3C!-- Klubbhuvud --%3E%3Cellipse cx='52' cy='22' rx='18' ry='10' transform='rotate(35 52 22)'/%3E%3C!-- Vänster lår --%3E%3Cellipse cx='155' cy='255' rx='18' ry='50' transform='rotate(-8 155 255)'/%3E%3C!-- Höger lår (viktöverföring framåt) --%3E%3Cellipse cx='185' cy='250' rx='16' ry='48' transform='rotate(12 185 250)'/%3E%3C!-- Vänster underben --%3E%3Cellipse cx='148' cy='340' rx='13' ry='46' transform='rotate(-5 148 340)'/%3E%3C!-- Höger underben (lite bakåt, på tå) --%3E%3Cellipse cx='190' cy='335' rx='12' ry='44' transform='rotate(18 190 335)'/%3E%3C!-- Vänster fot --%3E%3Cellipse cx='143' cy='390' rx='28' ry='11' transform='rotate(-5 143 390)'/%3E%3C!-- Höger fot (på tå) --%3E%3Cellipse cx='200' cy='382' rx='16' ry='9' transform='rotate(15 200 382)'/%3E%3C!-- Skugga under fötterna --%3E%3Cellipse cx='170' cy='400' rx='55' ry='10' opacity='0.3'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
+    filter: blur(6px) brightness(0.55);
+    opacity: 0.75;
+  }
+
+  /* Golf-landskap i CSS, bluras ut till en mjuk bakgrundsbild */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: -80px;
+    z-index: -1;
+    background:
+      /* Himmel — mer dominant */
+      linear-gradient(180deg, #8ec8e8 0%, #b8d8ee 28%, #cde0ee 50%, transparent 68%),
+      /* Sandgropar — mer framträdande */
+      radial-gradient(ellipse 160px 80px at 72% 62%, #c8ab6a 0%, transparent 65%),
+      radial-gradient(ellipse 100px 50px at 30% 78%, #c2a45e 0%, transparent 65%),
+      radial-gradient(ellipse 80px 40px at 85% 44%, #caa85e 0%, transparent 60%),
+      /* Putting greens — dämpad grön */
+      radial-gradient(circle 80px at 65% 52%, #4a9050 0%, transparent 60%),
+      radial-gradient(circle 55px at 18% 64%, #468a48 0%, transparent 55%),
+      /* Fairway — nertonat, mer beige/brun inslag */
+      linear-gradient(150deg,
+        #4a6e4a 0%, #5a7850 10%, #4e6c46 22%,
+        #8a8a60 32%, #7a7a52 42%, #4e6a46 54%,
+        #5a7450 64%, #8e8c62 74%, #4a6a44 84%,
+        #607858 94%, #4e6848 100%),
+      /* Mörkare djup */
+      radial-gradient(ellipse 300px 200px at 8% 32%, #2a3a28 0%, transparent 65%),
+      radial-gradient(ellipse 250px 180px at 92% 22%, #283628 0%, transparent 60%);
+    filter: blur(38px) saturate(0.9) brightness(0.92);
+  }
+
+  header {
+    background: rgba(0,0,0,0.18);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  header h1 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.02em;
+  }
+
+  header p { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 28px 24px; }
+
+  /* Klubbrad */
+  .club-bar {
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(22px) saturate(1.4);
+    -webkit-backdrop-filter: blur(22px) saturate(1.4);
+    border: 1px solid rgba(255,255,255,0.32);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.4);
+  }
+
+  .club-bar > span { color: rgba(255,255,255,0.6); }
+
+  .club-bar > span {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #aaa;
+    margin-bottom: 11px;
+  }
+
+  .club-groups { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+
+  .club-group-label {
+    font-size: 0.63rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #c8c0b4;
+    padding: 0 8px;
+  }
+
+  .club-btn {
+    background: #f2ede6;
+    border: 1px solid #ddd6ca;
+    color: #555;
+    padding: 5px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 500;
+    transition: all 0.14s;
+    font-family: inherit;
+  }
+
+  .club-btn:hover { background: #e8e2d8; border-color: #bbb4a8; color: #222; }
+
+  .club-btn.active {
+    background: #2a3d2c;
+    border-color: #2a3d2c;
+    color: #f0ede6;
+    font-weight: 600;
+  }
+
+  /* Jämförelsepaneler — lika höga */
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: stretch;
+  }
+
+  @media (max-width: 680px) { .comparison { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: rgba(255,255,255,0.14);
+    backdrop-filter: blur(28px) saturate(1.5);
+    -webkit-backdrop-filter: blur(28px) saturate(1.5);
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.35);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-header {
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    flex-shrink: 0;
+  }
+
+  .panel-title { font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+
+  .panel-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  .label-you { background: rgba(80,200,120,0.25); color: #b6f0c6; border: 1px solid rgba(80,200,120,0.3); }
+  .label-pro { background: rgba(240,180,80,0.25); color: #f5d98a; border: 1px solid rgba(240,180,80,0.3); }
+
+  /* Videoyta — fast höjd, ingen aspect-ratio som skapar ojämnheter */
+  .video-area {
+    flex: 1;
+    min-height: 220px;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .video-area video { width: 100%; height: 100%; object-fit: contain; }
+
+  .upload-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 28px 20px;
+    text-align: center;
+    transition: opacity 0.18s;
+  }
+
+  .upload-prompt:hover { opacity: 0.72; }
+
+  .upload-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #242424;
+    border: 1.5px dashed #4a4a4a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .upload-prompt p { color: #bbb; font-size: 0.84rem; font-weight: 500; }
+  .upload-prompt span { color: #666; font-size: 0.71rem; }
+
+  input[type="file"] { display: none; }
+
+  .panel-footer {
+    padding: 10px 16px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.08);
+    flex-shrink: 0;
+  }
+
+  .btn {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.77rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background 0.14s;
+    font-family: inherit;
+    backdrop-filter: blur(8px);
+  }
+
+  .btn:hover { background: rgba(255,255,255,0.32); }
+  .btn-sm { padding: 5px 11px; font-size: 0.72rem; }
+
+  /* Tips-panel */
+  .tips-panel {
+    background: rgba(255,255,255,0.13);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border: 1px solid rgba(255,255,255,0.24);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+
+  .tips-panel h2 {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 14px;
+  }
+
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+    gap: 10px;
+  }
+
+  .tip-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 13px 15px;
+    border-left: 3px solid rgba(100,200,120,0.6);
+    border-top: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .tip-card h3 { font-size: 0.77rem; font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 4px; }
+  .tip-card p { font-size: 0.74rem; color: rgba(255,255,255,0.6); line-height: 1.55; }
+
+  .video-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .club-name-display { font-size: 0.76rem; color: rgba(255,255,255,0.45); }
+
+  .sync-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.28);
+    color: rgba(255,255,255,0.8);
+    padding: 5px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+    font-family: inherit;
+    transition: all 0.14s;
+  }
+
+  .sync-btn:hover { background: rgba(255,255,255,0.25); }
+
+  /* Mobil */
+  @media (max-width: 500px) {
+    header { padding: 14px 16px; }
+    header h1 { font-size: 1rem; }
+    .container { padding: 16px 12px; }
+    .club-bar { padding: 12px 14px; }
+    .club-btn { padding: 7px 14px; font-size: 0.82rem; }
+    .panel-header { padding: 11px 14px; }
+    .panel-footer { padding: 9px 12px; }
+    .video-area { min-height: 180px; }
+    .upload-prompt > div { gap: 8px; }
+    .upload-prompt label { padding: 12px 10px; min-width: 80px; min-height: 90px; }
+    .tips-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  .club-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.85);
+  }
+
+  .club-btn:hover { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.4); color: #fff; }
+
+  .club-btn.active {
+    background: rgba(255,255,255,0.9);
+    border-color: rgba(255,255,255,0.9);
+    color: #1e3d22;
+    font-weight: 700;
+  }
+
+  .club-group-label { color: rgba(255,255,255,0.3); }
+
+  /* === AI-ANALYS === */
+  .api-modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .api-modal {
+    background: #1a2e1c; border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 16px; padding: 28px 32px; max-width: 420px; width: 90%;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+  .api-modal h2 { color: rgba(255,255,255,0.9); font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .api-modal p { color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-bottom: 18px; line-height: 1.65; }
+  .api-modal input {
+    width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 0.84rem;
+    font-family: 'Courier New', monospace; margin-bottom: 8px; outline: none; box-sizing: border-box;
+  }
+  .api-modal input:focus { border-color: rgba(100,200,120,0.6); }
+  .api-modal-note { font-size: 0.72rem; color: rgba(255,255,255,0.3); margin-bottom: 20px; }
+  .api-modal-note strong { color: rgba(255,255,255,0.5); }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  .settings-btn {
+    margin-left: auto; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.6); border-radius: 8px; padding: 6px 12px;
+    cursor: pointer; font-size: 0.76rem; font-weight: 500; display: flex; align-items: center; gap: 6px;
+    transition: background 0.14s; font-family: inherit; white-space: nowrap;
+  }
+  .settings-btn:hover { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); }
+  .settings-btn.has-key { color: rgba(100,210,130,0.85); border-color: rgba(100,200,120,0.3); }
+
+  .clear-btn {
+    background: rgba(255,80,80,0.12); border: 1px solid rgba(255,80,80,0.28);
+    color: rgba(255,150,150,0.85); padding: 5px 11px; border-radius: 7px;
+    cursor: pointer; font-size: 0.72rem; font-weight: 600; font-family: inherit;
+    transition: background 0.14s;
+  }
+  .clear-btn:hover { background: rgba(255,80,80,0.25); }
+
+  .analyze-btn {
+    background: rgba(100,200,120,0.2); border: 1px solid rgba(100,200,120,0.38);
+    color: #b6f0c6; padding: 6px 14px; border-radius: 7px; cursor: pointer;
+    font-size: 0.77rem; font-weight: 600; transition: all 0.14s; font-family: inherit;
+    display: none; align-items: center; gap: 6px; white-space: nowrap; margin-left: auto;
+  }
+  .analyze-btn:hover:not(:disabled) { background: rgba(100,200,120,0.35); }
+  .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .analysis-panel {
+    background: rgba(255,255,255,0.11); backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 14px;
+    overflow: hidden; margin-bottom: 24px; display: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .analysis-header {
+    padding: 13px 20px; border-bottom: 1px solid rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .analysis-header h2 {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: rgba(255,255,255,0.45); margin: 0;
+  }
+  .analysis-body { padding: 20px 24px; }
+  .analysis-loading {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 14px; padding: 36px 20px; color: rgba(255,255,255,0.55); font-size: 0.84rem;
+  }
+  .spinner {
+    width: 30px; height: 30px; border: 2px solid rgba(255,255,255,0.12);
+    border-top-color: rgba(100,200,120,0.75); border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .frame-strip { display: flex; gap: 6px; margin-bottom: 18px; overflow-x: auto; padding-bottom: 4px; }
+  .frame-strip img {
+    height: 68px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.14);
+    flex-shrink: 0; object-fit: cover;
+  }
+  .frame-label {
+    font-size: 0.6rem; color: rgba(255,255,255,0.35); text-align: center;
+    margin-top: 3px; white-space: nowrap;
+  }
+  .frame-item { display: flex; flex-direction: column; }
+
+  .analysis-content h3 {
+    font-size: 0.72rem; font-weight: 700; color: rgba(100,215,130,0.85);
+    text-transform: uppercase; letter-spacing: 0.09em; margin: 20px 0 9px;
+    padding-bottom: 5px; border-bottom: 1px solid rgba(100,200,120,0.2);
+  }
+  .analysis-content h3:first-child { margin-top: 0; }
+  .analysis-content p { font-size: 0.85rem; color: rgba(255,255,255,0.72); line-height: 1.72; margin: 0 0 8px; }
+  .analysis-content ul, .analysis-content ol { padding-left: 18px; margin: 4px 0 10px; }
+  .analysis-content li { font-size: 0.84rem; color: rgba(255,255,255,0.7); line-height: 1.65; margin-bottom: 5px; }
+  .analysis-error { color: #f08080; font-size: 0.85rem; padding: 24px 0; }
+
+  @media (max-width: 500px) {
+    .settings-btn span { display: none; }
+    .analysis-body { padding: 16px; }
+  }
+</style>
+<!-- Google Analytics — ersätt G-BGHRWYV841 med ditt mätnings-ID -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-BGHRWYV841"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -15,939 +459,695 @@
   gtag('js', new Date());
   gtag('config', 'G-BGHRWYV841');
 </script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Inter', system-ui, sans-serif;
-  color: #fff;
-  min-height: 100vh;
-  background: #3a6040;
-  overflow-x: hidden;
-}
-
-/* Bakgrund — golflandskap */
-body::before {
-  content: '';
-  position: fixed;
-  inset: -80px;
-  z-index: -1;
-  background:
-    linear-gradient(180deg, #8ec8e8 0%, #b8d8ee 28%, #cde0ee 50%, transparent 68%),
-    radial-gradient(ellipse 160px 80px at 72% 62%, #c8ab6a 0%, transparent 65%),
-    radial-gradient(ellipse 100px 50px at 30% 78%, #c2a45e 0%, transparent 65%),
-    radial-gradient(circle 80px at 65% 52%, #4a9050 0%, transparent 60%),
-    linear-gradient(150deg, #4a6e4a 0%, #5a7850 10%, #4e6c46 22%, #8a8a60 32%, #7a7a52 42%, #4e6a46 54%, #5a7450 64%, #8e8c62 74%, #4a6a44 84%, #607858 94%, #4e6848 100%),
-    radial-gradient(ellipse 300px 200px at 8% 32%, #2a3a28 0%, transparent 65%);
-  filter: blur(38px) saturate(0.9) brightness(0.92);
-}
-
-/* Golfar-silhuett */
-body::after {
-  content: '';
-  position: fixed;
-  bottom: -20px;
-  right: 6%;
-  width: 340px;
-  height: 580px;
-  z-index: -1;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 480'%3E%3Cg fill='%23182e1a'%3E%3Cellipse cx='120' cy='456' rx='74' ry='11' opacity='0.4'/%3E%3Ccircle cx='128' cy='72' r='29'/%3E%3Cpath d='M104,112 C98,150 96,190 104,232 C108,250 110,255 112,258 C112,300 110,360 108,420 L103,438 L82,446 L113,450 C117,448 119,430 121,400 C123,340 124,290 128,262 C130,290 138,310 150,330 C162,350 174,378 184,402 L190,410 L180,414 C170,400 160,360 156,320 C152,295 150,270 152,255 C156,230 158,180 156,140 C155,125 154,116 152,112 C140,106 116,106 104,112 Z'/%3E%3Cpath d='M150,118 C150,96 130,86 110,90 C100,92 92,96 90,100 C92,104 98,108 108,111 C124,104 140,108 150,118 Z'/%3E%3Cpath d='M90,96 L96,106 L209,35 L204,25 Z'/%3E%3Cellipse cx='207' cy='30' rx='13' ry='6' transform='rotate(-32 207 30)'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
-  filter: blur(4px) brightness(0.5);
-  opacity: 0.7;
-}
-
-header {
-  background: rgba(0,0,0,0.18);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 14px 32px;
-  text-align: center;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-header h1 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.85);
-  letter-spacing: 0.05em;
-}
-
-.container { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
-
-/* Upload */
-.upload-card {
-  background: rgba(255,255,255,0.13);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-}
-
-.upload-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.upload-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  padding: 14px 20px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.08);
-  transition: background 0.15s;
-  min-width: 100px;
-}
-
-.upload-btn:hover { background: rgba(255,255,255,0.18); }
-.upload-btn span { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.85); }
-.upload-btn small { font-size: 0.65rem; color: rgba(255,255,255,0.4); }
-
-.upload-icon {
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.2);
-  border: 1.5px dashed rgba(255,255,255,0.3);
-  display: flex; align-items: center; justify-content: center;
-}
-
-input[type="file"] { display: none; }
-
-/* Analysyta */
-.analysis-card {
-  background: rgba(255,255,255,0.13);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-  margin-bottom: 16px;
-  display: none;
-}
-
-.canvas-wrap {
-  position: relative;
-  width: 100%;
-  background: #000;
-  cursor: crosshair;
-}
-
-.canvas-wrap canvas { display: block; width: 100%; height: auto; }
-
-/* Egna videokontroller */
-.vidcontrols {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: rgba(0,0,0,0.25);
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
-.vc-btn {
-  background: rgba(255,255,255,0.14);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-  width: 38px; height: 38px;
-  border-radius: 9px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.14s;
-}
-.vc-btn:hover { background: rgba(255,255,255,0.26); }
-.vc-play { background: rgba(100,220,160,0.3); border-color: rgba(100,220,160,0.5); }
-.vc-play:hover { background: rgba(100,220,160,0.42); }
-.vc-time { font-size: 0.72rem; color: rgba(255,255,255,0.6); flex-shrink: 0; min-width: 38px; text-align: right; }
-#scrub {
-  flex: 1;
-  height: 6px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: rgba(255,255,255,0.2);
-  border-radius: 3px;
-  cursor: pointer;
-  outline: none;
-}
-#scrub::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  cursor: grab;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-}
-#scrub::-moz-range-thumb {
-  width: 18px; height: 18px;
-  border: none;
-  border-radius: 50%;
-  background: #fff;
-  cursor: grab;
-}
-
-/* Checkpoint knappar */
-.checkpoints {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
-
-.cp-btn {
-  padding: 10px 4px;
-  border: none;
-  border-right: 1px solid rgba(255,255,255,0.08);
-  background: transparent;
-  color: rgba(255,255,255,0.5);
-  font-family: inherit;
-  font-size: 0.65rem;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.15s;
-  line-height: 1.3;
-}
-
-.cp-btn:last-child { border-right: none; }
-.cp-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-.cp-btn.active { background: rgba(255,255,255,0.15); color: #fff; border-bottom: 2px solid #7dd;  }
-.cp-btn .cp-num { display: block; font-size: 0.6rem; opacity: 0.5; margin-bottom: 2px; }
-
-/* Info panel */
-.info-card {
-  background: rgba(255,255,255,0.13);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-  display: none;
-}
-
-.info-card h2 {
-  font-size: 0.9rem;
-  font-weight: 700;
-  margin-bottom: 4px;
-  color: #fff;
-}
-
-.info-card .subtitle {
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.45);
-  margin-bottom: 16px;
-}
-
-.checks {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.check-item {
-  background: rgba(255,255,255,0.07);
-  border-radius: 8px;
-  padding: 10px 12px;
-  border-left: 3px solid rgba(100,220,140,0.6);
-}
-
-.check-item h3 { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 3px; }
-.check-item p { font-size: 0.7rem; color: rgba(255,255,255,0.55); line-height: 1.45; }
-
-/* Verktygsfält */
-.toolbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  flex-wrap: wrap;
-}
-
-.tool-btn {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: rgba(255,255,255,0.8);
-  padding: 5px 12px;
-  border-radius: 7px;
-  cursor: pointer;
-  font-size: 0.72rem;
-  font-weight: 600;
-  font-family: inherit;
-  transition: background 0.14s;
-}
-
-.tool-btn:hover { background: rgba(255,255,255,0.22); }
-.tool-btn.active { background: rgba(100,220,160,0.25); border-color: rgba(100,220,160,0.5); color: #afffcc; }
-
-.angle-display {
-  margin-left: auto;
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.5);
-}
-
-.angle-display span { color: #7df; font-weight: 700; }
-
-@media (max-width: 600px) {
-  header { padding: 12px 16px; }
-  .container { padding: 14px 10px; }
-  .checks { grid-template-columns: 1fr; }
-  .checkpoints { grid-template-columns: repeat(3, 1fr); }
-  .cp-btn { border-bottom: 1px solid rgba(255,255,255,0.06); }
-}
-</style>
 </head>
 <body>
 
-<header><h1>Swing Analyzer</h1></header>
+<!-- API-nyckel modal -->
+<div id="apiModal" class="api-modal-backdrop" style="display:none;" onclick="if(event.target===this)closeApiModal()">
+  <div class="api-modal">
+    <h2>Anthropic API-nyckel</h2>
+    <p>Nyckeln används enbart i din webbläsare för att anropa Claude. Den sparas lokalt på din enhet och skickas aldrig till någon annan server.</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" autocomplete="off" onkeydown="if(event.key==='Enter')saveApiKey()">
+    <div class="api-modal-note">Hämta din nyckel på <strong>console.anthropic.com</strong> → API Keys</div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="closeApiModal()">Avbryt</button>
+      <button class="btn btn-sm" style="background:rgba(100,200,120,0.28);border-color:rgba(100,200,120,0.45);color:#b6f0c6;" onclick="saveApiKey()">Spara nyckel</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <circle cx="14" cy="10" r="5" fill="#7a9a7e"/>
+    <rect x="13" y="15" width="2" height="9" rx="1" fill="#7a9a7e"/>
+    <rect x="7" y="24" width="14" height="1.5" rx="0.75" fill="#4a6a4e"/>
+  </svg>
+  <div>
+    <h1>Swing Analyzer</h1>
+    <p>Välj klubba · Ladda upp din swing · Jämför med proffsen</p>
+  </div>
+  <button class="settings-btn" id="settingsBtn" onclick="openApiModal()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span id="settingsBtnLabel">API-nyckel</span>
+  </button>
+</header>
 
 <div class="container">
 
-  <!-- Ladda upp -->
-  <!-- Klubbval -->
-  <div class="upload-card" style="margin-bottom:12px;">
-    <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.45);margin-bottom:10px;">Välj klubba</div>
-    <div style="display:flex;flex-wrap:wrap;gap:5px;" id="clubBar"></div>
+  <div class="club-bar">
+    <span>Välj klubba</span>
+    <div class="club-groups" id="clubGroups"></div>
   </div>
 
-  <div class="upload-card" id="uploadCard">
-    <div style="text-align:center;margin-bottom:14px;">
-      <p style="font-size:0.8rem;color:rgba(255,255,255,0.6);">Ladda upp din golf-swing för att analysera den</p>
+  <div class="comparison">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Din swing</span>
+        <span class="panel-label label-you">DU</span>
+      </div>
+      <div class="video-area" id="yourVideoArea">
+        <div class="upload-prompt" id="uploadPrompt" style="gap:18px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+            <!-- Ladda upp fil (original) -->
+            <label for="swingUpload" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+              <div class="upload-icon">
+                <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              </div>
+              <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Ladda upp</span>
+              <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Välj fil</span>
+            </label>
+            <!-- Kamerarulle (mobil) -->
+            <label for="swingGallery" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+              <div class="upload-icon">
+                <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+              </div>
+              <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Kamerarulle</span>
+              <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Från telefon</span>
+            </label>
+            <!-- Spela in direkt -->
+            <label for="swingRecord" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+              <div class="upload-icon">
+                <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              </div>
+              <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Spela in</span>
+              <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Öppna kamera</span>
+            </label>
+          </div>
+        </div>
+        <input type="file" id="swingUpload" accept="video/*">
+        <input type="file" id="swingGallery" accept="video/*" accept="video/*">
+        <input type="file" id="swingRecord" accept="video/*" capture="camcorder">
+      </div>
+      <div class="panel-footer">
+        <div class="video-controls">
+          <span class="club-name-display" id="yourClubLabel">Ingen klubba vald</span>
+          <button class="clear-btn" id="clearYourBtn" style="display:none" onclick="clearYourVideo()">✕ Ta bort</button>
+          <button class="sync-btn" id="syncBtn" onclick="syncVideos()" style="display:none">⟳ Starta om båda</button>
+          <button class="analyze-btn" id="analyzeBtn" onclick="analyzeSwing()">✦ Analysera swing</button>
+        </div>
+      </div>
     </div>
-    <div class="upload-row">
-      <label for="vidFile" class="upload-btn">
-        <div class="upload-icon">
-          <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Pro swing</span>
+        <span class="panel-label label-pro">PRO</span>
+      </div>
+      <!-- Tab bar -->
+      <div style="display:flex;border-bottom:1px solid #f0ede8;">
+        <button id="proTab1" onclick="switchProTab('find')" style="flex:1;padding:9px 0;font-size:0.73rem;font-weight:600;cursor:pointer;border:none;border-bottom:2px solid rgba(255,255,255,0.9);background:transparent;color:rgba(255,255,255,0.95);font-family:inherit;">1 · Hitta &amp; ladda ner</button>
+        <button id="proTab2" onclick="switchProTab('upload')" style="flex:1;padding:9px 0;font-size:0.73rem;font-weight:600;cursor:pointer;border:none;border-bottom:2px solid transparent;background:transparent;color:rgba(255,255,255,0.4);font-family:inherit;">2 · Ladda upp video</button>
+      </div>
+
+      <!-- Step 1: find & download -->
+      <div id="proFindPane" style="display:flex;flex-direction:column;height:calc(100% - 37px);">
+        <div class="video-area" style="flex-direction:column;gap:0;overflow-y:auto;align-items:stretch;justify-content:flex-start;flex:1;">
+          <div id="proPlaceholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;padding:20px;">
+            <svg width="40" height="40" fill="none" stroke="#ccc" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:0.6"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
+            <p style="color:#bbb;font-size:0.85rem;text-align:center;">Välj en klubba ovan för att se förvalda pro-svingar</p>
+          </div>
+          <div id="proClips" style="display:none;width:100%;"></div>
         </div>
-        <span>Ladda upp</span>
-        <small>Välj fil</small>
-      </label>
-      <label for="vidGallery" class="upload-btn">
-        <div class="upload-icon">
-          <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+        <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.1);">
+          <p style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Så här gör du</p>
+          <ol style="font-size:0.75rem;color:rgba(255,255,255,0.7);padding-left:16px;line-height:2;">
+            <li>Klicka på en pro nedan — YouTube öppnas</li>
+            <li>Kopiera videons URL</li>
+            <li>Gå till <a href="https://cobalt.tools" target="_blank" rel="noopener" style="color:#1c2b1e;font-weight:600;text-decoration:underline;">cobalt.tools</a> och klistra in URL:en</li>
+            <li>Ladda ner videon till datorn</li>
+            <li>Gå till fliken <strong>2 · Ladda upp video</strong></li>
+          </ol>
         </div>
-        <span>Kamerarulle</span>
-        <small>Från telefon</small>
-      </label>
-      <label for="vidRecord" class="upload-btn">
-        <div class="upload-icon">
-          <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </div>
+
+      <!-- Step 2: upload -->
+      <div id="proUploadPane" style="display:none;flex-direction:column;height:calc(100% - 37px);">
+        <div class="video-area" id="proVideoArea" style="flex:1;">
+          <div class="upload-prompt" id="proUploadPrompt" style="gap:18px;">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+              <label for="proUpload" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+                <div class="upload-icon">
+                  <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                </div>
+                <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Ladda upp</span>
+                <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Välj fil</span>
+              </label>
+              <label for="proGallery" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+                <div class="upload-icon">
+                  <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                </div>
+                <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Kamerarulle</span>
+                <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Från telefon</span>
+              </label>
+              <label for="proRecord" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);min-width:90px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+                <div class="upload-icon">
+                  <svg width="20" height="20" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                </div>
+                <span style="color:rgba(255,255,255,0.85);font-size:0.75rem;font-weight:600;">Spela in</span>
+                <span style="color:rgba(255,255,255,0.38);font-size:0.65rem;text-align:center;">Öppna kamera</span>
+              </label>
+            </div>
+          </div>
+          <input type="file" id="proUpload" accept="video/*">
+          <input type="file" id="proGallery" accept="video/*" accept="video/*">
+          <input type="file" id="proRecord" accept="video/*" capture="camcorder">
         </div>
-        <span>Spela in</span>
-        <small>Öppna kamera</small>
-      </label>
+        <div style="padding:10px 16px;border-top:1px solid #2d5a3d;display:flex;align-items:center;gap:8px;">
+          <span class="club-name-display" id="proClubLabel">Ingen video vald</span>
+          <button class="clear-btn" id="clearProBtn" style="display:none" onclick="clearProVideo()">✕ Ta bort</button>
+        </div>
+      </div>
     </div>
-    <input type="file" id="vidFile" accept="video/*">
-    <input type="file" id="vidGallery" accept="video/*">
-    <input type="file" id="vidRecord" accept="video/*" capture="camcorder">
   </div>
 
-  <!-- Analysyta -->
-  <div class="analysis-card" id="analysisCard">
-    <!-- Perspektivväljare -->
-    <div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.1);">
-      <button id="perspSide" onclick="setPerspective('side')" style="flex:1;padding:11px 8px;border:none;font-family:inherit;font-size:0.78rem;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.12);color:#fff;border-bottom:2px solid #7df;transition:all 0.15s;">
-        Framifrån &nbsp;<small style="font-weight:400;opacity:0.6;">Ser ansikte &amp; mage</small>
-      </button>
-      <button id="perspBack" onclick="setPerspective('back')" style="flex:1;padding:11px 8px;border:none;font-family:inherit;font-size:0.78rem;font-weight:700;cursor:pointer;background:transparent;color:rgba(255,255,255,0.45);border-bottom:2px solid transparent;transition:all 0.15s;">
-        Bakifrån &nbsp;<small style="font-weight:400;opacity:0.6;">Längs slaglinjen</small>
-      </button>
+  <!-- AI-analys panel -->
+  <div class="analysis-panel" id="analysisPanel">
+    <div class="analysis-header">
+      <h2>✦ AI-analys av din swing</h2>
+      <button class="btn btn-sm" onclick="closeAnalysis()">✕ Stäng</button>
     </div>
-    <div class="toolbar" id="toolbar"></div>
-
-    <div class="canvas-wrap" id="canvasWrap">
-      <video id="mainVideo" playsinline webkit-playsinline
-        style="display:block;width:100%;height:auto;"></video>
-      <svg id="overlaySvg" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
-    </div>
-
-    <!-- Egna videokontroller (ligger utanför overlayen) -->
-    <div class="vidcontrols">
-      <button class="vc-btn" id="stepBack" title="En bildruta bakåt">⏮</button>
-      <button class="vc-btn vc-play" id="playPause" title="Spela/Pausa">▶</button>
-      <button class="vc-btn" id="stepFwd" title="En bildruta framåt">⏭</button>
-      <input type="range" id="scrub" min="0" max="1000" value="0" step="1">
-      <span class="vc-time" id="vcTime">0.0s</span>
-    </div>
-
-    <div class="checkpoints" id="checkpoints"></div>
+    <div class="analysis-body" id="analysisBody"></div>
   </div>
 
-  <!-- Info per checkpoint -->
-  <div class="info-card" id="infoCard">
-    <h2 id="infoTitle">—</h2>
-    <p class="subtitle" id="infoSubtitle">—</p>
-    <div class="checks" id="infoChecks"></div>
+  <div class="tips-panel">
+    <h2 id="tipsTitle">Vad du ska titta efter — välj en klubba ovan</h2>
+    <div class="tips-grid" id="tipsGrid">
+      <div class="tip-card">
+        <h3>Kom igång</h3>
+        <p>Välj din klubba ovan, ladda upp din swing till vänster, och hitta en pro-swing till höger att jämföra med.</p>
+      </div>
+      <div class="tip-card">
+        <h3>Kameravinkel</h3>
+        <p>Filma framifrån eller bakifrån längs bollen. Försök matcha samma vinkel som pro-videon för en rättvis jämförelse.</p>
+      </div>
+      <div class="tip-card">
+        <h3>Pausa och jämför</h3>
+        <p>Pausa båda videorna vid samma position — adress, topp av backswing, impact, finish — och jämför bild för bild.</p>
+      </div>
+    </div>
   </div>
 
 </div>
 
 <script>
-// ─── Klubbval ─────────────────────────────────────────────────────────────────
 const CLUBS = [
-  {g:'Woods',   clubs:['Driver','3-Wood','5-Wood']},
-  {g:'Hybrids', clubs:['3-Hybrid','4-Hybrid']},
-  {g:'Irons',   clubs:['4-Järn','5-Järn','6-Järn','7-Järn','8-Järn','9-Järn']},
-  {g:'Wedges',  clubs:['PW','GW','SW','LW']},
-  {g:'Putter',  clubs:['Putter']},
-];
-let selectedClub = 'Driver';
-
-(function buildClubBar() {
-  const bar = document.getElementById('clubBar');
-  CLUBS.forEach(({g, clubs}) => {
-    const sep = document.createElement('span');
-    sep.style.cssText = 'font-size:0.6rem;color:rgba(255,255,255,0.25);padding:0 6px;align-self:center;font-weight:700;text-transform:uppercase;';
-    sep.textContent = g;
-    bar.appendChild(sep);
-    clubs.forEach(c => {
-      const btn = document.createElement('button');
-      btn.textContent = c;
-      btn.style.cssText = `padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,${c===selectedClub?'0.7':'0.2'});background:${c===selectedClub?'rgba(255,255,255,0.9)':'rgba(255,255,255,0.08)'};color:${c===selectedClub?'#1a3a20':'rgba(255,255,255,0.8)'};font-size:0.75rem;font-weight:${c===selectedClub?'700':'500'};cursor:pointer;font-family:inherit;transition:all 0.14s;`;
-      btn.onclick = () => {
-        selectedClub = c;
-        document.querySelectorAll('#clubBar button').forEach(b => {
-          b.style.background = 'rgba(255,255,255,0.08)';
-          b.style.color = 'rgba(255,255,255,0.8)';
-          b.style.borderColor = 'rgba(255,255,255,0.2)';
-          b.style.fontWeight = '500';
-        });
-        btn.style.background = 'rgba(255,255,255,0.9)';
-        btn.style.color = '#1a3a20';
-        btn.style.borderColor = 'rgba(255,255,255,0.7)';
-        btn.style.fontWeight = '700';
-      };
-      bar.appendChild(btn);
-    });
-  });
-})();
-
-// ─── Perspektiv ───────────────────────────────────────────────────────────────
-let perspective = 'side'; // 'side' | 'back'
-
-// Varje linje har hints[] och targets[] (6 värden, ett per checkpoint 0–5)
-// samt showAt[] som styr vilka linjer som visas som standard vid varje steg.
-const PERSP_LINES = {
-  side: {
-    body: {
-      p1:{x:0.50,y:0.12}, p2:{x:0.50,y:0.60}, color:'#4dffaa', label:'Kroppslinje', ref:'v',
-      hints:[
-        'Sätt övre punkten mitt på huvudet och nedre punkten mitt mellan fötterna. Din referenslinje för sidorörelser (sway).',
-        'Bakre höften ska INTE glida utanför linjen under takeaway — rotera på plats, glid inte!',
-        'Kroppen håller centrum — jämför med adresspositionen. Ingen sidoglidning.',
-        'Kroppen centrerad under sig själv vid toppen. En liten bakåtlutning (max 5°) är ok.',
-        'Vikten och kroppen förflyttas nu mot målet — linjen lutar svagt framåt.',
-        'All vikt på framsidan. Linjen lutar tydligt mot målet — fullständig viktöverföring.',
-      ],
-      targets:['0° (lodrät)','0° — ingen sidoglidning','0°','0–5° bakåt ok','0–10° mot målet','10–20° mot målet'],
-      showAt:[true,true,true,true,true,true],
-    },
-    shoulder: {
-      p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axellinje', ref:'h',
-      hints:[
-        'Sätt en punkt på varje axeltopp (höger och vänster). Frontaxeln ska vara något högre vid adress med driver.',
-        'Axlarna börjar vrida sig — frontaxeln rör sig ner och in mot bollen. Kontrollera lutningen.',
-        'Tydlig axelrotation. Frontaxeln är nu klart lägre än bakaxeln sett framifrån.',
-        'Maximal rotation. Frontaxeln ska nu peka nedåt mot bollen/marken (ca 45°+ lutning).',
-        'Axlarna återvänder nära adressvinkeln vid impact — omkvadreringen sker.',
-        'Axlarna har roterat förbi adress — bakaxeln pekar nu mot målet.',
-      ],
-      targets:['5–10° (frontaxeln högre med driver, nära 0° med järn)','15–25°','25–40°','35–50°','5–15°','0–10°'],
-      showAt:[true,false,true,true,true,false],
-    },
-    hip: {
-      p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höftlinje', ref:'h',
-      hints:[
-        'Sätt en punkt på varje höftben (SIAS — benpunkten framtill på höften). Linjen ska vara vågrätt.',
-        'Höfterna håller sig nära vågräta. Kontrollera att de INTE glider i sidled.',
-        'Höfterna börjar rotera — frontaxeln drar sig bakåt och uppåt.',
-        'Höfterna ca 45° roterade. Från framifrån syns detta som en tydlig lutning på linjen.',
-        'KRITISKT: Fronthöften är klart öppen (utdragen mot målet). Linjen lutar tydligt — detta är rätt!',
-        'Full höftrotation — hela höften mot målet.',
-      ],
-      targets:['0° (vågrätt)','0–5°','10–20°','20–35°','25–40° öppen','30–45°'],
-      showAt:[true,false,true,true,true,true],
-    },
-    ball: {
-      p1:{x:0.56,y:0.50}, p2:{x:0.56,y:0.86}, color:'#ff8844', label:'Bollinje', ref:'v',
-      hints:[
-        'Dra en lodrät linje rakt upp från bollen. Referenspunkt för bollposition och huvud bakom bollen.',
-        'Ditt huvud och överkropp ska INTE ha letat sig framför bolllinjen under takeaway.',
-        'Överkroppen ska fortfarande vara bakom bolllinjen. Ingen forward sway halvvägs.',
-        'Ditt huvud ska vara klart till höger om (bakom) bolllinjen vid toppen av swingen.',
-        'KRITISKT: Händerna ska vara FRAMFÖR bolllinjen (forward shaft lean). Ditt huvud ska FORTFARANDE vara bakom.',
-        'Inte kritisk vid finish — fokus på balans och rotation i kroppen.',
-      ],
-      targets:['0° (lodrät)','0° — huvud bakom linjen','0° — överkropp bakom linjen','0° — huvud klart bakom','0° — händer framför, huvud bakom','—'],
-      showAt:[true,true,true,true,true,false],
-    },
-  },
-  back: {
-    plane: {
-      p1:{x:0.50,y:0.78}, p2:{x:0.62,y:0.22}, color:'#4dffaa', label:'Svängplan', ref:'h',
-      hints:[
-        'Sätt nedre punkten på bollen och övre punkten på INSIDAN av din bakre axel. Detta är din svängplansreferens — den lutande yta klubban ska följa.',
-        'Klubbhuvudet ska röra sig längs insidan av svängplanslinjen — inte utanför (outside takeaway).',
-        'Skaftet bör vara parallellt med svängplanslinjen när det är parallellt med marken. On-plane = bra!',
-        'Skaftet vid toppen bör ligga PÅ eller precis under svängplanslinjen. Över = för brant, under = för flat.',
-        'Händerna återvänder längs svängplanet till bollen — skaftet följer samma lutning ner som upp.',
-        'Inte relevant vid finish — kontrollera istället rotation och balans.',
-      ],
-      targets:['Driver ~45–50°, järn ~55–65°','Klubban rör sig innanför linjen','Skaftet parallellt med linjen','Skaftet på eller strax under linjen','Driver ~45–50°, järn ~55–65°','—'],
-      showAt:[true,true,true,true,true,false],
-    },
-    spine: {
-      p1:{x:0.50,y:0.15}, p2:{x:0.52,y:0.55}, color:'#ff88cc', label:'Ryggrad', ref:'v',
-      hints:[
-        'Dra längs ryggraden — från nacken (C7-kotan, den knöl du känner längst ner på nacken) ner längs kotpelaren till svanskotan.',
-        'Ryggradens lutning ska INTE ändras under takeaway — ingen upprätning ur swingen (early extension).',
-        'Ryggraden håller adressens lutning halvvägs. Kontrollera att du inte reser dig upp.',
-        'VIKTIGT: Ryggraden håller adressens lutning vid toppen. Reverse spine tilt (böjning bakåt) = skaderisk!',
-        'Ryggraden börjar rätas upp vid och efter impact — detta är normalt och tillåtet.',
-        'Full upprätning vid finish — kroppen balanserar rakt upp.',
-      ],
-      targets:['30–45° framåtlutning (från lodrätt)','30–45° — ska inte ändras','30–45°','30–45° — ska INTE minska','20–35°','0–15°'],
-      showAt:[true,true,false,true,true,false],
-    },
-    ball: {
-      p1:{x:0.50,y:0.45}, p2:{x:0.50,y:0.85}, color:'#4dcfff', label:'Bollinje', ref:'v',
-      hints:[
-        'Dra en lodrät linje rakt upp från bollen. Referenspunkt för händernas och klubbans position.',
-        'Händerna ska röra sig längs INSIDAN av bolllinjen under takeaway — inte utanför.',
-        'Kontrollera att händerna fortfarande är innanför bolllinjen halvvägs upp.',
-        'Kontrollera bollinjens relation till händerna och skaftets riktning vid toppen.',
-        'KRITISKT: Händerna ska återvända exakt till bollen — inte för långt fram eller bak i djupled.',
-        'Inte relevant vid finish.',
-      ],
-      targets:['0° (lodrät)','Händerna innanför linjen','Händerna innanför linjen','0°','0° — händerna exakt på bollen','—'],
-      showAt:[true,false,false,false,true,false],
-    },
-    foot: {
-      p1:{x:0.22,y:0.84}, p2:{x:0.78,y:0.84}, color:'#ffcf4d', label:'Fotstallning', ref:'h',
-      hints:[
-        'Dra en linje längs tålinjen (tå till tå). Visar om stansen är PARALLELL med mållinjen — ska vara vågrätt i bilden. Sett bakifrån = perfekt perspektiv för detta.',
-        'Fotstallningslinjen ändras inte under swingen — den är satt vid adress och är din riktningsreferens.',
-        'Fötterna är kvar — jämför klubbans rörelse med fotstallningsriktningen.',
-        'Kontrollera att bakre hälen inte har lyft för mycket. Lätt lyft är ok, kraftigt lyft = instabil.',
-        'Bakre tå börjar lyfta — detta är normalt. Fronten ska vara stabil.',
-        'Bakre fot nu på tå — visar fullständig viktöverföring och bra rotation.',
-      ],
-      targets:['0° (vågrätt = parallell med mållinjen)','0° — riktningsreferens','0°','Bakre häl lätt lyft = ok','Bakre tå lyfter = normalt','Bakre fot på tå = bra viktöverföring'],
-      showAt:[true,false,false,false,false,true],
-    },
-  }
-};
-
-const LINE_LABELS = {
-  side: { body:'Kroppslinje', shoulder:'Axellinje', hip:'Höftlinje', ball:'Bollinje' },
-  back: { plane:'Svängplan', spine:'Ryggrad', ball:'Bollinje', foot:'Fotstallning' },
-};
-
-// ─── Data: 6 nyckelpositioner ───────────────────────────────────────────────
-const CHECKPOINTS = [
-  { id:'address',  label:'Adress',   desc:'Setup — ställningen innan swingen börjar', pct:0.02, color:'#7dd',
-    side:[ {title:'Bollposition', body:'Driver: mitt för främre hälen. Järn: mer mot mitten av stancen.'}, {title:'Axellutning', body:'Främre axeln något högre än bakre — tydligast med driver.'}, {title:'Balans', body:'Vikten jämnt fördelad, lätt mot framfötterna.'}, {title:'Huvud bakom bollen', body:'Vid driver ska huvudet vara strax bakom bollen redan vid adress.'} ],
-    back:[ {title:'Stancebredd',  body:'Axelbredd eller lite bredare för driver. Smalare för korta järn.'}, {title:'Riktning', body:'Axlar, höfter och fötter ska peka parallellt med mållinjen — inte mot flaggan.'}, {title:'Bollposition', body:'Sett bakifrån: bollen ska vara innanför vänster häl för driver.'}, {title:'Rygg lateral', body:'Lätt tilt bort från målet vid driver — huvud bakom bollen.'} ]
-  },
-  { id:'takeaway', label:'Takeaway', desc:'De första 30 cm av backswingen', pct:0.18, color:'#adf',
-    side:[ {title:'Huvudet still', body:'Huvudet ska knappt röra sig i sidled — jämför med kroppslinjen.'}, {title:'Ingen sway', body:'Bakre höften glider inte utanför bakre foten.'}, {title:'Vikt börjar flytta', body:'Vikten börjar gå mot bakre sidan, men huvudet stannar.'}, {title:'Bred takeaway', body:'Händer och klubba hålls låga och samlade.'} ],
-    back:[ {title:'Klubban innanför', body:'Klubbhuvudet ska hålla sig innanför händerna — inte bakom kroppen.'}, {title:'Skaftets riktning', body:'Skaftet pekar mot mållinjen när det är parallellt med marken.'}, {title:'Axelrotation', body:'Vänster axel börjar röra sig mot hakan.'}, {title:'Handens väg', body:'Händerna rör sig längs insidan av mållinjen, inte utåt.'} ]
-  },
-  { id:'halfway',  label:'Halvvägs', desc:'Mitt i backswingen — klubban parallell med marken', pct:0.35, color:'#bdf',
-    side:[ {title:'Sway-kontroll', body:'Bakre höften ska inte glida utanför bakre foten — rotera, glid inte.'}, {title:'Huvudet kvar', body:'Huvudet stannar i stort sett på samma ställe i sidled.'}, {title:'Främre arm rak', body:'Främre armen förblir utsträckt.'}, {title:'Vikt ~60%', body:'Ungefär 60% av vikten på bakre sidan nu.'} ],
-    back:[ {title:'Svängplanet', body:'Dra svängplanslinjen från bollen genom händerna. Skaftet bör följa detta plan.'}, {title:'Klubbhuvudet', body:'Sett bakifrån ska klubbhuvudet synas precis ovanför händerna — on-plane.'}, {title:'Högerarmbåge', body:'Höger armbåge pekar ner mot marken, inte utåt.'}, {title:'Axelrotation', body:'Axlarna har roterat ~45° — höfterna ~20–25°.'} ]
-  },
-  { id:'top',      label:'Toppen',   desc:'Toppen av backswingen', pct:0.5, color:'#fda',
-    side:[ {title:'Huvudet still', body:'Jämför med adress — huvudet ska vara kvar på nästan samma höjd och sidled.'}, {title:'Vikt på bakre sidan', body:'Ca 70–80% av vikten på bakre foten.'}, {title:'Stabil bas', body:'Knäna håller sin böj — inget upprätande eller vingling.'}, {title:'Full rotation', body:'Axlarna har vridit sig — rygg/axel mot målet.'} ],
-    back:[ {title:'Svängplan topp', body:'Skaftet bör ligga på eller strax under svängplanslinjen vid toppen.'}, {title:'Cross-the-line?', body:'Pekar skaftet till höger om målet = för inåt. Vänster = laid-off. Sikta: rakt.'}, {title:'Höger armbåge', body:'Höger armbåge ~90° böjd, pekar mot marken — inte utåt (flybow).'}, {title:'Axelrotation', body:'Vänster axel under hakan — visar på fullständig rotation.'} ]
-  },
-  { id:'impact',   label:'Impact',   desc:'Kontakt med bollen — det viktigaste ögonblicket', pct:0.72, color:'#faa',
-    side:[ {title:'Händer före bollen', body:'Händerna framför bollen — skaftet lutar mot målet (forward shaft lean).'}, {title:'Vikt på främre sidan', body:'Ca 80% av vikten på främre foten.'}, {title:'Huvud bakom bollen', body:'Huvudet ska fortfarande vara bakom bollen vid träff.'}, {title:'Främre sidan rak', body:'Främre benet och sidan rätar ut sig till en "vägg".'} ],
-    back:[ {title:'Klubbbanan', body:'Sett bakifrån: idealt svänger klubban lätt inifrån-ut för draw eller rak för rak boll.'}, {title:'Skaftlutning', body:'Skaftet lutar mot målet (forward lean) — syns tydligt bakifrån.'}, {title:'Höfterna öppna', body:'Höfterna ska vara klart öppna — vänster höft utdragen mot målet.'}, {title:'Vänster sida', body:'Vänster sida är utsträckt och "vägg" — armen och skaftet bildar en rak linje.'} ]
-  },
-  { id:'finish',   label:'Finish',   desc:'Fullständig follow-through', pct:0.92, color:'#afa',
-    side:[ {title:'Balans', body:'All vikt på vänster fot. Höger tå knappt i marken.'}, {title:'Full rotation', body:'Bröstkorgen pekar mot eller förbi målet.'}, {title:'Hög finish', body:'Händerna och klubban avslutar högt bakom vänster öra.'}, {title:'Stabil position', body:'Håll finish-positionen 2–3 sekunder.'} ],
-    back:[ {title:'Axlarnas rotation', body:'Axlarna har roterat förbi 90° — höger axel pekar mot målet.'}, {title:'Höger fots position', body:'Höger fot på tå, skon visar mot marken — visar full viktöverföring.'}, {title:'Klubbans position', body:'Skaftet avslutar bakom nacken, parallellt med marken.'}, {title:'Balans', body:'Hela kroppen balanserar på vänster fot — ingen rörelse efteråt.'} ]
-  }
+  { id: 'driver', label: 'Driver',   group: 'Woods' },
+  { id: '3w',     label: '3-Wood',   group: 'Woods' },
+  { id: '5w',     label: '5-Wood',   group: 'Woods' },
+  { id: '3h',     label: '3-Hybrid', group: 'Hybrids' },
+  { id: '4h',     label: '4-Hybrid', group: 'Hybrids' },
+  { id: '4i',     label: '4-Iron',   group: 'Irons' },
+  { id: '5i',     label: '5-Iron',   group: 'Irons' },
+  { id: '6i',     label: '6-Iron',   group: 'Irons' },
+  { id: '7i',     label: '7-Iron',   group: 'Irons' },
+  { id: '8i',     label: '8-Iron',   group: 'Irons' },
+  { id: '9i',     label: '9-Iron',   group: 'Irons' },
+  { id: 'pw',     label: 'PW',       group: 'Wedges' },
+  { id: 'gw',     label: 'GW',       group: 'Wedges' },
+  { id: 'sw',     label: 'SW',       group: 'Wedges' },
+  { id: 'lw',     label: 'LW/60°',   group: 'Wedges' },
+  { id: 'putter', label: 'Putter',   group: 'Putter' },
 ];
 
-let lines = JSON.parse(JSON.stringify(PERSP_LINES.side));
-let lineVisible = Object.fromEntries(Object.keys(PERSP_LINES.side).map(k => {
-  const l = PERSP_LINES.side[k];
-  return [k, l.showAt ? l.showAt[0] : true];
-}));
-let activeCP = 0;
+const TIPS = {
+  driver: [
+    { title: 'Ball position', body: 'Inside the left heel. Tee it high — half the ball above the club face.' },
+    { title: 'Spine tilt', body: 'Slight tilt away from the target at address to promote an upward attack angle.' },
+    { title: 'Wide arc', body: 'Pros keep the club head low and slow in the takeaway, creating a wide swing arc.' },
+    { title: 'Hip rotation', body: 'Hips clear hard through impact before the arms fully extend toward the target.' },
+    { title: 'Head behind ball', body: 'Head stays behind the ball at impact — a key indicator of an upward strike.' },
+    { title: 'High finish', body: 'Finish high and balanced, all weight transferred onto the lead foot.' },
+  ],
+  '3w': [
+    { title: 'Ball position', body: 'One ball width inside the left heel. Slightly forward of iron position.' },
+    { title: 'Sweep, don\'t dig', body: 'Sweep the turf or catch it slightly on the upswing from a tee. No divot needed.' },
+    { title: 'Minimal shaft lean', body: 'Unlike irons, hands are barely ahead of the ball at address.' },
+    { title: 'Smooth transition', body: 'Pros never rush the downswing. Watch the pause at the top.' },
+  ],
+  '5w': [
+    { title: 'Ball position', body: 'One to two ball widths inside the left heel.' },
+    { title: 'Shallow attack', body: 'Slightly more upright plane than driver but still a sweeping motion.' },
+    { title: 'Full wrist hinge', body: 'Club should reach parallel or just short at the top of the backswing.' },
+  ],
+  '3h': [
+    { title: 'Versatile contact', body: 'Hybrids can be swept off the fairway or struck with a slight downward blow — both work.' },
+    { title: 'Stance width', body: 'Slightly wider than mid-irons. Ball position mid-to-forward.' },
+    { title: 'Shallow angle', body: 'More like a fairway wood than an iron. Avoid steep, chopping swings.' },
+  ],
+  '4h': [
+    { title: 'Attack angle', body: 'A slight downward strike (1–2°) is most consistent. Avoid scooping.' },
+    { title: 'Smooth tempo', body: 'Hybrids reward rhythm over speed. Watch the transition in pro swings.' },
+  ],
+  default_iron: [
+    { title: 'Ball position', body: 'Center for short irons; one ball forward per club as you go longer.' },
+    { title: 'Ball-first contact', body: 'Pros strike the ball first, then turf. Watch where the divot starts.' },
+    { title: 'Forward shaft lean', body: 'Hands ahead of the ball at impact. This compresses and controls the ball.' },
+    { title: 'Hip clearance', body: 'Lead hip rotates toward the target, creating room for the arms to swing through.' },
+    { title: 'Consistent knee flex', body: 'Avoid straightening the lead leg early in the downswing.' },
+    { title: 'Balanced finish', body: 'Weight on lead foot, chest facing target, club over lead shoulder.' },
+  ],
+  pw: [
+    { title: 'Ball position', body: 'Center of stance. Hands slightly ahead at address.' },
+    { title: 'Three-quarter swing', body: 'Most pros shorten the backswing for better control on wedge shots.' },
+    { title: 'Accelerate through', body: 'Never decelerate into the ball. Commit to a smooth, accelerating strike.' },
+    { title: 'Crisp divot', body: 'A divot pointing at the target after impact is the hallmark of a good wedge.' },
+  ],
+  gw: [
+    { title: 'Distance by length', body: 'Vary backswing length, not swing speed, to control distance.' },
+    { title: 'Controlled flight', body: 'Gap wedge should produce a mid-high trajectory with moderate spin.' },
+  ],
+  sw: [
+    { title: 'Bunker vs. full', body: 'Watch two things: bunker play (open face, enter sand behind ball) vs. full swing.' },
+    { title: 'Open face', body: 'Sand wedge is often played with a slightly open face for extra bounce and loft.' },
+    { title: 'Soft hands', body: 'Relaxed grip pressure — let the loft and bounce do the work.' },
+  ],
+  lw: [
+    { title: 'Open face', body: 'Often dramatically open for high lob shots. Club face points skyward at address.' },
+    { title: 'Steep plane', body: 'More upright swing plane than other clubs. Watch how pros get steep through impact.' },
+    { title: 'Always accelerate', body: 'Never decelerate. Commit fully even on short lob shots.' },
+  ],
+  putter: [
+    { title: 'Eyes over ball', body: 'Eyes directly over or slightly inside the ball at address.' },
+    { title: 'Pendulum motion', body: 'Shoulders rock, arms and wrists stay quiet. Watch for any wrist breakdown.' },
+    { title: 'Symmetrical stroke', body: 'Follow-through mirrors backswing length. Consistent tempo throughout.' },
+    { title: 'Still head', body: 'Head stays completely still until the ball is well on its way.' },
+    { title: 'Face angle at impact', body: 'Face angle at impact controls ~80% of starting direction. Watch the putter face closely.' },
+  ],
+};
 
-// ─── Init ────────────────────────────────────────────────────────────────────
-// Bygg checkpoint-knappar
-const cpBar = document.getElementById('checkpoints');
-CHECKPOINTS.forEach((cp, i) => {
-  const btn = document.createElement('button');
-  btn.className = 'cp-btn' + (i === 0 ? ' active' : '');
-  btn.innerHTML = `<span class="cp-num">${i+1}</span>${cp.label}`;
-  btn.style.borderBottom = i === 0 ? `2px solid ${cp.color}` : '';
-  btn.onclick = () => gotoCheckpoint(i);
-  cpBar.appendChild(btn);
-});
+const SEARCH = {
+  driver: 'pro golfer driver swing slow motion',
+  '3w':   '3 wood golf swing pro slow motion',
+  '5w':   '5 wood golf swing pro slow motion',
+  '3h':   '3 hybrid golf swing slow motion',
+  '4h':   '4 hybrid golf swing slow motion',
+  '4i':   '4 iron golf swing pro slow motion',
+  '5i':   '5 iron golf swing pro slow motion',
+  '6i':   '6 iron golf swing pro slow motion',
+  '7i':   '7 iron golf swing pro slow motion',
+  '8i':   '8 iron golf swing pro slow motion',
+  '9i':   '9 iron golf swing pro slow motion',
+  pw:     'pitching wedge swing pro slow motion',
+  gw:     'gap wedge golf swing slow motion',
+  sw:     'sand wedge golf swing pro slow motion',
+  lw:     'lob wedge 60 degree golf swing slow motion',
+  putter: 'pro golfer putting stroke slow motion',
+};
 
-// Bygg toolbar dynamiskt
-function buildToolbar() {
-  const tb = document.getElementById('toolbar');
-  tb.innerHTML = '';
-  const labels = LINE_LABELS[perspective];
-  Object.entries(labels).forEach(([key, label]) => {
+let selectedClub = null;
+let yourVideoEl = null;
+
+// Build club buttons
+const container = document.getElementById('clubGroups');
+const groups = [...new Set(CLUBS.map(c => c.group))];
+groups.forEach((g, gi) => {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-right:${gi < groups.length-1 ? '14px' : '0'};${gi < groups.length-1 ? 'border-right:1px solid #e0dbd4;margin-right:2px;' : ''}`;
+  const gl = document.createElement('span');
+  gl.className = 'club-group-label';
+  gl.textContent = g;
+  wrap.appendChild(gl);
+  CLUBS.filter(c => c.group === g).forEach(club => {
     const btn = document.createElement('button');
-    btn.className = 'tool-btn active';
-    btn.id = 'btn_' + key;
-    btn.textContent = label;
-    btn.onclick = () => toggleLine(key);
-    tb.appendChild(btn);
+    btn.className = 'club-btn';
+    btn.textContent = club.label;
+    btn.dataset.id = club.id;
+    btn.onclick = () => selectClub(club);
+    wrap.appendChild(btn);
   });
-  const reset = document.createElement('button');
-  reset.className = 'tool-btn';
-  reset.textContent = '↺ Återställ';
-  reset.onclick = resetLines;
-  tb.appendChild(reset);
-  const angle = document.createElement('div');
-  angle.className = 'angle-display';
-  angle.id = 'angleDisplay';
-  angle.innerHTML = perspective === 'side'
-    ? 'Ryggvinkel: <span>—°</span>'
-    : 'Svängplan: <span>—°</span>';
-  tb.appendChild(angle);
+  container.appendChild(wrap);
+});
+
+function selectClub(club) {
+  selectedClub = club;
+  document.querySelectorAll('.club-btn').forEach(b => b.classList.toggle('active', b.dataset.id === club.id));
+  document.getElementById('yourClubLabel').textContent = club.label;
+
+  renderProClips(club);
+
+  const key = TIPS[club.id] ? club.id : 'default_iron';
+  const tips = TIPS[key];
+  document.getElementById('tipsTitle').textContent = `Vad du ska titta efter — ${club.label}`;
+  document.getElementById('tipsGrid').innerHTML = tips.map(t =>
+    `<div class="tip-card"><h3>${t.title}</h3><p>${t.body}</p></div>`
+  ).join('');
 }
 
-buildToolbar();
-
-// Byt perspektiv
-function setPerspective(p) {
-  perspective = p;
-  lines = JSON.parse(JSON.stringify(PERSP_LINES[p]));
-  lineVisible = Object.fromEntries(Object.keys(PERSP_LINES[p]).map(k => {
-    const l = PERSP_LINES[p][k];
-    return [k, l.showAt ? l.showAt[activeCP] : true];
-  }));
-  buildToolbar();
-
-  const side = document.getElementById('perspSide');
-  const back = document.getElementById('perspBack');
-  side.style.background = p === 'side' ? 'rgba(255,255,255,0.12)' : 'transparent';
-  side.style.color      = p === 'side' ? '#fff' : 'rgba(255,255,255,0.45)';
-  side.style.borderBottom = p === 'side' ? '2px solid #7df' : '2px solid transparent';
-  back.style.background = p === 'back' ? 'rgba(255,255,255,0.12)' : 'transparent';
-  back.style.color      = p === 'back' ? '#fff' : 'rgba(255,255,255,0.45)';
-  back.style.borderBottom = p === 'back' ? '2px solid #7df' : '2px solid transparent';
-
-  if (vidEl.src) gotoCheckpoint(activeCP);
+function loadYourVideo(file) {
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  document.getElementById('uploadPrompt').style.display = 'none';
+  if (yourVideoEl) yourVideoEl.remove();
+  yourVideoEl = document.createElement('video');
+  yourVideoEl.src = url;
+  yourVideoEl.controls = true;
+  yourVideoEl.loop = true;
+  yourVideoEl.style.cssText = 'width:100%;height:100%;object-fit:contain;';
+  document.getElementById('yourVideoArea').appendChild(yourVideoEl);
+  document.getElementById('clearYourBtn').style.display = 'inline-block';
+  document.getElementById('syncBtn').style.display = 'flex';
+  document.getElementById('analyzeBtn').style.display = 'flex';
 }
 
-// ─── Video + SVG overlay ─────────────────────────────────────────────────────
-const vidEl = document.getElementById('mainVideo');
-const svg   = document.getElementById('overlaySvg');
-let dragging = null;
+document.getElementById('swingUpload').addEventListener('change', e => loadYourVideo(e.target.files[0]));
+document.getElementById('swingGallery').addEventListener('change', e => loadYourVideo(e.target.files[0]));
+document.getElementById('swingRecord').addEventListener('change', e => loadYourVideo(e.target.files[0]));
 
-let videoShown = false;
-function showVideo() {
-  if (videoShown) return;
-  videoShown = true;
-  document.getElementById('uploadCard').style.display   = 'none';
-  document.getElementById('analysisCard').style.display = 'block';
-  document.getElementById('infoCard').style.display     = 'block';
-  renderSvg();
-  // Försök seek till checkpoint 0 när duration finns
-  if (vidEl.duration && isFinite(vidEl.duration)) {
-    gotoCheckpoint(0);
-  } else {
-    vidEl.addEventListener('durationchange', function h() {
-      vidEl.removeEventListener('durationchange', h);
-      gotoCheckpoint(0);
-    });
-  }
+function clearYourVideo() {
+  if (yourVideoEl) { yourVideoEl.remove(); yourVideoEl = null; }
+  document.getElementById('uploadPrompt').style.display = 'flex';
+  document.getElementById('clearYourBtn').style.display = 'none';
+  document.getElementById('syncBtn').style.display = 'none';
+  document.getElementById('analyzeBtn').style.display = 'none';
+  document.getElementById('swingUpload').value = '';
+  closeAnalysis();
 }
 
-['vidFile','vidGallery','vidRecord'].forEach(id => {
-  document.getElementById(id).addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    // Sätt listener INNAN src
-    vidEl.addEventListener('loadeddata', showVideo, { once: true });
-    vidEl.addEventListener('canplay',    showVideo, { once: true });
-    videoShown = false;
-    vidEl.src = URL.createObjectURL(file);
-    vidEl.load();
-  });
-});
+let proVideoEl = null;
 
-// ─── Egna videokontroller ────────────────────────────────────────────────────
-const playBtn  = document.getElementById('playPause');
-const scrub    = document.getElementById('scrub');
-const vcTime   = document.getElementById('vcTime');
-const FRAME    = 1/30; // ungefärlig bildruta
+function switchProTab(tab) {
+  const find = tab === 'find';
+  document.getElementById('proFindPane').style.display = find ? 'flex' : 'none';
+  document.getElementById('proUploadPane').style.display = find ? 'none' : 'flex';
+  document.getElementById('proTab1').style.borderBottomColor = find ? 'rgba(255,255,255,0.9)' : 'transparent';
+  document.getElementById('proTab1').style.color = find ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.35)';
+  document.getElementById('proTab2').style.borderBottomColor = find ? 'transparent' : 'rgba(255,255,255,0.9)';
+  document.getElementById('proTab2').style.color = find ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.95)';
+}
 
-playBtn.addEventListener('click', () => {
-  if (vidEl.paused) { vidEl.play(); } else { vidEl.pause(); }
-});
-vidEl.addEventListener('play',  () => playBtn.textContent = '⏸');
-vidEl.addEventListener('pause', () => playBtn.textContent = '▶');
+function loadProVideoFile(file) {
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  document.getElementById('proUploadPrompt').style.display = 'none';
+  if (proVideoEl) proVideoEl.remove();
+  proVideoEl = document.createElement('video');
+  proVideoEl.src = url;
+  proVideoEl.controls = true;
+  proVideoEl.loop = true;
+  proVideoEl.style.cssText = 'width:100%;height:100%;object-fit:contain;';
+  document.getElementById('proVideoArea').appendChild(proVideoEl);
+  document.getElementById('clearProBtn').style.display = 'inline-block';
+  document.getElementById('proClubLabel').textContent = file.name;
+  document.getElementById('syncBtn').style.display = 'flex';
+}
 
-document.getElementById('stepBack').addEventListener('click', () => {
-  vidEl.pause();
-  vidEl.currentTime = Math.max(0, vidEl.currentTime - FRAME);
-});
-document.getElementById('stepFwd').addEventListener('click', () => {
-  vidEl.pause();
-  vidEl.currentTime = Math.min(vidEl.duration || 0, vidEl.currentTime + FRAME);
-});
+document.getElementById('proUpload').addEventListener('change', e => loadProVideoFile(e.target.files[0]));
+document.getElementById('proGallery').addEventListener('change', e => loadProVideoFile(e.target.files[0]));
+document.getElementById('proRecord').addEventListener('change', e => loadProVideoFile(e.target.files[0]));
 
-// Slider → video
-scrub.addEventListener('input', () => {
-  if (!vidEl.duration) return;
-  vidEl.pause();
-  vidEl.currentTime = (scrub.value/1000) * vidEl.duration;
-});
+function clearProVideo() {
+  if (proVideoEl) { proVideoEl.remove(); proVideoEl = null; }
+  document.getElementById('proUploadPrompt').style.display = 'flex';
+  document.getElementById('clearProBtn').style.display = 'none';
+  document.getElementById('proClubLabel').textContent = 'Ingen video vald';
+  document.getElementById('proUpload').value = '';
+  if (!yourVideoEl) document.getElementById('syncBtn').style.display = 'none';
+}
 
-// Video → slider + tid
-vidEl.addEventListener('timeupdate', () => {
-  if (!vidEl.duration) return;
-  scrub.value = (vidEl.currentTime / vidEl.duration) * 1000;
-  vcTime.textContent = vidEl.currentTime.toFixed(1) + 's';
-});
+// Curated pro swings per club — search queries open on YouTube
+const PRO_CLIPS = {
+  driver: [
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy driver swing slow motion' },
+    { name: 'Dustin Johnson',  query: 'Dustin Johnson driver swing slow motion' },
+    { name: 'Tiger Woods',     query: 'Tiger Woods driver swing slow motion' },
+    { name: 'Jon Rahm',        query: 'Jon Rahm driver swing slow motion' },
+  ],
+  '3w': [
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy 3 wood swing slow motion' },
+    { name: 'Tiger Woods',     query: 'Tiger Woods 3 wood swing slow motion' },
+    { name: 'Dustin Johnson',  query: 'Dustin Johnson fairway wood slow motion' },
+  ],
+  '5w': [
+    { name: 'Collin Morikawa', query: 'Collin Morikawa fairway wood swing slow motion' },
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy 5 wood swing slow motion' },
+    { name: 'Tiger Woods',     query: 'Tiger Woods 5 wood swing slow motion' },
+  ],
+  '3h': [
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy hybrid swing slow motion' },
+    { name: 'Tiger Woods',     query: 'Tiger Woods hybrid iron slow motion' },
+  ],
+  '4h': [
+    { name: 'Adam Scott',      query: 'Adam Scott hybrid swing slow motion' },
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy hybrid swing slow motion' },
+  ],
+  '4i': [
+    { name: 'Tiger Woods',     query: 'Tiger Woods 4 iron swing slow motion' },
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy long iron swing slow motion' },
+  ],
+  '5i': [
+    { name: 'Adam Scott',      query: 'Adam Scott 5 iron swing slow motion' },
+    { name: 'Tiger Woods',     query: 'Tiger Woods 5 iron swing slow motion' },
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy 5 iron swing slow motion' },
+  ],
+  '6i': [
+    { name: 'Collin Morikawa', query: 'Collin Morikawa iron swing slow motion' },
+    { name: 'Tiger Woods',     query: 'Tiger Woods 6 iron swing slow motion' },
+    { name: 'Adam Scott',      query: 'Adam Scott iron swing slow motion' },
+  ],
+  '7i': [
+    { name: 'Tiger Woods',     query: 'Tiger Woods 7 iron swing slow motion' },
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy 7 iron swing slow motion' },
+    { name: 'Justin Rose',     query: 'Justin Rose 7 iron swing slow motion' },
+    { name: 'Adam Scott',      query: 'Adam Scott 7 iron swing slow motion' },
+  ],
+  '8i': [
+    { name: 'Collin Morikawa', query: 'Collin Morikawa 8 iron swing slow motion' },
+    { name: 'Tiger Woods',     query: 'Tiger Woods 8 iron swing slow motion' },
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy 8 iron swing slow motion' },
+  ],
+  '9i': [
+    { name: 'Tiger Woods',     query: 'Tiger Woods 9 iron swing slow motion' },
+    { name: 'Jon Rahm',        query: 'Jon Rahm 9 iron swing slow motion' },
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy 9 iron swing slow motion' },
+  ],
+  pw: [
+    { name: 'Tiger Woods',     query: 'Tiger Woods pitching wedge swing slow motion' },
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy wedge swing slow motion' },
+    { name: 'Collin Morikawa', query: 'Collin Morikawa wedge swing slow motion' },
+  ],
+  gw: [
+    { name: 'Phil Mickelson',  query: 'Phil Mickelson gap wedge swing slow motion' },
+    { name: 'Tiger Woods',     query: 'Tiger Woods gap wedge swing slow motion' },
+  ],
+  sw: [
+    { name: 'Phil Mickelson',  query: 'Phil Mickelson sand wedge bunker slow motion' },
+    { name: 'Tiger Woods',     query: 'Tiger Woods sand wedge swing slow motion' },
+    { name: 'Seve Ballesteros',query: 'Seve Ballesteros bunker shot slow motion' },
+  ],
+  lw: [
+    { name: 'Phil Mickelson',  query: 'Phil Mickelson lob wedge flop shot slow motion' },
+    { name: 'Tiger Woods',     query: 'Tiger Woods 60 degree wedge slow motion' },
+    { name: 'Seve Ballesteros',query: 'Seve Ballesteros lob shot slow motion' },
+  ],
+  putter: [
+    { name: 'Tiger Woods',     query: 'Tiger Woods putting stroke slow motion' },
+    { name: 'Rory McIlroy',    query: 'Rory McIlroy putting slow motion' },
+    { name: 'Ben Crenshaw',    query: 'Ben Crenshaw putting stroke slow motion' },
+    { name: 'Jordan Spieth',   query: 'Jordan Spieth putting stroke slow motion' },
+  ],
+};
 
-// ─── Hoppa till checkpoint ────────────────────────────────────────────────────
-function gotoCheckpoint(i) {
-  activeCP = i;
-  const cp = CHECKPOINTS[i];
-  vidEl.pause();
-  vidEl.currentTime = (vidEl.duration || 0) * cp.pct;
-
-  document.querySelectorAll('.cp-btn').forEach((btn, idx) => {
-    btn.classList.toggle('active', idx === i);
-    btn.style.borderBottom = idx === i ? `2px solid ${CHECKPOINTS[idx].color}` : '';
-  });
-
-  // Sätt synlighet per checkpoint (showAt[i]) — uppdatera även toolbarknapparna
-  Object.entries(lines).forEach(([key, l]) => {
-    if (l.showAt) {
-      lineVisible[key] = l.showAt[i];
-      const btn = document.getElementById('btn_' + key);
-      if (btn) btn.classList.toggle('active', lineVisible[key]);
-    }
-  });
-
-  const checks = cp[perspective] || cp.side;
-  document.getElementById('infoTitle').textContent    = cp.label + ' — ' + (perspective === 'side' ? 'Framifrån' : 'Bakifrån');
-  document.getElementById('infoSubtitle').textContent = cp.desc;
-
-  // Placeringsguide — visar ALLA linjer (aktiva tydliga, inaktiva avtonade)
-  const guide = Object.entries(lines).map(([k, l]) => {
-    const hint   = l.hints   ? l.hints[i]   : (l.hint   || '');
-    const target = l.targets ? l.targets[i] : (l.target || '');
-    const isVis  = lineVisible[k];
-    return `<div style="display:flex;gap:8px;padding:7px 0;border-top:1px solid rgba(255,255,255,0.07);opacity:${isVis ? 1 : 0.38}">
-       <span style="width:12px;height:12px;border-radius:50%;background:${l.color};flex-shrink:0;margin-top:2px;"></span>
-       <div style="font-size:0.73rem;line-height:1.5;">
-         <b style="color:${l.color}">${l.label}</b>${!isVis ? ' <span style="font-size:0.65rem;color:rgba(255,255,255,0.3)">(dold — tryck på knappen ovan för att visa)</span>' : ''}
-         <span style="color:rgba(255,255,255,0.7);"> — ${hint}</span>
-         <div style="color:rgba(255,255,255,0.5);margin-top:2px;">🎯 Riktvärde: <b style="color:rgba(255,255,255,0.75)">${target}</b></div>
-       </div>
-     </div>`;
+function renderProClips(club) {
+  const clips = PRO_CLIPS[club.id] || PRO_CLIPS['7i'];
+  document.getElementById('proPlaceholder').style.display = 'none';
+  const container = document.getElementById('proClips');
+  container.style.display = 'block';
+  container.innerHTML = clips.map(c => {
+    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(c.query)}`;
+    return `
+      <a href="${url}" target="_blank" rel="noopener" style="
+        display:flex;align-items:center;gap:14px;padding:13px 18px;
+        border-bottom:1px solid #f5f3f0;text-decoration:none;
+        background:rgba(255,255,255,0.07);transition:background 0.12s;
+      " onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="13" height="13" fill="rgba(255,255,255,0.9)" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.85rem;font-weight:600;color:rgba(255,255,255,0.9);">${c.name}</div>
+          <div style="font-size:0.71rem;color:rgba(255,255,255,0.45);margin-top:1px;">${club.label} · öppnar YouTube</div>
+        </div>
+        <svg width="12" height="12" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    `;
   }).join('');
-
-  document.getElementById('infoChecks').innerHTML =
-    `<div style="grid-column:1/-1;background:rgba(0,0,0,0.18);border-radius:8px;padding:10px 14px;margin-bottom:4px;">
-       <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.4);margin-bottom:2px;">📐 Placera linjerna så här</div>
-       ${guide}
-     </div>` +
-    checks.map(c =>
-      `<div class="check-item" style="border-left-color:${cp.color}80"><h3>${c.title}</h3><p>${c.body}</p></div>`
-    ).join('');
-
-  renderSvg();
 }
 
-// ─── Beräkna lutning i grader (pixel-exakt) ──────────────────────────────────
-function tiltDeg(l) {
-  const r = svg.getBoundingClientRect();
-  const dx = (l.p2.x - l.p1.x) * (r.width  || 1);
-  const dy = (l.p2.y - l.p1.y) * (r.height || 1);
-  let fromH = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI); // 0..180
-  if (fromH > 90) fromH = 180 - fromH;                       // 0..90 från vågrätt
-  const fromV = 90 - fromH;                                  // från lodrätt
-  return Math.round(l.ref === 'v' ? fromV : fromH);
+function syncVideos() {
+  if (yourVideoEl) { yourVideoEl.currentTime = 0; yourVideoEl.play(); }
 }
 
-// ─── Rita SVG-linjer (skapas en gång, uppdateras vid drag) ───────────────────
-const NS = 'http://www.w3.org/2000/svg';
-let svgEls = {}; // key -> { hitLine, line, text, hits:[], dots:[] }
-
-function renderSvg() {
-  svg.innerHTML = '';
-  svgEls = {};
-  const defs = document.createElementNS(NS,'defs');
-  defs.innerHTML = `<filter id="sh"><feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="rgba(0,0,0,0.7)"/></filter>`;
-  svg.appendChild(defs);
-
-  Object.entries(lines).forEach(([key, l]) => {
-    if (!lineVisible[key]) return;
-
-    // Osynlig tjock greppyta för hela linjen
-    const hitLine = document.createElementNS(NS,'line');
-    hitLine.setAttribute('stroke','transparent');
-    hitLine.setAttribute('stroke-width','30');
-    hitLine.setAttribute('stroke-linecap','round');
-    hitLine.style.pointerEvents = 'stroke';
-    hitLine.style.touchAction = 'none';
-    hitLine.style.cursor = 'move';
-    hitLine.dataset.key = key; hitLine.dataset.mode = 'line';
-    svg.appendChild(hitLine);
-
-    // Synlig linje
-    const line = document.createElementNS(NS,'line');
-    line.setAttribute('stroke', l.color);
-    line.setAttribute('stroke-width','3');
-    line.setAttribute('filter','url(#sh)');
-    line.style.pointerEvents = 'none';
-    svg.appendChild(line);
-
-    // Etikett
-    const text = document.createElementNS(NS,'text');
-    text.setAttribute('fill','#fff');
-    text.setAttribute('font-size','13');
-    text.setAttribute('font-weight','bold');
-    text.setAttribute('font-family','Inter,sans-serif');
-    text.setAttribute('filter','url(#sh)');
-    text.style.pointerEvents = 'none';
-    svg.appendChild(text);
-
-    const hits = [], dots = [];
-    ['p1','p2'].forEach(pt => {
-      // Stor osynlig greppyta
-      const hit = document.createElementNS(NS,'circle');
-      hit.setAttribute('r','30');
-      hit.setAttribute('fill','transparent');
-      hit.style.pointerEvents = 'all';
-      hit.style.touchAction   = 'none';
-      hit.style.cursor = 'grab';
-      hit.dataset.key = key; hit.dataset.pt = pt; hit.dataset.mode = 'point';
-      svg.appendChild(hit);
-      hits.push(hit);
-
-      // Synlig prick
-      const c = document.createElementNS(NS,'circle');
-      c.setAttribute('r','9');
-      c.setAttribute('fill', l.color);
-      c.setAttribute('stroke','#fff');
-      c.setAttribute('stroke-width','2.5');
-      c.setAttribute('filter','url(#sh)');
-      c.style.pointerEvents = 'none';
-      svg.appendChild(c);
-      dots.push(c);
-    });
-
-    svgEls[key] = { hitLine, line, text, hits, dots };
-    updateLine(key);
-  });
-
-  updateAngle();
+// ========== API-NYCKEL ==========
+function openApiModal() {
+  const saved = localStorage.getItem('anthropic_api_key') || '';
+  document.getElementById('apiKeyInput').value = saved;
+  document.getElementById('apiModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('apiKeyInput').focus(), 60);
 }
 
-// Uppdatera bara koordinaterna för en linje (snabbt, ingen ombyggnad)
-function updateLine(key) {
-  const l = lines[key], e = svgEls[key];
-  if (!e) return;
-  const x1 = l.p1.x*100+'%', y1 = l.p1.y*100+'%';
-  const x2 = l.p2.x*100+'%', y2 = l.p2.y*100+'%';
-  e.hitLine.setAttribute('x1',x1); e.hitLine.setAttribute('y1',y1);
-  e.hitLine.setAttribute('x2',x2); e.hitLine.setAttribute('y2',y2);
-  e.line.setAttribute('x1',x1); e.line.setAttribute('y1',y1);
-  e.line.setAttribute('x2',x2); e.line.setAttribute('y2',y2);
-  e.text.setAttribute('x', ((l.p1.x+l.p2.x)/2*100)+'%');
-  e.text.setAttribute('y', ((l.p1.y+l.p2.y)/2*100 - 2)+'%');
-  e.text.textContent = `${tiltDeg(l)}°`;
-  ['p1','p2'].forEach((pt, i) => {
-    e.hits[i].setAttribute('cx', l[pt].x*100+'%'); e.hits[i].setAttribute('cy', l[pt].y*100+'%');
-    e.dots[i].setAttribute('cx', l[pt].x*100+'%'); e.dots[i].setAttribute('cy', l[pt].y*100+'%');
-  });
+function closeApiModal() {
+  document.getElementById('apiModal').style.display = 'none';
 }
 
-function updateAngle() {
-  const el = document.getElementById('angleDisplay');
-  if (!el) return;
-  if (perspective === 'side' && lines.body && lineVisible.body) {
-    el.innerHTML = `Sidledslutning: <span>${tiltDeg(lines.body)}°</span> <small style="color:rgba(255,255,255,0.35)">(från lodrätt)</small>`;
-  } else if (perspective === 'back' && lines.plane && lineVisible.plane) {
-    el.innerHTML = `Svängplan: <span>${tiltDeg(lines.plane)}°</span> <small style="color:rgba(255,255,255,0.35)">(ideal ~55–65°)</small>`;
-  }
-}
-
-// ─── Drag på handtag / hela linjen ───────────────────────────────────────────
-function pointerPos(e) {
-  const r = svg.getBoundingClientRect();
-  return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
-}
-
-svg.addEventListener('pointerdown', e => {
-  const t = e.target;
-  if (!t.dataset || !t.dataset.key) return;
-  e.preventDefault();
-  try { t.setPointerCapture(e.pointerId); } catch(_) {}
-  const key = t.dataset.key;
-  if (t.dataset.mode === 'line') {
-    const p = pointerPos(e);
-    dragging = { key, mode:'line', start:p, orig:{ p1:{...lines[key].p1}, p2:{...lines[key].p2} } };
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (key) {
+    localStorage.setItem('anthropic_api_key', key);
   } else {
-    dragging = { key, mode:'point', pt:t.dataset.pt };
+    localStorage.removeItem('anthropic_api_key');
   }
-});
-
-svg.addEventListener('pointermove', e => {
-  if (!dragging) return;
-  e.preventDefault();
-  const p = pointerPos(e);
-  const clamp = v => Math.max(0, Math.min(1, v));
-  if (dragging.mode === 'line') {
-    const dx = p.x - dragging.start.x, dy = p.y - dragging.start.y;
-    lines[dragging.key].p1 = { x:clamp(dragging.orig.p1.x+dx), y:clamp(dragging.orig.p1.y+dy) };
-    lines[dragging.key].p2 = { x:clamp(dragging.orig.p2.x+dx), y:clamp(dragging.orig.p2.y+dy) };
-  } else {
-    lines[dragging.key][dragging.pt] = { x:clamp(p.x), y:clamp(p.y) };
-  }
-  updateLine(dragging.key);  // bara koordinatuppdatering — snabbt
-  updateAngle();
-});
-
-function endDrag() { dragging = null; }
-svg.addEventListener('pointerup', endDrag);
-svg.addEventListener('pointercancel', endDrag);
-
-// ─── Knappar ─────────────────────────────────────────────────────────────────
-function toggleLine(key) {
-  lineVisible[key] = !lineVisible[key];
-  const btn = document.getElementById('btn_' + key);
-  if (btn) btn.classList.toggle('active', lineVisible[key]);
-  renderSvg();
+  updateSettingsBtn();
+  closeApiModal();
 }
 
-function resetLines() {
-  lines = JSON.parse(JSON.stringify(PERSP_LINES[perspective]));
-  // Återställ synlighet till standardvärden för nuvarande checkpoint
-  Object.entries(lines).forEach(([k, l]) => {
-    lineVisible[k] = l.showAt ? l.showAt[activeCP] : true;
-    const btn = document.getElementById('btn_' + k);
-    if (btn) btn.classList.toggle('active', lineVisible[k]);
+function updateSettingsBtn() {
+  const hasKey = !!localStorage.getItem('anthropic_api_key');
+  const btn = document.getElementById('settingsBtn');
+  const label = document.getElementById('settingsBtnLabel');
+  btn.classList.toggle('has-key', hasKey);
+  label.textContent = hasKey ? 'API-nyckel ✓' : 'API-nyckel';
+}
+
+updateSettingsBtn();
+
+// ========== FRAME-EXTRAKTION ==========
+async function extractFrames(video) {
+  const MAX_W = 640;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.min(video.videoWidth, MAX_W);
+  canvas.height = Math.round(canvas.width * video.videoHeight / video.videoWidth);
+  const ctx = canvas.getContext('2d');
+
+  const positions =  [0.04, 0.20, 0.38, 0.55, 0.72, 0.92];
+  const labels     = ['Address', 'Takeaway', 'Topp av backswing', 'Transition', 'Impact', 'Follow-through'];
+
+  const wasPaused = video.paused;
+  video.pause();
+
+  const frames = [];
+  const thumbs = [];
+
+  for (let i = 0; i < positions.length; i++) {
+    video.currentTime = video.duration * positions[i];
+    await new Promise(r => video.addEventListener('seeked', r, { once: true }));
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.78);
+    frames.push({ b64: dataUrl.split(',')[1], label: labels[i] });
+    thumbs.push({ src: dataUrl, label: labels[i] });
+  }
+
+  video.currentTime = 0;
+  if (!wasPaused) video.play();
+
+  return { frames, thumbs };
+}
+
+// ========== CLAUDE API ==========
+async function callClaude(frames, clubLabel, apiKey) {
+  const content = [
+    {
+      type: 'text',
+      text: `Du är en PGA-certifierad golfcoach med djup expertkunskap i swingbiomekanik. Analysera dessa ${frames.length} bilder från en golfswing med ${clubLabel}.\n\nBilderna är tagna vid följande faser: ${frames.map(f => f.label).join(', ')}.\n\nGe en detaljerad coaching-analys på svenska med exakt dessa fyra sektioner (använd ## som rubrik):\n\n## Sammanfattning\nEn övergripande bedömning av swingen i 2–3 meningar.\n\n## Styrkor\nLista 2–4 konkreta styrkor du ser i bilderna.\n\n## Förbättringsområden\nLista 2–4 specifika tekniska saker att jobba på, i prioritetsordning.\n\n## Nästa steg\n1–2 konkreta övningar eller drills att börja med.\n\nVar specifik och hänvisa direkt till vad du ser i bilderna. Fokusera på det viktigaste för ${clubLabel}.`
+    },
+    ...frames.flatMap(f => [
+      { type: 'text', text: `[Fas: ${f.label}]` },
+      { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: f.b64 } }
+    ])
+  ];
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-calls': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-8',
+      max_tokens: 1600,
+      messages: [{ role: 'user', content }]
+    })
   });
-  renderSvg();
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${resp.status} — kontrollera att API-nyckeln stämmer`);
+  }
+
+  const data = await resp.json();
+  return data.content[0].text;
+}
+
+// ========== MARKDOWN → HTML ==========
+function mdToHtml(text) {
+  const lines = text.split('\n');
+  let html = '';
+  let inList = false;
+
+  for (const line of lines) {
+    if (line.startsWith('## ')) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<h3>${line.slice(3).trim()}</h3>`;
+    } else if (/^[-*]\s/.test(line)) {
+      if (!inList) { html += '<ul>'; inList = true; }
+      html += `<li>${line.slice(2).trim()}</li>`;
+    } else if (/^\d+\.\s/.test(line)) {
+      if (!inList) { html += '<ul>'; inList = true; }
+      html += `<li>${line.replace(/^\d+\.\s/, '').trim()}</li>`;
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      if (line.trim()) html += `<p>${line}</p>`;
+    }
+  }
+  if (inList) html += '</ul>';
+  return html;
+}
+
+// ========== ANALYS-FLÖDE ==========
+async function analyzeSwing() {
+  const apiKey = localStorage.getItem('anthropic_api_key');
+  if (!apiKey) {
+    openApiModal();
+    return;
+  }
+  if (!yourVideoEl || !yourVideoEl.duration) return;
+
+  const clubLabel = selectedClub ? selectedClub.label : 'golf';
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Analyserar…';
+
+  const panel = document.getElementById('analysisPanel');
+  const body  = document.getElementById('analysisBody');
+  panel.style.display = 'block';
+  body.innerHTML = `<div class="analysis-loading"><div class="spinner"></div><span>Extraherar frames ur videon…</span></div>`;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  try {
+    const { frames, thumbs } = await extractFrames(yourVideoEl);
+
+    const stripHtml = `<div class="frame-strip">
+      ${thumbs.map(t => `<div class="frame-item"><img src="${t.src}" alt="${t.label}"><div class="frame-label">${t.label}</div></div>`).join('')}
+    </div>`;
+
+    body.innerHTML = `${stripHtml}<div class="analysis-loading"><div class="spinner"></div><span>Claude analyserar din teknik med ${clubLabel}…</span></div>`;
+
+    const text = await callClaude(frames, clubLabel, apiKey);
+
+    body.innerHTML = `${stripHtml}<div class="analysis-content">${mdToHtml(text)}</div>`;
+
+  } catch (err) {
+    body.innerHTML = `<div class="analysis-error">⚠️ Fel: ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✦ Analysera swing';
+  }
+}
+
+function closeAnalysis() {
+  const panel = document.getElementById('analysisPanel');
+  if (panel) panel.style.display = 'none';
 }
 </script>
 </body>
