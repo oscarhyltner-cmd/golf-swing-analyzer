@@ -436,40 +436,122 @@ let selectedClub = 'Driver';
 // ─── Perspektiv ───────────────────────────────────────────────────────────────
 let perspective = 'side'; // 'side' | 'back'
 
+// Varje linje har hints[] och targets[] (6 värden, ett per checkpoint 0–5)
+// samt showAt[] som styr vilka linjer som visas som standard vid varje steg.
 const PERSP_LINES = {
   side: {
-    body:     { p1:{x:0.50,y:0.12}, p2:{x:0.50,y:0.60}, color:'#4dffaa', label:'Kropp',  ref:'v',
-                hint:'Sätt övre punkten mitt på huvudet och nedre punkten mitt mellan fötterna.',
-                target:'Adress ~0° (lodrät). Mot impact får den luta 10–20° bort från målet.' },
-    shoulder: { p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axlar',  ref:'h',
-                hint:'Sätt en punkt på vardera axeltopp, rakt över axlarna.',
-                target:'Adress ~5–10° (främre axeln högre). I övrigt nära vågrät.' },
-    hip:      { p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höfter', ref:'h',
-                hint:'Sätt en punkt på vardera höftben, rakt över höften.',
-                target:'Vågrät (~0°) vid adress.' },
-    ball:     { p1:{x:0.56,y:0.50}, p2:{x:0.56,y:0.86}, color:'#ff8844', label:'Boll',   ref:'v',
-                hint:'Dra en lodrät linje rakt upp från bollen.',
-                target:'Alltid 0° (lodrät) — referens för bollposition och huvud bakom bollen.' },
+    body: {
+      p1:{x:0.50,y:0.12}, p2:{x:0.50,y:0.60}, color:'#4dffaa', label:'Kroppslinje', ref:'v',
+      hints:[
+        'Sätt övre punkten mitt på huvudet och nedre punkten mitt mellan fötterna. Din referenslinje för sidorörelser (sway).',
+        'Bakre höften ska INTE glida utanför linjen under takeaway — rotera på plats, glid inte!',
+        'Kroppen håller centrum — jämför med adresspositionen. Ingen sidoglidning.',
+        'Kroppen centrerad under sig själv vid toppen. En liten bakåtlutning (max 5°) är ok.',
+        'Vikten och kroppen förflyttas nu mot målet — linjen lutar svagt framåt.',
+        'All vikt på framsidan. Linjen lutar tydligt mot målet — fullständig viktöverföring.',
+      ],
+      targets:['0° (lodrät)','0° — ingen sidoglidning','0°','0–5° bakåt ok','0–10° mot målet','10–20° mot målet'],
+      showAt:[true,true,true,true,true,true],
+    },
+    shoulder: {
+      p1:{x:0.34,y:0.27}, p2:{x:0.64,y:0.27}, color:'#4dcfff', label:'Axellinje', ref:'h',
+      hints:[
+        'Sätt en punkt på varje axeltopp (höger och vänster). Frontaxeln ska vara något högre vid adress med driver.',
+        'Axlarna börjar vrida sig — frontaxeln rör sig ner och in mot bollen. Kontrollera lutningen.',
+        'Tydlig axelrotation. Frontaxeln är nu klart lägre än bakaxeln sett framifrån.',
+        'Maximal rotation. Frontaxeln ska nu peka nedåt mot bollen/marken (ca 45°+ lutning).',
+        'Axlarna återvänder nära adressvinkeln vid impact — omkvadreringen sker.',
+        'Axlarna har roterat förbi adress — bakaxeln pekar nu mot målet.',
+      ],
+      targets:['5–10° (frontaxeln högre med driver, nära 0° med järn)','15–25°','25–40°','35–50°','5–15°','0–10°'],
+      showAt:[true,false,true,true,true,false],
+    },
+    hip: {
+      p1:{x:0.37,y:0.47}, p2:{x:0.61,y:0.47}, color:'#ffcf4d', label:'Höftlinje', ref:'h',
+      hints:[
+        'Sätt en punkt på varje höftben (SIAS — benpunkten framtill på höften). Linjen ska vara vågrätt.',
+        'Höfterna håller sig nära vågräta. Kontrollera att de INTE glider i sidled.',
+        'Höfterna börjar rotera — frontaxeln drar sig bakåt och uppåt.',
+        'Höfterna ca 45° roterade. Från framifrån syns detta som en tydlig lutning på linjen.',
+        'KRITISKT: Fronthöften är klart öppen (utdragen mot målet). Linjen lutar tydligt — detta är rätt!',
+        'Full höftrotation — hela höften mot målet.',
+      ],
+      targets:['0° (vågrätt)','0–5°','10–20°','20–35°','25–40° öppen','30–45°'],
+      showAt:[true,false,true,true,true,true],
+    },
+    ball: {
+      p1:{x:0.56,y:0.50}, p2:{x:0.56,y:0.86}, color:'#ff8844', label:'Bollinje', ref:'v',
+      hints:[
+        'Dra en lodrät linje rakt upp från bollen. Referenspunkt för bollposition och huvud bakom bollen.',
+        'Ditt huvud och överkropp ska INTE ha letat sig framför bolllinjen under takeaway.',
+        'Överkroppen ska fortfarande vara bakom bolllinjen. Ingen forward sway halvvägs.',
+        'Ditt huvud ska vara klart till höger om (bakom) bolllinjen vid toppen av swingen.',
+        'KRITISKT: Händerna ska vara FRAMFÖR bolllinjen (forward shaft lean). Ditt huvud ska FORTFARANDE vara bakom.',
+        'Inte kritisk vid finish — fokus på balans och rotation i kroppen.',
+      ],
+      targets:['0° (lodrät)','0° — huvud bakom linjen','0° — överkropp bakom linjen','0° — huvud klart bakom','0° — händer framför, huvud bakom','—'],
+      showAt:[true,true,true,true,true,false],
+    },
   },
   back: {
-    plane:    { p1:{x:0.50,y:0.78}, p2:{x:0.62,y:0.22}, color:'#4dffaa', label:'Svängplan', ref:'h',
-                hint:'Nedre punkten på bollen, övre punkten genom händerna/axeln.',
-                target:'Driver ~45–50°, järn ~55–65° från marken. Skaftet bör följa linjen.' },
-    spine:    { p1:{x:0.50,y:0.15}, p2:{x:0.52,y:0.55}, color:'#ff88cc', label:'Ryggaxel',  ref:'v',
-                hint:'Dra längs ryggraden, från nacken till svanskotan.',
-                target:'~30–40° framåtlutning (från lodrätt) vid adress.' },
-    ball:     { p1:{x:0.50,y:0.45}, p2:{x:0.50,y:0.85}, color:'#4dcfff', label:'Boll', ref:'v',
-                hint:'Dra en lodrät linje rakt upp från bollen.',
-                target:'0° (lodrät). Kolla att huvudet stannar bakom och att händerna återvänder hit.' },
-    shoulder: { p1:{x:0.35,y:0.30}, p2:{x:0.65,y:0.30}, color:'#ffcf4d', label:'Axlar',     ref:'h',
-                hint:'Sätt en punkt på vardera axeltopp.',
-                target:'Nära vågrät (~0°) vid adress.' },
+    plane: {
+      p1:{x:0.50,y:0.78}, p2:{x:0.62,y:0.22}, color:'#4dffaa', label:'Svängplan', ref:'h',
+      hints:[
+        'Sätt nedre punkten på bollen och övre punkten på INSIDAN av din bakre axel. Detta är din svängplansreferens — den lutande yta klubban ska följa.',
+        'Klubbhuvudet ska röra sig längs insidan av svängplanslinjen — inte utanför (outside takeaway).',
+        'Skaftet bör vara parallellt med svängplanslinjen när det är parallellt med marken. On-plane = bra!',
+        'Skaftet vid toppen bör ligga PÅ eller precis under svängplanslinjen. Över = för brant, under = för flat.',
+        'Händerna återvänder längs svängplanet till bollen — skaftet följer samma lutning ner som upp.',
+        'Inte relevant vid finish — kontrollera istället rotation och balans.',
+      ],
+      targets:['Driver ~45–50°, järn ~55–65°','Klubban rör sig innanför linjen','Skaftet parallellt med linjen','Skaftet på eller strax under linjen','Driver ~45–50°, järn ~55–65°','—'],
+      showAt:[true,true,true,true,true,false],
+    },
+    spine: {
+      p1:{x:0.50,y:0.15}, p2:{x:0.52,y:0.55}, color:'#ff88cc', label:'Ryggrad', ref:'v',
+      hints:[
+        'Dra längs ryggraden — från nacken (C7-kotan, den knöl du känner längst ner på nacken) ner längs kotpelaren till svanskotan.',
+        'Ryggradens lutning ska INTE ändras under takeaway — ingen upprätning ur swingen (early extension).',
+        'Ryggraden håller adressens lutning halvvägs. Kontrollera att du inte reser dig upp.',
+        'VIKTIGT: Ryggraden håller adressens lutning vid toppen. Reverse spine tilt (böjning bakåt) = skaderisk!',
+        'Ryggraden börjar rätas upp vid och efter impact — detta är normalt och tillåtet.',
+        'Full upprätning vid finish — kroppen balanserar rakt upp.',
+      ],
+      targets:['30–45° framåtlutning (från lodrätt)','30–45° — ska inte ändras','30–45°','30–45° — ska INTE minska','20–35°','0–15°'],
+      showAt:[true,true,false,true,true,false],
+    },
+    ball: {
+      p1:{x:0.50,y:0.45}, p2:{x:0.50,y:0.85}, color:'#4dcfff', label:'Bollinje', ref:'v',
+      hints:[
+        'Dra en lodrät linje rakt upp från bollen. Referenspunkt för händernas och klubbans position.',
+        'Händerna ska röra sig längs INSIDAN av bolllinjen under takeaway — inte utanför.',
+        'Kontrollera att händerna fortfarande är innanför bolllinjen halvvägs upp.',
+        'Kontrollera bollinjens relation till händerna och skaftets riktning vid toppen.',
+        'KRITISKT: Händerna ska återvända exakt till bollen — inte för långt fram eller bak i djupled.',
+        'Inte relevant vid finish.',
+      ],
+      targets:['0° (lodrät)','Händerna innanför linjen','Händerna innanför linjen','0°','0° — händerna exakt på bollen','—'],
+      showAt:[true,false,false,false,true,false],
+    },
+    foot: {
+      p1:{x:0.22,y:0.84}, p2:{x:0.78,y:0.84}, color:'#ffcf4d', label:'Fotstallning', ref:'h',
+      hints:[
+        'Dra en linje längs tålinjen (tå till tå). Visar om stansen är PARALLELL med mållinjen — ska vara vågrätt i bilden. Sett bakifrån = perfekt perspektiv för detta.',
+        'Fotstallningslinjen ändras inte under swingen — den är satt vid adress och är din riktningsreferens.',
+        'Fötterna är kvar — jämför klubbans rörelse med fotstallningsriktningen.',
+        'Kontrollera att bakre hälen inte har lyft för mycket. Lätt lyft är ok, kraftigt lyft = instabil.',
+        'Bakre tå börjar lyfta — detta är normalt. Fronten ska vara stabil.',
+        'Bakre fot nu på tå — visar fullständig viktöverföring och bra rotation.',
+      ],
+      targets:['0° (vågrätt = parallell med mållinjen)','0° — riktningsreferens','0°','Bakre häl lätt lyft = ok','Bakre tå lyfter = normalt','Bakre fot på tå = bra viktöverföring'],
+      showAt:[true,false,false,false,false,true],
+    },
   }
 };
 
 const LINE_LABELS = {
-  side: { body:'Kroppslinje', shoulder:'Axellinje', hip:'Höftlinje', ball:'Bolllinje' },
-  back: { plane:'Svängplan', spine:'Ryggaxel', ball:'Bolllinje', shoulder:'Axellinje' },
+  side: { body:'Kroppslinje', shoulder:'Axellinje', hip:'Höftlinje', ball:'Bollinje' },
+  back: { plane:'Svängplan', spine:'Ryggrad', ball:'Bollinje', foot:'Fotstallning' },
 };
 
 // ─── Data: 6 nyckelpositioner ───────────────────────────────────────────────
@@ -501,7 +583,10 @@ const CHECKPOINTS = [
 ];
 
 let lines = JSON.parse(JSON.stringify(PERSP_LINES.side));
-let lineVisible = Object.fromEntries(Object.keys(PERSP_LINES.side).map(k => [k, true]));
+let lineVisible = Object.fromEntries(Object.keys(PERSP_LINES.side).map(k => {
+  const l = PERSP_LINES.side[k];
+  return [k, l.showAt ? l.showAt[0] : true];
+}));
 let activeCP = 0;
 
 // ─── Init ────────────────────────────────────────────────────────────────────
@@ -549,7 +634,10 @@ buildToolbar();
 function setPerspective(p) {
   perspective = p;
   lines = JSON.parse(JSON.stringify(PERSP_LINES[p]));
-  lineVisible = Object.fromEntries(Object.keys(PERSP_LINES[p]).map(k => [k, true]));
+  lineVisible = Object.fromEntries(Object.keys(PERSP_LINES[p]).map(k => {
+    const l = PERSP_LINES[p][k];
+    return [k, l.showAt ? l.showAt[activeCP] : true];
+  }));
   buildToolbar();
 
   const side = document.getElementById('perspSide');
@@ -648,21 +736,33 @@ function gotoCheckpoint(i) {
     btn.style.borderBottom = idx === i ? `2px solid ${CHECKPOINTS[idx].color}` : '';
   });
 
+  // Sätt synlighet per checkpoint (showAt[i]) — uppdatera även toolbarknapparna
+  Object.entries(lines).forEach(([key, l]) => {
+    if (l.showAt) {
+      lineVisible[key] = l.showAt[i];
+      const btn = document.getElementById('btn_' + key);
+      if (btn) btn.classList.toggle('active', lineVisible[key]);
+    }
+  });
+
   const checks = cp[perspective] || cp.side;
   document.getElementById('infoTitle').textContent    = cp.label + ' — ' + (perspective === 'side' ? 'Framifrån' : 'Bakifrån');
   document.getElementById('infoSubtitle').textContent = cp.desc;
 
-  // Placeringsguide för linjerna — var de ska sitta + riktvärde i grader
-  const guide = Object.entries(lines).filter(([k]) => lineVisible[k]).map(([k, l]) =>
-    `<div style="display:flex;gap:8px;padding:7px 0;border-top:1px solid rgba(255,255,255,0.07);">
+  // Placeringsguide — visar ALLA linjer (aktiva tydliga, inaktiva avtonade)
+  const guide = Object.entries(lines).map(([k, l]) => {
+    const hint   = l.hints   ? l.hints[i]   : (l.hint   || '');
+    const target = l.targets ? l.targets[i] : (l.target || '');
+    const isVis  = lineVisible[k];
+    return `<div style="display:flex;gap:8px;padding:7px 0;border-top:1px solid rgba(255,255,255,0.07);opacity:${isVis ? 1 : 0.38}">
        <span style="width:12px;height:12px;border-radius:50%;background:${l.color};flex-shrink:0;margin-top:2px;"></span>
        <div style="font-size:0.73rem;line-height:1.5;">
-         <b style="color:${l.color}">${l.label}</b>
-         <span style="color:rgba(255,255,255,0.7);"> — ${l.hint}</span>
-         <div style="color:rgba(255,255,255,0.5);margin-top:2px;">🎯 Riktvärde: ${l.target}</div>
+         <b style="color:${l.color}">${l.label}</b>${!isVis ? ' <span style="font-size:0.65rem;color:rgba(255,255,255,0.3)">(dold — tryck på knappen ovan för att visa)</span>' : ''}
+         <span style="color:rgba(255,255,255,0.7);"> — ${hint}</span>
+         <div style="color:rgba(255,255,255,0.5);margin-top:2px;">🎯 Riktvärde: <b style="color:rgba(255,255,255,0.75)">${target}</b></div>
        </div>
-     </div>`
-  ).join('');
+     </div>`;
+  }).join('');
 
   document.getElementById('infoChecks').innerHTML =
     `<div style="grid-column:1/-1;background:rgba(0,0,0,0.18);border-radius:8px;padding:10px 14px;margin-bottom:4px;">
@@ -841,10 +941,11 @@ function toggleLine(key) {
 
 function resetLines() {
   lines = JSON.parse(JSON.stringify(PERSP_LINES[perspective]));
-  lineVisible = Object.fromEntries(Object.keys(PERSP_LINES[perspective]).map(k => [k,true]));
-  Object.keys(LINE_LABELS[perspective]).forEach(k => {
-    const btn = document.getElementById('btn_'+k);
-    if (btn) btn.classList.add('active');
+  // Återställ synlighet till standardvärden för nuvarande checkpoint
+  Object.entries(lines).forEach(([k, l]) => {
+    lineVisible[k] = l.showAt ? l.showAt[activeCP] : true;
+    const btn = document.getElementById('btn_' + k);
+    if (btn) btn.classList.toggle('active', lineVisible[k]);
   });
   renderSvg();
 }
