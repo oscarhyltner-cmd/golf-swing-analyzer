@@ -288,6 +288,40 @@ input[type="file"] { display:none; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
 
+/* ── GUIDE LEGEND ── */
+.guide-legend {
+  display:none; padding:14px 18px 18px; border-top:1px solid var(--border);
+  background:rgba(0,0,0,0.28);
+}
+.legend-header {
+  font-family:var(--mono); font-size:0.6rem; letter-spacing:0.15em;
+  text-transform:uppercase; color:var(--amber); opacity:0.75; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.legend-header::before { content:'//'; color:var(--amber); opacity:0.5; font-weight:700; }
+.legend-list { display:flex; flex-direction:column; gap:8px; }
+.legend-item { display:flex; gap:11px; align-items:flex-start; }
+.legend-num {
+  width:20px; height:20px; border-radius:50%; flex-shrink:0;
+  background:rgba(6,15,8,0.92); border:1.5px solid rgba(200,168,75,0.72);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:0.6rem; font-weight:700; color:var(--amber);
+  text-shadow:0 0 6px rgba(200,168,75,0.45); margin-top:1px;
+}
+.legend-content { flex:1; min-width:0; }
+.legend-label {
+  font-family:var(--mono); font-size:0.64rem; font-weight:700;
+  letter-spacing:0.06em; color:var(--amber); margin-bottom:2px;
+}
+.legend-ideal { font-size:0.71rem; color:var(--w55); line-height:1.5; }
+.legend-cue {
+  font-family:var(--mono); font-size:0.6rem; color:rgba(61,220,110,0.55);
+  margin-top:3px; line-height:1.4;
+}
+@media (min-width:540px) {
+  .legend-list { display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; }
+}
+
 @media (max-width:600px) {
   .header-inner { padding:0 14px; }
   .hero-strip { padding:12px 16px 10px; }
@@ -434,6 +468,9 @@ input[type="file"] { display:none; }
       <canvas id="drawCanvas"></canvas>
     </div>
 
+    <!-- Guide legend (numbered list below frame) -->
+    <div class="guide-legend" id="guideLegend"></div>
+
     <div class="guide-bar">
       <span class="guide-note">
         <strong>GUIDE</strong> = idealposition för vald kameravinkel &amp; fas. Streckad = rak linje. Pil = rörelseriktning.
@@ -558,103 +595,327 @@ const CAM_TIPS = {
 };
 
 // ══════════════════════════════════
-//  GUIDES — Bakifrån (DTL-vy)
-//  Kamera bakom golfaren, sikt mot målet.
-//  Mållinje visas som pil/streck UPPÅT i bild (in i bilden).
+//  CLUB CATEGORY
 // ══════════════════════════════════
-const GUIDES_DTL = [
-  // 0: ADDRESS
-  [
-    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (rakt mot mål)'},
-    {type:'line',  pts:[{x:.28,y:.88},{x:.68,y:.88}], label:'Fotlinje: parallell med mållinje'},
-    {type:'line',  pts:[{x:.30,y:.35},{x:.65,y:.35}], label:'Axellinje: parallell med mållinje'},
-    {type:'arrow', pts:[{x:.48,y:.92},{x:.48,y:.84}], label:'Bollposition'},
-  ],
-  // 1: TAKEAWAY
-  [
-    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (referens)'},
-    {type:'arrow', pts:[{x:.48,y:.80},{x:.60,y:.58}], label:'Klubba: innanför mållinje (rätt)'},
-    {type:'line',  pts:[{x:.28,y:.30},{x:.62,y:.30}], label:'Axlar: börjar rotera'},
-    {type:'arrow', pts:[{x:.42,y:.62},{x:.44,y:.55}], label:'Handleden: börjar gångjärna'},
-  ],
-  // 2: TOPP AV BACKSWING
-  [
-    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (referens)'},
-    {type:'arrow', pts:[{x:.60,y:.42},{x:.40,y:.38}], label:'Skaft: parallellt — pekar mot mål'},
-    {type:'line',  pts:[{x:.28,y:.28},{x:.62,y:.58}], label:'Vänster arm: ~horisontell'},
-    {type:'line',  pts:[{x:.36,y:.68},{x:.54,y:.60}], label:'Höfter: 45° rotation'},
-  ],
-  // 3: TRANSITION
-  [
-    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (referens)'},
-    {type:'arrow', pts:[{x:.58,y:.45},{x:.50,y:.65}], label:'Klubba: faller inåt på insidan'},
-    {type:'arrow', pts:[{x:.52,y:.62},{x:.44,y:.58}], label:'Höfter: leder — roterar mot mål'},
-  ],
-  // 4: IMPACT
-  [
-    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (referens)'},
-    {type:'arrow', pts:[{x:.58,y:.72},{x:.38,y:.82}], label:'Slagbana: inifrån-ut (lätt)'},
-    {type:'arrow', pts:[{x:.48,y:.92},{x:.45,y:.78}], label:'Divot: pekar mot/förbi målet'},
-    {type:'line',  pts:[{x:.44,y:.30},{x:.48,y:.80}], label:'Skaft: framåtlutning vid impact'},
-  ],
-  // 5: FOLLOW-THROUGH
-  [
-    {type:'line',  pts:[{x:.48,y:.88},{x:.48,y:.10}], label:'Mållinje (referens)'},
-    {type:'arrow', pts:[{x:.48,y:.72},{x:.44,y:.40}], label:'Utsving: längs/innanför mållinje'},
-    {type:'arrow', pts:[{x:.56,y:.72},{x:.54,y:.58}], label:'Höger häl: lyfts från marken'},
-    {type:'line',  pts:[{x:.32,y:.44},{x:.58,y:.36}], label:'Bröst/mage: mot målet'},
-  ],
-];
+function getClubCategory(id) {
+  if (id === 'driver') return 'driver';
+  if (id === '3w' || id === '5w') return 'wood';
+  if (id === 'sw' || id === 'lw') return 'wedge';
+  if (id === 'putter') return 'putter';
+  return 'iron'; // 3h,4h,4i-9i,pw,gw
+}
 
 // ══════════════════════════════════
-//  GUIDES — Från sidan (face-on)
-//  Kamera vid sidan — ser ansikte och mage.
+//  GUIDES — per klubbkategori + kameravinkel
+//  Varje guide: { type, pts, num, label, ideal, cue }
+//  pts koordinater: x/y normaliserade 0-1 (0,0 = övre vänster)
 // ══════════════════════════════════
-const GUIDES_FACEON = [
-  // 0: ADDRESS
-  [
-    {type:'line',  pts:[{x:.48,y:.18},{x:.52,y:.74}], label:'Ryggrad: ~35° framåtlutning'},
-    {type:'line',  pts:[{x:.28,y:.30},{x:.66,y:.28}], label:'Axlar: parallella med mållinje'},
-    {type:'line',  pts:[{x:.30,y:.53},{x:.64,y:.51}], label:'Höfter: parallella med mållinje'},
-    {type:'arrow', pts:[{x:.42,y:.98},{x:.42,y:.87}], label:'Bollpos. (driver: vänster häl)'},
+const GUIDES = {
+
+// ─────────────────────────────────
+//  DRIVER
+// ─────────────────────────────────
+driver: {
+  dtl: [
+    // 0: Address
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',           ideal:'Rak linje från bollen rakt mot målet. Fötter & axlar parallella med den.',          cue:'Axlar/höfter öppna mot linjen? → slice-risk'},
+     {type:'line',  pts:[{x:.22,y:.88},{x:.72,y:.88}], num:2, label:'Fotlinje (bred)',     ideal:'Bredare än axelbredd för driver. Stabil grund för maximal svingbåge.',              cue:'För smal stance → instabil rotation → kraft förloras'},
+     {type:'arrow', pts:[{x:.47,y:.92},{x:.35,y:.88}], num:3, label:'Bollposition (framåt)',ideal:'Innanför vänster häl — mer framåt än för alla andra klubbor.',                     cue:'Bollen för bak → nedåtgående slag → topping/skjuter ner i bollen'},
+     {type:'line',  pts:[{x:.26,y:.38},{x:.65,y:.38}], num:4, label:'Axellinje',           ideal:'Parallell med mållinje. Höger axel lätt lägre (ryggradstilt mot höger).',          cue:'Axlarna öppna? → over-the-top-risk. Slutna? → blockad finish'}],
+    // 1: Takeaway
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',           ideal:'Referenslinje — allt bedöms mot den.',                                              cue:''},
+     {type:'arrow', pts:[{x:.47,y:.82},{x:.65,y:.55}], num:2, label:'Klubba: bred båge',   ideal:'Klubban rör sig lågt och brett innanför mållinje — inte utåt. Lång, sweepande arc.',cue:'Klubban utanför linjen vid takeaway? → over-the-top startar redan här'},
+     {type:'arrow', pts:[{x:.38,y:.60},{x:.40,y:.50}], num:3, label:'Handledsvinkel',      ideal:'Minimal tidig böjning av handlederna. De hänger sig inte förrän vid midjan.',       cue:'Tidigt gångjärn = förlorad svingbåge och kraft'}],
+    // 2: Topp av backswing
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',           ideal:'Referens — skaftet ska peka parallellt med denna vid full backswing.',              cue:''},
+     {type:'arrow', pts:[{x:.62,y:.40},{x:.38,y:.36}], num:2, label:'Skaft: parallellt',   ideal:'Skaftet parallellt med mållinje och mark vid full backswing — pekar mot mål.',      cue:'Skaftet crossar linjen (för långt)? → timing & kontroll försämras'},
+     {type:'line',  pts:[{x:.25,y:.30},{x:.60,y:.55}], num:3, label:'Vänster arm: rak',    ideal:'Arm rak eller nästintill — bibehåller full svingbåge och konsistens.',              cue:'Kraftigt vikt vänsterarm → förlorar båge och konsekvent kontakt'},
+     {type:'line',  pts:[{x:.32,y:.68},{x:.56,y:.60}], num:4, label:'Höfter: 45° rotation',ideal:'Höfterna roterar ~45° (axlarna ~90°). Separationen (X-faktorn) genererar kraft.',  cue:'Höfterna roterar lika mycket som axlarna? → X-faktor förloras → distansförlust'}],
+    // 3: Transition
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',           ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.60,y:.44},{x:.52,y:.62}], num:2, label:'Klubba: faller inåt', ideal:'Klubban faller nedåt och inåt — inte utåt. "Drop into the slot."',                 cue:'Faller klubban utåt/uppåt? → over the top → pull/slice. Ska kännas som att man "slänger" ner den'},
+     {type:'arrow', pts:[{x:.54,y:.62},{x:.44,y:.58}], num:3, label:'Höfter leder',        ideal:'Höfterna roterar FÖRE armarna. Sekvens: höfter → axlar → armar → klubba.',          cue:'Axlarna startar nedsvingen? → rätt sekvens bryts → klassisk slice-rörelse'}],
+    // 4: Impact
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',           ideal:'Referens för slagbana.',                                                           cue:''},
+     {type:'arrow', pts:[{x:.62,y:.74},{x:.42,y:.82}], num:2, label:'Slagbana: inifrån-ut',ideal:'Lätt inifrån-ut-bana ger draw-boll och maximalt avstånd för driver.',               cue:'Bana rakt eller utanför-in? → slice/fade. Inifrån-ut → draw-bana'},
+     {type:'line',  pts:[{x:.46,y:.32},{x:.50,y:.82}], num:3, label:'Skaft: minimal lean', ideal:'Driver: händerna knappt framför bollen (minimalt lean till skillnad från järn).',   cue:'Kraftig lean på driver → slår ner i bollen → backspin ökar dramatiskt'},
+     {type:'arrow', pts:[{x:.50,y:.18},{x:.50,y:.24}], num:4, label:'Huvud bakom bollen',  ideal:'Huvudet stannar bakom bollpositionen — resultat av ryggradstilten mot höger.',      cue:'Huvudet framför bollen → descending blow → topping-risk och distansförlust'}],
+    // 5: Follow-through
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',           ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.50,y:.68},{x:.44,y:.30}], num:2, label:'Utsving längs linjen',ideal:'Klubban svingar längs eller lätt innanför mållinje — inte rakt ut eller kraftigt in.',cue:'Drastiskt inåt-utsvingen? → overdraw/hook. Rakt ut? → open-face-mönster'},
+     {type:'line',  pts:[{x:.28,y:.46},{x:.58,y:.34}], num:3, label:'Bröst mot mål',       ideal:'Bröstet pekar mot eller förbi målet. Full rotation genomförd. Balanserad finish.',  cue:'Bröstet fortfarande nedåt? → rotation avbröts för tidigt → kraft förloras'}],
   ],
-  // 1: TAKEAWAY
-  [
-    {type:'line',  pts:[{x:.48,y:.20},{x:.52,y:.72}], label:'Rygg: hålls stabil'},
-    {type:'arrow', pts:[{x:.48,y:.58},{x:.64,y:.42}], label:'Armar: rör sig längs kroppen'},
-    {type:'arrow', pts:[{x:.30,y:.30},{x:.26,y:.37}], label:'Vänster axel: under hakan'},
-    {type:'arrow', pts:[{x:.56,y:.56},{x:.60,y:.62}], label:'Vikt: laddar höger sida'},
+  faceon: [
+    // 0: Address
+    [{type:'line',  pts:[{x:.50,y:.18},{x:.53,y:.76}], num:1, label:'Ryggrad (~35°)',      ideal:'Ryggraden lutar ~35° framåt. Lätt bakåttilt mot höger — driver-specifik.',         cue:'Ryggraden för upprätt → svårt rotera korrekt. Utan bakåttilt → ej uppåtgående slag'},
+     {type:'line',  pts:[{x:.22,y:.82},{x:.74,y:.82}], num:2, label:'Fotlinje (bred)',     ideal:'Driver: bredare än axelbredd. Stabil bas för max rotation och kraft.',              cue:'Kontrollera att fötterna är tillräckligt breda — smal stance för driver = instabilitet'},
+     {type:'arrow', pts:[{x:.40,y:.98},{x:.38,y:.88}], num:3, label:'Bollpos. (vänster häl)',ideal:'Bollen vid eller nära vänster häl — maximalt framåt för uppåtgående slagsvinkel.',cue:'Bollen för långt bak → förlust av ascending angle-fördel → backspin ökar'},
+     {type:'line',  pts:[{x:.26,y:.28},{x:.66,y:.30}], num:4, label:'Axlar: parallella',   ideal:'Axlarna parallella med mållinje. Höger axel lätt lägre (ryggradstilt).',           cue:'Axlarna öppna? → over-the-top-risk. Slutna? → blockad finish och push'}],
+    // 1: Takeaway
+    [{type:'line',  pts:[{x:.50,y:.18},{x:.53,y:.76}], num:1, label:'Ryggrad: stabil',    ideal:'Ryggraden bibehåller sin vinkel. Ingen upprätnning ännu i takeaway.',              cue:'Rätar du upp dig vid takeaway? → konsistens och kontakt försämras'},
+     {type:'arrow', pts:[{x:.50,y:.56},{x:.66,y:.40}], num:2, label:'Armar längs kroppen', ideal:'Händerna rör sig längs bröstet — inte iväg från kroppen. Brett och lågt.',         cue:'Armar för långt från kroppen → klubban hamnar utanför svingplanet → slice'},
+     {type:'arrow', pts:[{x:.60,y:.76},{x:.64,y:.86}], num:3, label:'Vikt: laddar höger',  ideal:'Tyngdpunkten skiftar till höger häl. Höger knä böjt och stabilt — ingen sway.',    cue:'Höger knä sträcker sig utåt (sway)? → instabilitet → mister kraft och kontroll'}],
+    // 2: Topp av backswing
+    [{type:'line',  pts:[{x:.20,y:.28},{x:.62,y:.32}], num:1, label:'Vänster arm: horisontell',ideal:'Vänster arm nära horisontell. Rak. Ger full svingbåge och maximal kraft.',    cue:'Arm kraftigt under horisontell? → för kort backswing. Arm crossar axeln? → för långt'},
+     {type:'arrow', pts:[{x:.28,y:.30},{x:.62,y:.52}], num:2, label:'Axlar: 90° rotation', ideal:'Axlarna roterar ~90° relativt mållinje. Vänster axel under hakan.',               cue:'Under 70° rotation? → för kort backswing → kraft förloras märkbart'},
+     {type:'arrow', pts:[{x:.32,y:.52},{x:.56,y:.46}], num:3, label:'Höfter: 45° rotation',ideal:'Höfter roterar ~45° (halva axelns rotation) — X-faktorn skapar lagrad kraft.',    cue:'Höfterna roterar lika mycket som axlarna? → X-faktor förloras → distansförlust'},
+     {type:'arrow', pts:[{x:.58,y:.84},{x:.42,y:.84}], num:4, label:'Vikt: 70-80% höger',  ideal:'~70-80% av vikten på höger sida. Stabil, inte svajig (sway).',                    cue:'Vikten för långt höger (sway) → instabilitet. Inte tillräckligt → reverse pivot'}],
+    // 3: Transition
+    [{type:'arrow', pts:[{x:.54,y:.54},{x:.42,y:.52}], num:1, label:'Höfter leder',        ideal:'Höfterna påbörjar rörelsen mot mål INNAN axlarna följer. Sekvensen avgör allt.',   cue:'Axlarna startar nedsvingen? → over-the-top-rörelse → slice är oundviklig'},
+     {type:'arrow', pts:[{x:.54,y:.40},{x:.50,y:.50}], num:2, label:'Armar/klubba: faller', ideal:'Klubban faller nedåt och inåt — "drop into the slot." Inte kastar ut.',           cue:'Klubban kastar ut? → over the top. Ska kännas som att man "slänger" ner den'},
+     {type:'line',  pts:[{x:.50,y:.18},{x:.50,y:.72}], num:3, label:'Huvud: stilla',       ideal:'Huvudet rör sig minimalt. Liten lateral rörelse (tumme-breadth) är OK för driver.', cue:'Kraftigt bakåt huvud? → reverse pivot. Kraftigt framåt? → early extension'}],
+    // 4: Impact
+    [{type:'line',  pts:[{x:.45,y:.24},{x:.51,y:.76}], num:1, label:'Ryggradstilt kvar',   ideal:'Ryggraden bibehåller sin bakåttilt (mot höger). Huvud stannar bakom bollen.',      cue:'Ryggraden rät vid impact? → early extension. Huvud framför bollen? → ej uppåtgående slag'},
+     {type:'line',  pts:[{x:.28,y:.50},{x:.58,y:.42}], num:2, label:'Höfter: 40-50° öppna',ideal:'Höfterna har roterat rejält mot mål vid impact. Vänster höft drar bakåt.',          cue:'Höfterna inte öppna? → armarna "tappar" in i kroppen → blockad finish'},
+     {type:'arrow', pts:[{x:.40,y:.88},{x:.38,y:.74}], num:3, label:'Händer: framför bollen',ideal:'Händerna minimalt framför bollen för driver (mindre lean än för järn).',          cue:'Händer bakom bollen? → scoop → topping och dramatisk distansförlust'}],
+    // 5: Follow-through
+    [{type:'arrow', pts:[{x:.46,y:.60},{x:.38,y:.24}], num:1, label:'Finish: hög & full',  ideal:'Klubban avslutas högt över vänster axel. Full svingbåge genomförd.',               cue:'Låg finish? → rotation avbröts tidigt. Indikerar deceleration → distansförlust'},
+     {type:'line',  pts:[{x:.26,y:.52},{x:.58,y:.34}], num:2, label:'Bröst mot mål',       ideal:'Bröstet pekar mot eller förbi målet. Fullständig höftrotation genomförd.',          cue:'Bröstet fortfarande åt höger? → rotation ofullständig → kraft förloras'},
+     {type:'arrow', pts:[{x:.62,y:.82},{x:.60,y:.68}], num:3, label:'Höger häl: upp',      ideal:'Höger häl helt lyft av rotationen. Vikt 100% på vänster fot. Balanserad finish.',  cue:'Höger häl kvar på marken? → vikt fastnar → rotation blockeras → inconsekvent'}],
   ],
-  // 2: TOPP AV BACKSWING
-  [
-    {type:'line',  pts:[{x:.24,y:.27},{x:.58,y:.31}], label:'Vänster arm: horisontell'},
-    {type:'arrow', pts:[{x:.28,y:.30},{x:.62,y:.52}], label:'Axlar: 90° rotation'},
-    {type:'arrow', pts:[{x:.32,y:.52},{x:.56,y:.46}], label:'Höfter: 45° rotation'},
-    {type:'arrow', pts:[{x:.54,y:.84},{x:.44,y:.84}], label:'Vikt: 70-80% höger sida'},
+},
+
+// ─────────────────────────────────
+//  FAIRWAY WOOD (3W / 5W)
+// ─────────────────────────────────
+wood: {
+  dtl: [
+    // 0: Address
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referenslinje mot målet. Fötter, höfter & axlar parallella.',                      cue:''},
+     {type:'line',  pts:[{x:.24,y:.88},{x:.70,y:.88}], num:2, label:'Fotlinje (axelbredd)', ideal:'Axelbredd eller strax bredare. Balanserad och stabil.',                            cue:'Bredare än driver är onödigt för fairway wood'},
+     {type:'arrow', pts:[{x:.47,y:.92},{x:.38,y:.88}], num:3, label:'Bollposition (lätt framåt)',ideal:'En bollbredd innanför vänster häl — lite bakåt jämfört med driver.',          cue:'Bollposition är avgörande: driver vs fairway wood skiljer sig ett par cm'}],
+    // 1: Takeaway
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.47,y:.82},{x:.63,y:.56}], num:2, label:'Klubba: bred & låg',  ideal:'Brett och svepande takeaway. Inte lika upprätt som järn. Lågt och brett.',         cue:'Fairway wood ska svepas, inte hackas. Bred takeaway → bättre kontakt från fairway'},
+     {type:'arrow', pts:[{x:.42,y:.62},{x:.44,y:.53}], num:3, label:'Handledsvinkel',       ideal:'Handlederna hänger sig gradvis — inte bryskt. Kontrollerad svingbåge.',            cue:''}],
+    // 2: Topp av backswing
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens — skaftet pekar mot mål.',                                                cue:''},
+     {type:'arrow', pts:[{x:.62,y:.38},{x:.38,y:.36}], num:2, label:'Skaft: parallellt',   ideal:'Skaftet parallellt med mållinje. Tre-kvarts OK för fairway wood — kontroll viktigare.',cue:'Tre-kvarts backswing är vanligt och OK för 3W/5W'},
+     {type:'line',  pts:[{x:.28,y:.30},{x:.60,y:.52}], num:3, label:'Vänster arm: rak',    ideal:'Arm rak — bibehåller kontroll och svingbåge.',                                     cue:''}],
+    // 3: Transition
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.58,y:.46},{x:.50,y:.64}], num:2, label:'Klubba: faller mjukt', ideal:'Klubban faller mjukt inåt — skapar svepande, bred slagbana.',                     cue:'Brantare fall än driver är OK, men inte lika brant som järn'},
+     {type:'arrow', pts:[{x:.52,y:.64},{x:.44,y:.60}], num:3, label:'Höfter leder',         ideal:'Höfterna roterar FÖRE armarna — som alltid för fullsvingar.',                      cue:''}],
+    // 4: Impact
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.60,y:.74},{x:.40,y:.82}], num:2, label:'Slagbana: svepande',  ideal:'Svepande bana — liten eller ingen divot. Träff på eller strax uppåt för 3W/5W.',   cue:'Stor djup divot? → för brant nedsving (steep) → tapp av avstånd'},
+     {type:'line',  pts:[{x:.44,y:.32},{x:.48,y:.82}], num:3, label:'Skaft: minimalt lean', ideal:'Händerna knappt framför bollen. Nästan lodrätt skaft — mer som driver än järn.',  cue:'Mer lean → brantare slagsvinkel → oönskad divot och distansförlust'}],
+    // 5: Follow-through
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.48,y:.70},{x:.44,y:.38}], num:2, label:'Finish: hög',         ideal:'Hög, balanserad finish. Vikt helt på vänster sida.',                               cue:''},
+     {type:'line',  pts:[{x:.30,y:.44},{x:.58,y:.34}], num:3, label:'Bröst mot mål',       ideal:'Full rotation. Bröstet mot målet vid finish.',                                     cue:''}],
   ],
-  // 3: TRANSITION
-  [
-    {type:'arrow', pts:[{x:.54,y:.54},{x:.42,y:.51}], label:'Höfter leder: roterar mot mål'},
-    {type:'arrow', pts:[{x:.54,y:.40},{x:.50,y:.48}], label:'Armar/klubba: faller inåt'},
-    {type:'arrow', pts:[{x:.52,y:.80},{x:.38,y:.80}], label:'Vikt: skiftar till vänster'},
-    {type:'line',  pts:[{x:.48,y:.18},{x:.51,y:.72}], label:'Huvud: stilla'},
+  faceon: [
+    // 0: Address
+    [{type:'line',  pts:[{x:.50,y:.18},{x:.53,y:.76}], num:1, label:'Ryggrad (~35°)',      ideal:'Framåtlutning ~35°. Minimal bakåttilt (lite mindre än driver).',                   cue:''},
+     {type:'arrow', pts:[{x:.40,y:.96},{x:.40,y:.86}], num:2, label:'Bollpos. (lätt framåt)',ideal:'En bollbredd innanför vänster häl.',                                             cue:''},
+     {type:'line',  pts:[{x:.24,y:.82},{x:.70,y:.82}], num:3, label:'Stancebredd',         ideal:'Axelbredd eller strax bredare. Balanserad men stabil.',                            cue:''}],
+    // 1: Takeaway
+    [{type:'line',  pts:[{x:.50,y:.18},{x:.53,y:.76}], num:1, label:'Ryggrad: stabil',    ideal:'Bibehålls. Ingen upprätnning.',                                                    cue:''},
+     {type:'arrow', pts:[{x:.50,y:.56},{x:.66,y:.42}], num:2, label:'Armar längs kropp',   ideal:'Händerna rör sig utmed kroppen, bred svingbåge.',                                  cue:''},
+     {type:'arrow', pts:[{x:.60,y:.76},{x:.64,y:.86}], num:3, label:'Vikt: laddar höger',  ideal:'Vikt skiftar gradvis till höger sida. Stabil, inte sway.',                         cue:''}],
+    // 2: Topp av backswing
+    [{type:'line',  pts:[{x:.20,y:.28},{x:.62,y:.32}], num:1, label:'Vänster arm: rak',   ideal:'Arm nära horisontell. Full svingbåge.',                                            cue:''},
+     {type:'arrow', pts:[{x:.28,y:.30},{x:.62,y:.52}], num:2, label:'Axelrotation ~90°',   ideal:'Axlarna roterar ~90° relativt mållinje.',                                          cue:''},
+     {type:'arrow', pts:[{x:.56,y:.84},{x:.44,y:.84}], num:3, label:'Vikt: höger',         ideal:'70% höger. Stabil, inte svajig.',                                                  cue:''}],
+    // 3: Transition
+    [{type:'arrow', pts:[{x:.54,y:.54},{x:.42,y:.52}], num:1, label:'Höfter leder',        ideal:'Höfterna roterar FÖRE axlarna — standard sekvens.',                                cue:''},
+     {type:'line',  pts:[{x:.50,y:.18},{x:.50,y:.72}], num:2, label:'Huvud: stilla',       ideal:'Huvud stilla, minimal lateral rörelse.',                                           cue:''}],
+    // 4: Impact
+    [{type:'line',  pts:[{x:.48,y:.24},{x:.52,y:.76}], num:1, label:'Ryggrad: neutral',    ideal:'Minimal bakåttilt — mer neutral än driver vid impact.',                            cue:''},
+     {type:'line',  pts:[{x:.28,y:.50},{x:.58,y:.42}], num:2, label:'Höfter: öppna',       ideal:'Höfterna har roterat mot mål. Vänster höft drar bakåt.',                           cue:''},
+     {type:'arrow', pts:[{x:.40,y:.88},{x:.38,y:.75}], num:3, label:'Händer: lätt framför', ideal:'Händer lätt framför bollen — svepande kontakt.',                                 cue:''}],
+    // 5: Follow-through
+    [{type:'arrow', pts:[{x:.46,y:.60},{x:.38,y:.24}], num:1, label:'Finish: hög',         ideal:'Hög finish. Viktar helt på vänster.',                                              cue:''},
+     {type:'arrow', pts:[{x:.62,y:.82},{x:.60,y:.68}], num:2, label:'Höger häl: upp',      ideal:'Hälen lyfts av — vikt 100% vänster.',                                              cue:''}],
   ],
-  // 4: IMPACT
-  [
-    {type:'line',  pts:[{x:.43,y:.26},{x:.49,y:.74}], label:'Skaft: framåtlutning (viktigt!)'},
-    {type:'line',  pts:[{x:.32,y:.50},{x:.57,y:.43}], label:'Höfter: 45° öppna mot mål'},
-    {type:'line',  pts:[{x:.32,y:.28},{x:.55,y:.50}], label:'Vänster sida: rak & fast'},
-    {type:'arrow', pts:[{x:.40,y:.88},{x:.36,y:.74}], label:'Händer: framför bollen'},
-    {type:'arrow', pts:[{x:.48,y:.18},{x:.48,y:.22}], label:'Huvud: bakom bollen'},
+},
+
+// ─────────────────────────────────
+//  JÄRN (hybrid, 3i-9i, PW, GW)
+// ─────────────────────────────────
+iron: {
+  dtl: [
+    // 0: Address
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Rak referenslinje från bollen mot målet. Fötter, höfter & axlar parallella.',      cue:'Axlar öppna mot linjen? → over-the-top-risk. Slutna? → push-risk'},
+     {type:'line',  pts:[{x:.26,y:.88},{x:.68,y:.88}], num:2, label:'Fotlinje',            ideal:'Axelbredd eller lätt smalare. Fötter parallella med mållinje.',                    cue:'Öppna fötter (vänster utåt) utan att kompensera → slice-bana byggs in'},
+     {type:'arrow', pts:[{x:.47,y:.92},{x:.46,y:.88}], num:3, label:'Bollposition (centrum)',ideal:'Centrum av stance för korta järn. Lätt framåt (en boll) per längre klubba.',    cue:'Boll för framåt → fat shots. Boll för bak → thin & höger start'},
+     {type:'line',  pts:[{x:.28,y:.36},{x:.64,y:.36}], num:4, label:'Axellinje',           ideal:'Axlarna parallella med mållinje. Ingen tilt nödvändig (till skillnad från driver).',cue:''}],
+    // 1: Takeaway
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.47,y:.80},{x:.60,y:.58}], num:2, label:'Klubba: innanför',    ideal:'Klubban rör sig innanför mållinje — inte utåt. Svingplanet bibehålls.',            cue:'Utanför målljenjen vid takeaway? → klassisk over-the-top-start → slice'},
+     {type:'arrow', pts:[{x:.42,y:.62},{x:.44,y:.54}], num:3, label:'Tidigt gångjärn',     ideal:'Handlederna börjar lätt böja sig (gångjärna) vid knähöjd — naturlig rörelse.',    cue:'Handlederna helt stela? → stel svingbåge. För tidig hinge? → tapp av kontroll'},
+     {type:'line',  pts:[{x:.28,y:.30},{x:.62,y:.30}], num:4, label:'Axlar: roterar',      ideal:'Axlarna startar sin rotation lugnt och i takt med armrörelsen.',                   cue:''}],
+    // 2: Topp av backswing
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens — skaftet ska peka mot mål vid full backswing.',                          cue:''},
+     {type:'arrow', pts:[{x:.60,y:.42},{x:.40,y:.38}], num:2, label:'Skaft: parallellt',   ideal:'Skaftet parallellt med mållinje och mark. Rätt längd backswing.',                  cue:'Skaftet crossar linjen (för långt)? → svingplan och timing-problem uppstår'},
+     {type:'line',  pts:[{x:.26,y:.28},{x:.60,y:.54}], num:3, label:'Vänster arm: rak',    ideal:'Arm rak eller nästintill. Bibehåller kontroll, power och svingbåge.',              cue:'Kraftigt vikt vänsterarm → förlorar båge och konsistens'},
+     {type:'line',  pts:[{x:.36,y:.68},{x:.54,y:.60}], num:4, label:'Höfter: 45°',         ideal:'Höfterna roterar ~45° (axlarna ~90°). X-faktorn genererar kraft.',                 cue:'Höfterna lika roterade som axlarna? → X-faktor förloras → distansförlust'}],
+    // 3: Transition
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.58,y:.45},{x:.50,y:.65}], num:2, label:'Klubba: "slots in"',   ideal:'Klubban faller nedåt och inåt — "slots into the slot." Inte kastar ut.',          cue:'Klubban kastar utåt? → klassisk over the top → pull/slice-bana'},
+     {type:'arrow', pts:[{x:.52,y:.62},{x:.44,y:.58}], num:3, label:'Höfter: leder',        ideal:'Höfterna roterar FÖRE armarna. Sekvens: höfter → axlar → armar → klubba.',          cue:'Axlarna leder? → rätt rörelsesekvens bryts → slice eller pull-miss'}],
+    // 4: Impact
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens för slagbana.',                                                           cue:''},
+     {type:'arrow', pts:[{x:.58,y:.72},{x:.38,y:.82}], num:2, label:'Slagbana: inifrån-ut',ideal:'Lätt inifrån-ut-bana — divoten pekar mot mål eller lätt åt vänster.',              cue:'Utanför-in-bana → pull/slice. Syns om divot pekar klart vänster om mål'},
+     {type:'arrow', pts:[{x:.47,y:.92},{x:.44,y:.78}], num:3, label:'Divot: mot mål',       ideal:'Divoten börjar VID eller efter bollposition. Pekar mot målet.',                   cue:'Divot före bollen? → fat shot. Ingen divot? → thin eller sweep (fel)'},
+     {type:'line',  pts:[{x:.44,y:.30},{x:.48,y:.82}], num:4, label:'Skaft: framåtlutning', ideal:'Händerna tydligt framför bollen. Skaftet lutar framåt mot mål vid impact.',       cue:'Händer bakom bollen? → scoop. Komprimering och all distans förloras'}],
+    // 5: Follow-through
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.48,y:.72},{x:.44,y:.40}], num:2, label:'Utsving längs linjen', ideal:'Klubban svingar längs eller lätt innanför mållinje mot mål.',                     cue:'Kraftigt inåt-utsvingen? → overdraw/hook. Utåt? → slice-mönster kvarstår'},
+     {type:'arrow', pts:[{x:.56,y:.72},{x:.54,y:.58}], num:3, label:'Höger häl: upp',       ideal:'Höger häl lyfts av rotationen. Vikt på vänster sida.',                            cue:'Hälen kvar? → vikt fastnar på höger sida → rotation blockeras'},
+     {type:'line',  pts:[{x:.30,y:.44},{x:.58,y:.36}], num:4, label:'Bröst mot mål',        ideal:'Bröstet pekar mot eller förbi målet vid full finish.',                             cue:''}],
   ],
-  // 5: FOLLOW-THROUGH
-  [
-    {type:'arrow', pts:[{x:.44,y:.60},{x:.38,y:.26}], label:'Finish: hög över vänster axel'},
-    {type:'line',  pts:[{x:.30,y:.52},{x:.54,y:.36}], label:'Bröst/mage: mot målet'},
-    {type:'arrow', pts:[{x:.60,y:.82},{x:.58,y:.68}], label:'Höger häl: upp från marken'},
-    {type:'arrow', pts:[{x:.38,y:.80},{x:.36,y:.72}], label:'Vikt: 100% vänster fot'},
+  faceon: [
+    // 0: Address
+    [{type:'line',  pts:[{x:.48,y:.18},{x:.52,y:.74}], num:1, label:'Ryggrad (~35°)',      ideal:'Ryggraden lutar ~35° framåt. Rak, inte krokig. Neutral spine utan bakåttilt.',    cue:'Rygg för upprätt → svårt nå bollen korrekt. Krokig rygg → ryggskadefara'},
+     {type:'line',  pts:[{x:.28,y:.30},{x:.66,y:.28}], num:2, label:'Axlar: parallella',   ideal:'Axlarna parallella med mållinje. Ingen tilt för järn (till skillnad från driver).',cue:''},
+     {type:'line',  pts:[{x:.30,y:.53},{x:.64,y:.51}], num:3, label:'Höfter: parallella',  ideal:'Höfterna parallella med mållinje — inte öppna vid address.',                       cue:'Öppna höfter vid address → slice-mönster byggs in redan från start'},
+     {type:'arrow', pts:[{x:.46,y:.98},{x:.46,y:.88}], num:4, label:'Bollpos. / händer',   ideal:'Centrum eller lätt framåt. Händerna lätt framför bollen vid address.',             cue:'Händerna bakom bollen vid address → scoop-mönster byggs in från start'}],
+    // 1: Takeaway
+    [{type:'line',  pts:[{x:.48,y:.20},{x:.52,y:.72}], num:1, label:'Ryggrad: stabil',    ideal:'Ryggrad håller sin vinkel. Ingen upprätnning under takeaway.',                    cue:'Rätar du upp dig vid takeaway? → konsistens och kontakt försämras'},
+     {type:'arrow', pts:[{x:.48,y:.58},{x:.64,y:.42}], num:2, label:'Armar längs kropp',   ideal:'Händerna rör sig längs bröstet — inte iväg från kroppen.',                        cue:'Händerna drar ut från kroppen → svingplanet bryts → inconsekvent kontakt'},
+     {type:'arrow', pts:[{x:.30,y:.30},{x:.26,y:.37}], num:3, label:'Vänster axel: roterar',ideal:'Vänster axel roterar mot/under hakan. Indikerar bra rotation.',                  cue:''}],
+    // 2: Topp av backswing
+    [{type:'line',  pts:[{x:.24,y:.27},{x:.58,y:.31}], num:1, label:'Vänster arm: horisontell',ideal:'Vänster arm nära horisontell — full backswing och maximal kraft.',           cue:'Arm kraftigt under horisontell? → för kort backswing → kraft förloras'},
+     {type:'arrow', pts:[{x:.28,y:.30},{x:.62,y:.52}], num:2, label:'Axlar: 90°',          ideal:'Axlarna har roterat ~90° relativt mållinje. Vänster axel under hakan.',           cue:'Under 70° rotation? → för kort backswing → distansförlust'},
+     {type:'arrow', pts:[{x:.32,y:.52},{x:.56,y:.46}], num:3, label:'Höfter: 45°',         ideal:'Höfterna roterar ~45°. Separationen (X-faktor) lagrar kraft.',                    cue:'Höfterna roterar mer än 45°? → X-faktor minskar → distansförlust'},
+     {type:'arrow', pts:[{x:.54,y:.84},{x:.44,y:.84}], num:4, label:'Vikt: 70% höger',     ideal:'~70% av vikten på höger sida. Stabil, inte sway.',                                cue:'Sway (vikten svänger utåt)? → instabilitet. Reverse pivot? → fel vikt'}],
+    // 3: Transition
+    [{type:'arrow', pts:[{x:.54,y:.54},{x:.42,y:.51}], num:1, label:'Höfter leder',        ideal:'Höfterna roterar mot mål INNAN axlarna följer. Sekvensen avgör allt.',            cue:'Axlarna startar nedsvingen? → over-the-top → slice är oundviklig'},
+     {type:'arrow', pts:[{x:.54,y:.40},{x:.50,y:.48}], num:2, label:'Armar: faller inåt',  ideal:'"Drop into the slot" — klubban faller in mot kroppen, inte kastar ut.',           cue:'Klubban kastar ut? → over the top → pull/slice'},
+     {type:'arrow', pts:[{x:.52,y:.80},{x:.38,y:.80}], num:3, label:'Vikt: skiftar vänster',ideal:'Vikten börjar skifta till vänster sida under transitionen.',                     cue:'Vikten stannar höger till impact? → reverse pivot / skjuter ner i bollen'},
+     {type:'line',  pts:[{x:.48,y:.18},{x:.51,y:.72}], num:4, label:'Huvud: stilla',       ideal:'Huvudet rör sig minimalt under transitionen.',                                    cue:''}],
+    // 4: Impact
+    [{type:'line',  pts:[{x:.43,y:.26},{x:.49,y:.74}], num:1, label:'Skaft: framåtlutning',ideal:'Skaftet lutar tydligt framåt mot mål. Händerna framför bollen vid impact.',       cue:'Skaftet upprätt/bakåt vid impact? → scoop. Kraft och komprimering förloras'},
+     {type:'line',  pts:[{x:.32,y:.50},{x:.57,y:.43}], num:2, label:'Höfter: 45° öppna',   ideal:'Höfterna har roterat ~45° mot mål vid impact — öppna mot mål.',                   cue:'Höfterna inte öppna? → armarna "tappar" in i kroppen → blockad finish'},
+     {type:'line',  pts:[{x:.32,y:.28},{x:.55,y:.50}], num:3, label:'Vänster sida: rak & fast',ideal:'"The wall" — vänster arm och ben raka och fasta vid impact.',                cue:'Vänster arm viker? → kraft förloras. Vänster knä böjs in? → instabilitet'},
+     {type:'arrow', pts:[{x:.40,y:.88},{x:.36,y:.74}], num:4, label:'Händer: framför bollen',ideal:'Händerna tydligt framför bollen. Komprimeringen sker här.',                    cue:'Händer bakom bollen? → scoop. Förlorar distans och träffkonsistens'}],
+    // 5: Follow-through
+    [{type:'arrow', pts:[{x:.44,y:.60},{x:.38,y:.26}], num:1, label:'Finish: hög',         ideal:'Klubban avslutas högt — över vänster axel. Armarna sträcks ut.',                 cue:'Låg finish? → deceleration eller ofullständig rotation'},
+     {type:'line',  pts:[{x:.30,y:.52},{x:.54,y:.36}], num:2, label:'Bröst mot mål',       ideal:'Bröstet pekar mot eller förbi målet. Full höftrotation genomförd.',               cue:'Bröstet åt höger? → rotation ofullständig → minskad kraft och konsistens'},
+     {type:'arrow', pts:[{x:.60,y:.82},{x:.58,y:.68}], num:3, label:'Höger häl: upp',      ideal:'Höger häl helt lyft — drivs av rotationen. Vikt 100% vänster.',                   cue:'Höger häl kvar? → vikt fastnar → rotation blockeras'},
+     {type:'arrow', pts:[{x:.38,y:.80},{x:.36,y:.72}], num:4, label:'Vikt: 100% vänster',  ideal:'All vikt på vänster fot. Balanserad och stabil finish.',                          cue:'Instabil finish → balans/viktsfördelning-problem hela svingen'}],
   ],
-];
+},
+
+// ─────────────────────────────────
+//  WEDGE (SW / LW)
+// ─────────────────────────────────
+wedge: {
+  dtl: [
+    // 0: Address
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referenslinje. För SW/LW: fötterna lätt öppna mot mål (avsiktligt).',            cue:'Öppen stance öppnar svingbanan — ger mer backspin och rakare bana för wedge'},
+     {type:'line',  pts:[{x:.28,y:.88},{x:.64,y:.88}], num:2, label:'Fotlinje: öppen stance',ideal:'Vänster fot lätt utdragen. Smalare bredd än järn — kontroll prioriteras.',     cue:'Öppen stance → banan går lätt vänster (out-to-in) → avsiktligt för wedge'},
+     {type:'arrow', pts:[{x:.47,y:.92},{x:.47,y:.88}], num:3, label:'Bollposition (centrum)',ideal:'Centrum av stance. Händerna tydligt framför bollen (forward press).',           cue:'Boll för framåt → thin. Boll för bak → fat. Centrum är rätt för wedge'}],
+    // 1: Takeaway
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.47,y:.80},{x:.55,y:.58}], num:2, label:'Brant takeaway',       ideal:'Något brantare svingplan än järn — händerna går upp snabbare.',                  cue:'Brantare plan → steepare AoA → mer backspin och kontroll'},
+     {type:'arrow', pts:[{x:.44,y:.62},{x:.46,y:.52}], num:3, label:'Tidig hinge',          ideal:'Handlederna böjer sig tidigt för kortare, kontrollerad svingbåge.',               cue:''}],
+    // 2: Topp av backswing
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.58,y:.46},{x:.44,y:.44}], num:2, label:'3/4 backswing',        ideal:'Tre-kvarts svingbåge — INTE full backswing. Kontroll > distans för wedge.',       cue:'Full backswing för wedge → svårt kontrollera distansen konsekvent'},
+     {type:'line',  pts:[{x:.30,y:.32},{x:.58,y:.50}], num:3, label:'Vänster arm: kortare', ideal:'Armen kan vara lätt böjd — kortare svingbåge är avsiktlig för wedge.',           cue:''}],
+    // 3: Transition
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.56,y:.48},{x:.50,y:.64}], num:2, label:'Brant nedsving',       ideal:'Brantare nedsving för wedge — steeper angle of attack ger backspin.',            cue:'Flat nedsving för wedge → sweep → ingen backspin → bollen "flyger"'},
+     {type:'arrow', pts:[{x:.50,y:.64},{x:.44,y:.60}], num:3, label:'Höfter leder',         ideal:'Höfterna leder — alltid. Samma sekvens för alla fullsvingar.',                    cue:''}],
+    // 4: Impact
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.55,y:.72},{x:.40,y:.80}], num:2, label:'Brant slagbana',       ideal:'Brantare nedsving ger skarpare divot. Divoten pekar mot mål.',                   cue:'Stor, djup divot mot mål = bra för wedge. Indikerar boll-först-kontakt'},
+     {type:'line',  pts:[{x:.42,y:.28},{x:.48,y:.82}], num:3, label:'Skaft: tydlig lean',   ideal:'Tydlig framåtlutning av skaftet. Händerna klart framför bollen.',                 cue:'Mest forward shaft lean av alla klubbor → komprimering → backspin'},
+     {type:'arrow', pts:[{x:.48,y:.92},{x:.44,y:.76}], num:4, label:'Divot: skarp mot mål', ideal:'Divoten pekar mot målet. Börjar exakt vid bollposition.',                        cue:'Divot pekar klart åt vänster? → out-to-in bana. Kan vara avsiktligt men kontrollera'}],
+    // 5: Follow-through
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Mållinje',            ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.48,y:.72},{x:.46,y:.46}], num:2, label:'3/4 finish',           ideal:'Tre-kvarts finish som speglar backswingen. Inte lika hög som driver.',            cue:'Finish-höjden reflekterar backswing-längden. Symmetri ger konsekvent distans'},
+     {type:'line',  pts:[{x:.32,y:.46},{x:.56,y:.36}], num:3, label:'Bröst mot mål',        ideal:'Full rotation ändå. Bröstet mot målet trots kortare swing.',                     cue:''}],
+  ],
+  faceon: [
+    // 0: Address
+    [{type:'line',  pts:[{x:.48,y:.18},{x:.52,y:.74}], num:1, label:'Ryggrad (~35°)',      ideal:'Framåtlutning som vanligt. Händerna framför bollen (forward press).',             cue:''},
+     {type:'line',  pts:[{x:.30,y:.53},{x:.62,y:.51}], num:2, label:'Höfter: lätt öppna',  ideal:'Höfterna lätt öppna mot mål (öppen stance) — avsiktligt för SW/LW.',             cue:'Öppen stance → svingbanan går lätt vänster → rätt för wedge. Inte misstag'},
+     {type:'arrow', pts:[{x:.46,y:.96},{x:.46,y:.86}], num:3, label:'Bollpos. / händer',   ideal:'Centrum. Händerna tydligt framför bollen — mer forward press än järn.',           cue:'Forward press skapar bättre shaft lean vid impact → backspin → kontroll'}],
+    // 1: Takeaway
+    [{type:'line',  pts:[{x:.48,y:.18},{x:.52,y:.74}], num:1, label:'Ryggrad: stabil',    ideal:'Håller vinkeln. Ingen upprätnning.',                                               cue:''},
+     {type:'arrow', pts:[{x:.48,y:.58},{x:.60,y:.40}], num:2, label:'Upprätt svingplan',   ideal:'Händerna går upp brantare för wedge — upprätt svingplan är avsiktligt.',          cue:'Upprätt plan → steeper AoA → backspin och kontroll'}],
+    // 2: Topp av backswing
+    [{type:'line',  pts:[{x:.24,y:.30},{x:.56,y:.38}], num:1, label:'3/4 arm-position',   ideal:'Vänster arm vid ~3/4 (inte full backswing). Arm lätt under horisontell.',         cue:'Full backswing för wedge → svårare att kontrollera distansen'},
+     {type:'arrow', pts:[{x:.28,y:.32},{x:.58,y:.50}], num:2, label:'Axlar: 70-80°',       ideal:'Axelrotation lite kortare än fullsvingen — konsistent med 3/4-swing.',            cue:''},
+     {type:'arrow', pts:[{x:.32,y:.54},{x:.52,y:.48}], num:3, label:'Höfter: 35°',         ideal:'Höfterna roterar något mindre för kortare svingbåge.',                            cue:''}],
+    // 3: Transition
+    [{type:'arrow', pts:[{x:.54,y:.52},{x:.44,y:.50}], num:1, label:'Höfter leder',        ideal:'Samma sekvens: höfter roterar FÖRE armarna.',                                     cue:''},
+     {type:'arrow', pts:[{x:.52,y:.82},{x:.40,y:.82}], num:2, label:'Vikt: vänster snabbt', ideal:'Vikten skiftar till vänster. Betonat för wedge (steep descent).',                cue:'Vikten kvar höger → flat kontakt → ingen backspin → bollen "flyger"'}],
+    // 4: Impact
+    [{type:'line',  pts:[{x:.42,y:.24},{x:.48,y:.74}], num:1, label:'Skaft: kraftig lean', ideal:'Tydligast forward lean av alla klubbor. Händerna klart framför bollen.',          cue:'Wedge komprimerar bollen maximalt. Mest forward lean → mest backspin'},
+     {type:'line',  pts:[{x:.30,y:.48},{x:.56,y:.40}], num:2, label:'Höfter: öppna',       ideal:'Höfterna klart öppna mot mål. Vänster höft drar bakåt.',                          cue:''},
+     {type:'line',  pts:[{x:.30,y:.28},{x:.54,y:.48}], num:3, label:'Vänster sida: stark', ideal:'"The wall" — vänster sida fast och rak vid impact.',                             cue:''},
+     {type:'arrow', pts:[{x:.40,y:.88},{x:.36,y:.72}], num:4, label:'Händer: klart framför',ideal:'Händerna klart framför bollen. Komprimering maximeras.',                         cue:'Scoop (händer bakom)? → ingen backspin → bollen "flyger" och kontroll förloras'}],
+    // 5: Follow-through
+    [{type:'arrow', pts:[{x:.46,y:.62},{x:.40,y:.32}], num:1, label:'3/4 finish',          ideal:'Finish-höjden matchar backswingen. Inte lika hög som driver.',                    cue:'Symmetri: 3/4 backswing → 3/4 finish. Symmetrisk pendel = konsekvent distans'},
+     {type:'line',  pts:[{x:.30,y:.52},{x:.54,y:.36}], num:2, label:'Bröst mot mål',       ideal:'Full rotation genomförd ändå. Bröstet mot målet.',                                cue:''},
+     {type:'arrow', pts:[{x:.60,y:.82},{x:.58,y:.68}], num:3, label:'Höger häl: upp',      ideal:'Hälen lyfts — rotation genomförd.',                                               cue:''}],
+  ],
+},
+
+// ─────────────────────────────────
+//  PUTTER
+// ─────────────────────────────────
+putter: {
+  dtl: [
+    // 0: Address
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Puttlinje',           ideal:'Den tänkta puttlinjen. Fötter & putterface parallella med den.',                  cue:'Face-vinkeln vid impact bestämmer ~80% av startlinjen — den är det viktigaste'},
+     {type:'line',  pts:[{x:.24,y:.85},{x:.68,y:.85}], num:2, label:'Fotlinje: smal',      ideal:'Smalare än full swing. Axelbredd eller smalare. Stabil men inte bred.',           cue:''},
+     {type:'arrow', pts:[{x:.47,y:.92},{x:.46,y:.88}], num:3, label:'Bollpos. (lätt framåt)',ideal:'Bollen lätt framför centrum — säkerställer uppåtgående träff för ren rulle.',  cue:'Boll för bak → drabbas nedåt → bollen studsar och hoppar. Boll framåt → ren rulle'},
+     {type:'line',  pts:[{x:.28,y:.42},{x:.62,y:.42}], num:4, label:'Ögon: över bollen',   ideal:'Ögonen direkt ovanför bollen eller lätt innanför putterlinjen.',                  cue:'Ögon utanför bollen → ser linjen vriden → siktar fel → missar puttar'}],
+    // 1: Takeaway
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Puttlinje',           ideal:'Referens: pendeln svänger längs eller lätt innanför linjen.',                    cue:''},
+     {type:'arrow', pts:[{x:.47,y:.80},{x:.50,y:.68}], num:2, label:'Pendelriktning',       ideal:'Puttern rör sig lätt innanför linjen (naturlig arc). SBST fungerar också.',      cue:'Straight-back-straight-through (SBST) är en annan giltig metod — välj en'},
+     {type:'line',  pts:[{x:.30,y:.38},{x:.60,y:.38}], num:3, label:'Axlar: vaggar',        ideal:'Axlarna vaggar uppåt/nedåt som en pendel — de ROTERAR inte.',                   cue:'Rotation i axlarna → banan böjer sig → inconsekvent putt'}],
+    // 2: Halvvägs backswing
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Puttlinje',           ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.47,y:.76},{x:.52,y:.64}], num:2, label:'Putterposition',       ideal:'Puttern lätt innanför linjen vid backswingen (naturlig arc).',                    cue:''},
+     {type:'line',  pts:[{x:.30,y:.36},{x:.60,y:.36}], num:3, label:'Handleder: STILLA',   ideal:'Handlederna böjer sig INTE. Rörelsen kommer enbart från axlarna.',                cue:'Handlederna bryta? → inkonsekvent slag → bollen slår iväg åt sidan'}],
+    // 3: Transition
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Puttlinje',           ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.52,y:.64},{x:.47,y:.78}], num:2, label:'Mjuk transition',      ideal:'Transitionen är mjuk och kontrollerad. Inget ryck.',                             cue:'Ryckig transition → inkonsekvent tempo → svårt träffa face-square'}],
+    // 4: Impact
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Puttlinje',           ideal:'Puttern träffar bollen längs linjen. Face vinkelrät mot linjen.',                cue:'Face-vinkeln: ~80% av startlinjen. Banan: ~20%. Prioritera face-square'},
+     {type:'arrow', pts:[{x:.47,y:.80},{x:.45,y:.68}], num:2, label:'Pendeln: igenom',      ideal:'Puttern rör sig mot målet. Symmetri med backswingen — samma längd.',             cue:'Samma längd bakåt och framåt ger jämnt tempo och bra distansbedömning'},
+     {type:'line',  pts:[{x:.28,y:.30},{x:.62,y:.30}], num:3, label:'Huvud: STILLA',        ideal:'Huvudet rör sig INTE vid eller efter impact. Vänta tills du HÖR bollen.',        cue:'Titta upp för tidigt = vanligaste orsaken till missade puttar. Hör bollen — titta inte'}],
+    // 5: Follow-through
+    [{type:'line',  pts:[{x:.47,y:.90},{x:.47,y:.08}], num:1, label:'Puttlinje',           ideal:'Referens',                                                                         cue:''},
+     {type:'arrow', pts:[{x:.47,y:.80},{x:.44,y:.62}], num:2, label:'Follow-through: speglar',ideal:'Follow-through-längd speglar backswing-längden. Symmetrisk pendel.',          cue:'Follow-through kortare än backswing? → deceleration → inconsekvent träff'},
+     {type:'line',  pts:[{x:.28,y:.30},{x:.62,y:.30}], num:3, label:'Huvud: stilla till slut',ideal:'Huvudet stannar tills pendeln är klar. Aldrig titta upp för tidigt.',         cue:''}],
+  ],
+  faceon: [
+    // 0: Address
+    [{type:'line',  pts:[{x:.48,y:.22},{x:.52,y:.68}], num:1, label:'Ryggrad: upprätt',    ideal:'Putter-stance är mer upprätt än full swing. Ryggraden nästan rak.',               cue:'Upprätt stance → ögonen enklare rakt över bollen → ser linjen rätt'},
+     {type:'line',  pts:[{x:.28,y:.34},{x:.60,y:.32}], num:2, label:'Ögon: rakt ovanför',  ideal:'Ögonen direkt ovanför bollen eller lätt innanför putterlinjen.',                  cue:'Ögon utanför bollen → ser linjen vriden. Kontrollera med ett tappat bolltest'},
+     {type:'arrow', pts:[{x:.46,y:.90},{x:.46,y:.80}], num:3, label:'Bollpos. (framåt)',    ideal:'Bollen framför centrum — uppåtgående träff ger bättre rulle.',                    cue:''},
+     {type:'line',  pts:[{x:.30,y:.55},{x:.62,y:.53}], num:4, label:'Höfter: stilla',       ideal:'Höfterna rör sig INTE vid putt. Pendeln drivs av axelvaggan.',                    cue:'Höftrörelse → instabilitet → puttern förs av banan → missade puttar'}],
+    // 1: Takeaway
+    [{type:'line',  pts:[{x:.48,y:.22},{x:.52,y:.68}], num:1, label:'Ryggrad: stabil',    ideal:'Ryggraden rör sig inte alls. Kroppen helt stilla.',                               cue:''},
+     {type:'arrow', pts:[{x:.50,y:.52},{x:.58,y:.40}], num:2, label:'Axlar: vaggar',        ideal:'Höger axel sjunker, vänster höjs (som vagga) — INTE rotation.',                  cue:'Axelrotation vs axelvagga: vaggan ger konsekvent, rak bana'},
+     {type:'line',  pts:[{x:.28,y:.56},{x:.60,y:.54}], num:3, label:'Handleder: stilla',   ideal:'Handlederna böjer sig INTE. Stela handleder hela puttstroke.',                   cue:'Handledsrörelse → inkonsekvens. Arm-och-axel = konsistens'}],
+    // 2: Halvvägs backswing
+    [{type:'line',  pts:[{x:.48,y:.22},{x:.52,y:.68}], num:1, label:'Ryggrad: stabil',    ideal:'Ingen rörelse i hela kroppen utom axelvaggan.',                                   cue:''},
+     {type:'arrow', pts:[{x:.50,y:.52},{x:.58,y:.42}], num:2, label:'Backswing-längd',      ideal:'Backswingen bestämmer distansen. Längre backswing = längre putt.',               cue:'Samma tempo alltid. Variera backswing-längden för att kontrollera distansen'},
+     {type:'line',  pts:[{x:.28,y:.56},{x:.60,y:.54}], num:3, label:'Handleder: stilla',   ideal:'Handlederna helt stilla. Putten är en arm-och-axel-rörelse.',                    cue:''}],
+    // 3: Transition
+    [{type:'line',  pts:[{x:.48,y:.22},{x:.52,y:.68}], num:1, label:'Ryggrad: stabil',    ideal:'Ingen rörelse.',                                                                   cue:''},
+     {type:'arrow', pts:[{x:.56,y:.42},{x:.46,y:.54}], num:2, label:'Mjuk transition',      ideal:'Mjuk, kontrollerad vändning. Inget ryck.',                                       cue:'Ryckig transition → inkonsekvent tempo → dålig distansbedömning'}],
+    // 4: Impact
+    [{type:'line',  pts:[{x:.48,y:.22},{x:.52,y:.68}], num:1, label:'Ryggrad: stabil',    ideal:'Ryggraden rör sig INTE vid impact. Axelvaggan gör jobbet.',                      cue:'Kroppen rör sig → putterface roterar → bollen missar'},
+     {type:'arrow', pts:[{x:.44,y:.52},{x:.36,y:.46}], num:2, label:'Puttern mot målet',    ideal:'Puttern rör sig mot målet. Symmetrisk rörelse med backswingen.',                 cue:''},
+     {type:'line',  pts:[{x:.26,y:.30},{x:.60,y:.28}], num:3, label:'Huvud: ABSOLUT STILLA',ideal:'Huvudet rör sig inte alls. Vänta tills du HÖR bollen träffa koppen.',           cue:'Titta upp tidigt är det vanligaste misstaget vid putt. Lita på din sikt'}],
+    // 5: Follow-through
+    [{type:'line',  pts:[{x:.48,y:.22},{x:.52,y:.68}], num:1, label:'Ryggrad: stabil',    ideal:'Kroppen stilla ända till slutet.',                                                cue:''},
+     {type:'arrow', pts:[{x:.44,y:.52},{x:.34,y:.40}], num:2, label:'Follow-through: symmetrisk',ideal:'Follow-through speglar backswingen i längd. Kontrollerat tempo.',           cue:'Asymmetrisk pendel → inconsekvent träff → svårt läsa distansen'},
+     {type:'line',  pts:[{x:.26,y:.30},{x:.60,y:.28}], num:3, label:'Huvud: stilla till slut',ideal:'Inte titta upp förrän puttern stannat. Lita på linjen du valt.',             cue:'Titta upp för tidigt → putten glider → frustration → missade puttar'}],
+  ],
+},
+
+}; // end GUIDES
 
 // ══════════════════════════════════
 //  BUILD CLUB BUTTONS
@@ -687,6 +948,7 @@ function selectClub(club) {
   document.getElementById('clubBadge').textContent = club.label.toUpperCase();
   document.getElementById('clubPill').textContent  = club.label.toUpperCase();
   updateTips();
+  if (frames.length) { redraw(); updateLegend(); }
 }
 
 function updateTips() {
@@ -720,7 +982,7 @@ function setCameraAngle(angle) {
   document.getElementById('cameraInfo').textContent =
     angle === 'bakifran' ? 'Kamera bakom — sikt mot målet' : 'Kamera vid sidan — ser ansikte & mage';
   updateTips();
-  if (frames.length) redraw();
+  if (frames.length) { redraw(); updateLegend(); }
 }
 
 // ══════════════════════════════════
@@ -830,6 +1092,7 @@ async function startAnnotation() {
   buildFrameStrip();
   document.getElementById('annotationPanel').style.display = 'block';
   selectFrame(0);
+  updateLegend();
   document.getElementById('annotationPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -850,8 +1113,8 @@ function selectFrame(idx) {
   document.querySelectorAll('.frame-thumb').forEach((el,i) => el.classList.toggle('active', i===idx));
   frameImg.src = frames[idx].src;
   document.getElementById('phaseLabel').textContent = FRAME_LABELS[idx].toUpperCase();
-  frameImg.onload = () => { resizeCanvas(); redraw(); };
-  if (frameImg.complete) { resizeCanvas(); redraw(); }
+  frameImg.onload = () => { resizeCanvas(); redraw(); updateLegend(); };
+  if (frameImg.complete) { resizeCanvas(); redraw(); updateLegend(); }
 }
 function resizeCanvas() {
   const rect = frameImg.getBoundingClientRect();
@@ -868,46 +1131,68 @@ function redraw() {
 // ── Guide rendering
 function drawGuides() {
   if (!showGuides) return;
-  const set    = cameraAngle === 'bakifran' ? GUIDES_DTL : GUIDES_FACEON;
-  const guides = set[currentFrame] || [];
-  const GC     = 'rgba(200,168,75,0.88)';
+  const cat    = selectedClub ? getClubCategory(selectedClub.id) : 'iron';
+  const camKey = cameraAngle === 'bakifran' ? 'dtl' : 'faceon';
+  const guides = (GUIDES[cat] && GUIDES[cat][camKey] && GUIDES[cat][camKey][currentFrame]) || [];
+  const GC = 'rgba(200,168,75,0.92)';
   guides.forEach(g => {
     ctx.save();
     ctx.strokeStyle = GC; ctx.fillStyle = GC; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
     const A = toCanvas(g.pts[0]), B = toCanvas(g.pts[g.pts.length - 1]);
     if (g.type === 'line') {
       ctx.setLineDash([7, 5]); strokeLine(ctx, A, B); ctx.setLineDash([]);
-    } else if (g.type === 'arrow') {
+    } else {
       ctx.setLineDash([]);
       strokeLine(ctx, A, B);
       drawArrowHead(ctx, A, B, GC);
     }
-    if (g.label) drawGuideLabel(ctx, A, B, g.label);
+    drawGuideCircle(ctx, A, B, g.num);
     ctx.restore();
   });
-  // Watermark
-  const angleLabel = cameraAngle === 'bakifran' ? 'BAKIFRÅN — sikt mot mål' : 'FRÅN SIDAN — sikt mot ansikte';
+  const angleLabel = cameraAngle === 'bakifran' ? 'DTL — BAKIFRÅN' : 'FACE-ON — FRÅN SIDAN';
   ctx.save();
-  ctx.font = '500 9.5px JetBrains Mono, monospace';
-  ctx.fillStyle = 'rgba(200,168,75,0.38)';
+  ctx.font = '500 9px JetBrains Mono, monospace';
+  ctx.fillStyle = 'rgba(200,168,75,0.32)';
   ctx.fillText(`▸ IDEAL GUIDE — ${angleLabel}`, 8, canvas.height - 7);
   ctx.restore();
 }
 
-function drawGuideLabel(ctx, A, B, text) {
-  const mx = (A.x+B.x)/2, my = (A.y+B.y)/2;
-  ctx.font = '600 9.5px JetBrains Mono, monospace';
-  const w = ctx.measureText(text).width, pad = 4, h = 14;
-  let lx = mx + 7, ly = my - 2;
-  if (lx + w + pad > canvas.width - 4) lx = mx - w - pad - 7;
-  if (lx < 4) lx = 4;
-  if (ly - h + 4 < 4) ly = my + 14;
-  if (ly > canvas.height - 4) ly = my - 4;
-  ctx.fillStyle = 'rgba(6,15,8,0.80)';
-  if (typeof ctx.roundRect === 'function') { ctx.beginPath(); ctx.roundRect(lx-pad, ly-h+3, w+pad*2, h, 2); ctx.fill(); }
-  else { ctx.fillRect(lx-pad, ly-h+3, w+pad*2, h); }
-  ctx.fillStyle = 'rgba(220,185,80,0.95)';
-  ctx.fillText(text, lx, ly);
+function drawGuideCircle(ctx, A, B, num) {
+  const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, r = 9;
+  ctx.save();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(6,15,8,0.88)';
+  ctx.strokeStyle = 'rgba(200,168,75,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(mx, my, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = 'rgba(200,168,75,0.95)';
+  ctx.font = 'bold 9px JetBrains Mono, monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(String(num), mx, my + 0.5);
+  ctx.restore();
+}
+
+function updateLegend() {
+  const legendEl = document.getElementById('guideLegend');
+  if (!legendEl) return;
+  const cat    = selectedClub ? getClubCategory(selectedClub.id) : null;
+  const camKey = cameraAngle === 'bakifran' ? 'dtl' : 'faceon';
+  const guides = cat ? ((GUIDES[cat] && GUIDES[cat][camKey] && GUIDES[cat][camKey][currentFrame]) || []) : [];
+  if (!guides.length || !showGuides) { legendEl.style.display = 'none'; return; }
+  legendEl.style.display = 'block';
+  legendEl.innerHTML = `
+    <div class="legend-header">${FRAME_LABELS[currentFrame].toUpperCase()} — GUIDELINJER</div>
+    <div class="legend-list">
+      ${guides.map(g => `
+        <div class="legend-item">
+          <div class="legend-num">${g.num}</div>
+          <div class="legend-content">
+            <div class="legend-label">${g.label}</div>
+            <div class="legend-ideal">${g.ideal}</div>
+            ${g.cue ? `<div class="legend-cue">▸ ${g.cue}</div>` : ''}
+          </div>
+        </div>`).join('')}
+    </div>`;
 }
 
 function strokeLine(ctx, A, B) { ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke(); }
@@ -928,9 +1213,14 @@ function toggleGuides() {
     ? '<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> GUIDE: PÅ'
     : '<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> GUIDE: AV';
   redraw();
+  updateLegend();
 }
 
-function closeAnnotation() { document.getElementById('annotationPanel').style.display='none'; frames=[]; }
+function closeAnnotation() {
+  document.getElementById('annotationPanel').style.display='none';
+  document.getElementById('guideLegend').style.display='none';
+  frames=[];
+}
 window.addEventListener('resize', () => { if (frames.length) { resizeCanvas(); redraw(); } });
 
 // Init tips with default camera angle
